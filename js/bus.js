@@ -149,7 +149,22 @@
       const ref = this.ref.child("inbox").push();
       return new Promise((res) => {
         this.pending[ref.key] = res;
-        ref.set({ pid: this.pid, type, body: JSON.stringify(body || {}), t: Date.now() }).catch((e) => { delete this.pending[ref.key]; res({ ok: false, msg: explain(e) }); });
+        const msg = { pid: this.pid, type, body: JSON.stringify(body || {}), t: Date.now() };
+        ref.set(msg).catch(async (e) => {
+          /* 저장이 막히면 원인을 확인하고, 로그인 토큰을 새로 받아 한 번 더 시도해요 */
+          let why = explain(e);
+          if (/permission/i.test(String((e && (e.code || e.message)) || e))) {
+            try {
+              const u = firebase.auth().currentUser;
+              if (u) await u.getIdToken(true);
+              const meta = (await this.ref.child("meta").get()).val();
+              if (!meta) why = "이 수업은 끝났거나 코드가 바뀌었어요. 선생님 화면의 QR을 다시 찍어 주세요.";
+              else if (!u || u.uid !== this.pid) why = "연결이 새로 바뀌었어요. 화면을 새로고침한 뒤 다시 입장해 주세요.";
+              else { await ref.set(msg); return; }
+            } catch (e2) { why += ` (확인용: ${String((e2 && (e2.code || e2.message)) || e2).slice(0, 60)})`; }
+          }
+          if (this.pending[ref.key]) { delete this.pending[ref.key]; res({ ok: false, msg: why }); }
+        });
         setTimeout(() => { if (this.pending[ref.key]) { delete this.pending[ref.key]; res({ ok: false, msg: "교사 화면이 응답하지 않아요. 잠시 뒤 다시 눌러 주세요." }); } }, 9000);
       });
     }
