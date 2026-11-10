@@ -1,0 +1,44 @@
+{
+  "rules": {
+    "rooms": {
+      "$room": {
+        "meta": {
+          ".read": "auth != null",
+          ".write": "auth != null && (!data.exists() || data.child('host').val() === auth.uid)",
+          ".validate": "!newData.exists() || newData.child('host').val() === auth.uid"
+        },
+        "state": {
+          ".read": "auth != null && root.child('rooms').child($room).child('meta/host').val() === auth.uid",
+          ".write": "auth != null && root.child('rooms').child($room).child('meta/host').val() === auth.uid"
+        },
+        "pub": {
+          ".read": "auth != null",
+          ".write": "auth != null && root.child('rooms').child($room).child('meta/host').val() === auth.uid"
+        },
+        "films": {
+          ".read": "auth != null",
+          ".write": "auth != null && root.child('rooms').child($room).child('meta/host').val() === auth.uid"
+        },
+        "views": {
+          ".write": "auth != null && root.child('rooms').child($room).child('meta/host').val() === auth.uid",
+          "$uid": { ".read": "auth != null && auth.uid === $uid" }
+        },
+        "replies": {
+          ".write": "auth != null && root.child('rooms').child($room).child('meta/host').val() === auth.uid",
+          "$uid": {
+            ".read": "auth != null && auth.uid === $uid",
+            "$key": { ".write": "auth != null && auth.uid === $uid && !newData.exists()" }
+          }
+        },
+        "inbox": {
+          ".read": "auth != null && root.child('rooms').child($room).child('meta/host').val() === auth.uid",
+          ".write": "auth != null && root.child('rooms').child($room).child('meta/host').val() === auth.uid",
+          "$msg": {
+            ".write": "auth != null && !data.exists() && newData.child('pid').val() === auth.uid && root.child('rooms').child($room).child('meta').exists()",
+            ".validate": "newData.hasChildren(['pid', 'type', 'body']) && newData.child('type').isString() && newData.child('type').val().length < 20 && newData.child('body').isString() && newData.child('body').val().length < 8000"
+          }
+        }
+      }
+    }
+  }
+}

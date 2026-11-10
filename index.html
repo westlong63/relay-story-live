@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Relay Story Live</title>
+<link rel="stylesheet" href="fonts/pretendard/pretendardvariable-dynamic-subset.css">
+<link rel="stylesheet" href="css/app.css">
+<style>
+  .in { max-width:1200px; margin:0 auto; padding:0 24px; }
+  .gnb { background:#fff; border-bottom:1px solid var(--line); }
+  .gnb .in { display:flex; align-items:center; gap:28px; height:76px; }
+  .brand { display:flex; align-items:baseline; gap:10px; text-decoration:none; color:var(--ink); }
+  .brand b { font-size:22px; font-weight:800; letter-spacing:-0.02em; }
+  .brand span { font-size:14px; color:var(--dim); padding-left:10px; border-left:1px solid var(--line-2); }
+  .gnb nav { margin-left:auto; display:flex; gap:28px; }
+  .gnb nav a { color:var(--ink); text-decoration:none; font-size:17px; font-weight:500; padding:26px 0 24px; border-bottom:3px solid transparent; }
+  .gnb nav a:hover { border-bottom-color:var(--blue-2); }
+
+  .hero { background:#fff; border-bottom:1px solid var(--line); }
+  .hero .in { padding-top:56px; padding-bottom:120px; }
+  .hero .eyebrow { font-size:clamp(34px, 6vw, 64px); }
+  .hero h1 { font-size:clamp(46px, 8vw, 92px); font-weight:800; margin:0; line-height:1.02; }
+  .lead { font-size:20px; color:var(--ink-2); line-height:1.6; margin:22px 0 28px; max-width:720px; }
+  .cta { display:flex; gap:10px; flex-wrap:wrap; }
+  .cta .btn { font-size:18px; padding:14px 26px; text-decoration:none; display:inline-block; }
+  #hostNote { font-size:14px; margin-top:10px; }
+
+  .board .in { display:grid; grid-template-columns:minmax(0, 1fr) 360px; gap:0; margin-top:-72px; align-items:start; }
+  .notice { background:#fff; border:1px solid var(--line); display:grid; grid-template-columns:170px minmax(0, 1fr); gap:28px; padding:40px 40px 32px; }
+  .notice .side { text-align:right; }
+  .notice .side .eyebrow { font-size:34px; }
+  .notice .side .big { font-size:40px; font-weight:800; letter-spacing:-0.02em; line-height:1.05; }
+  .notice .side p { margin:18px 0 0; font-size:15px; color:var(--dim); line-height:1.6; }
+  .steps { list-style:none; margin:0; padding:0; }
+  .steps li { display:grid; grid-template-columns:72px minmax(0, 1fr) auto; gap:16px; align-items:baseline; padding:15px 0; border-bottom:1px solid var(--line); }
+  .steps li:first-child { padding-top:4px; }
+  .steps .tag { text-align:center; }
+  .steps b { font-size:18px; display:block; }
+  .steps .sub { font-size:15px; color:var(--dim); line-height:1.5; display:block; margin-top:3px; }
+  .steps time { font-size:15px; color:var(--dim); font-variant-numeric:tabular-nums; }
+
+  .navyblk { background:var(--navy); color:#fff; padding:40px 32px 34px; margin-top:36px; }
+  .navyblk .eyebrow { color:rgba(255,255,255,.72); font-size:34px; }
+  .navyblk .big { font-size:40px; font-weight:800; letter-spacing:-0.02em; margin-bottom:22px; }
+  .navyblk label { display:block; font-size:15px; color:rgba(255,255,255,.85); margin-bottom:8px; }
+  .codeIn { font-size:30px; text-align:center; letter-spacing:10px; text-transform:uppercase; width:100%; font-weight:700; border-color:#fff; }
+  .navyblk button { width:100%; margin-top:10px; font-size:18px; padding:13px; background:#fff; color:var(--navy); border-color:#fff; font-weight:700; }
+  .navyblk button:hover { background:var(--tint); }
+  .navyblk ul { list-style:none; padding:0; margin:22px 0 0; }
+  .navyblk li { border-top:1px solid var(--navy-line); padding:13px 2px; font-size:15px; line-height:1.5; }
+
+  .strip { margin-top:48px; }
+  .strip .box { background:var(--tint); padding:24px; display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px; }
+  .strip h2 { font-size:22px; margin:0 0 14px; }
+  .safe { background:#fff; border:1px solid var(--tint-line); padding:16px 18px; }
+  .safe b { display:block; font-size:17px; margin-bottom:4px; }
+  .safe span { font-size:14px; color:var(--dim); line-height:1.55; }
+  .credit { margin-top:56px; }
+
+  @media (max-width: 900px) {
+    .gnb nav { display:none; }
+    .hero .in { padding-top:36px; padding-bottom:40px; }
+    .board .in { grid-template-columns:1fr; margin-top:0; }
+    .navyblk { margin-top:0; order:-1; }
+    .notice { grid-template-columns:1fr; padding:28px 20px; gap:16px; }
+    .notice .side { text-align:left; }
+    .steps li { grid-template-columns:64px minmax(0, 1fr); }
+    .steps time { grid-column:2; }
+    .in { padding:0 16px; }
+  }
+</style>
+</head>
+<body>
+<header class="gnb"><div class="in">
+  <a class="brand" href="index.html"><b>Relay Story Live</b><span>중3 전환기 영어</span></a>
+  <nav aria-label="바로가기"><a href="#flow">수업 흐름</a><a href="#safe">안전 장치</a><a href="demo.html">시연 모드</a></nav>
+</div></header>
+
+<section class="hero"><div class="in">
+  <div class="eyebrow">Relay Story</div>
+  <h1 class="brk">Live</h1>
+  <p class="lead">모둠 친구들과 영어 이야기를 돌려 쓰면, 그 이야기가 바로 영상이 되어 다 같이 보는 수업이에요.
+    설치도 로그인도 없고, 영어 선생님이 아니어도 화면 안내대로 진행하면 돼요.</p>
+  <div class="cta">
+    <a class="btn primary" id="host" href="host.html">수업 시작하기 (교사)</a>
+    <a class="btn" href="demo.html">시연 모드 열기</a>
+  </div>
+  <div id="hostNote" class="warn"></div>
+</div></section>
+
+<section class="board"><div class="in">
+  <div class="notice" id="flow">
+    <div class="side">
+      <div class="eyebrow">Class</div>
+      <div class="big brk">Flow</div>
+      <p>45분 한 차시.<br>주제만 바꾸면<br>몇 번이든 다시 해요.</p>
+    </div>
+    <ol class="steps">
+      <li><span class="tag">STEP 1</span><span><b>오늘의 Topic</b><span class="sub">주제와 시작 상황을 함께 읽어요.</span></span><time>3분</time></li>
+      <li><span class="tag">STEP 2</span><span><b>단어</b><span class="sub">2022 개정 중학교 기본 어휘 6개를 듣고 퀴즈를 풀어요. 모둠 정답률에 따라 영상 보너스가 생겨요.</span></span><time>8분</time></li>
+      <li><span class="tag">STEP 3</span><span><b>돌려 쓰기</b><span class="sub">모두 동시에 자기 이야기를 시작하고, 라운드마다 옆 친구에게 넘겨 이어 써요.</span></span><time>14분</time></li>
+      <li><span class="tag">STEP 4</span><span><b>AI 영상</b><span class="sub">장면 그림, 자막, 영어 음성, 음악이 있는 영상이 바로 만들어져요. 모둠 대표작을 골라요.</span></span><time>4분</time></li>
+      <li><span class="tag">STEP 5</span><span><b>함께 보기</b><span class="sub">대표작 상영, 반응 보내기, Best Story 투표와 시상.</span></span><time>12분</time></li>
+    </ol>
+  </div>
+  <div class="navyblk">
+    <div class="eyebrow">Student</div>
+    <div class="big">학생 입장</div>
+    <label for="code">선생님 화면의 다섯 글자 코드</label>
+    <input id="code" class="codeIn" maxlength="5" placeholder="ABCDE" autocomplete="off" autocapitalize="characters">
+    <button id="go">들어가기</button>
+    <ul>
+      <li>화면의 QR을 찍어도 바로 들어가요.</li>
+      <li>이름 대신 별명으로 들어가요.</li>
+      <li>선생님 화면은 전자칠판에서 Edge로 열면 영어 음성이 가장 자연스러워요.</li>
+    </ul>
+  </div>
+</div></section>
+
+<section class="strip" id="safe"><div class="in">
+  <h2>안전 장치</h2>
+  <div class="box">
+    <div class="safe"><b>작가 서약</b><span>서약에 체크해야 입장할 수 있어요.</span></div>
+    <div class="safe"><b>금지어·실명 자동 차단</b><span>나쁜 말이나 친구 실명이 있으면 제출이 막히고 고칠 곳을 알려 줘요.</span></div>
+    <div class="safe"><b>선생님 미리보기</b><span>상영 전에 모든 이야기의 전체 글을 볼 수 있어요.</span></div>
+    <div class="safe"><b>우리 반만 공유</b><span>별명만 쓰고, 수업 기록은 선생님이 언제든 지울 수 있어요.</span></div>
+  </div>
+</div></section>
+
+<div class="credit" id="credit"></div>
+<script src="js/config.js"></script>
+<script>
+  const C = window.RSL_CONFIG || {};
+  document.getElementById("credit").textContent = C.credit || "";
+  if (!C.firebase) {
+    document.getElementById("host").href = "host.html?demo=1";
+    document.getElementById("hostNote").textContent = "아직 Firebase 설정 전이라 이 컴퓨터 안에서만 연결되는 시연 모드로 열려요.";
+  }
+  const go = () => { const c = document.getElementById("code").value.trim().toUpperCase(); if (c) location.href = "play.html?r=" + encodeURIComponent(c) + (C.firebase ? "" : "&demo=1"); };
+  document.getElementById("go").onclick = go;
+  document.getElementById("code").onkeydown = (e) => { if (e.key === "Enter") go(); };
+</script>
+</body>
+</html>

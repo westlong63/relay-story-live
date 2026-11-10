@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>우리 반 영상관 · Relay Story Live</title>
+<link rel="stylesheet" href="fonts/pretendard/pretendardvariable-dynamic-subset.css">
+<link rel="stylesheet" href="css/app.css">
+<style>
+  .gnb { background:#fff; border-bottom:1px solid var(--line); }
+  .gnb div { max-width:1100px; margin:0 auto; padding:0 16px; height:64px; display:flex; align-items:center; gap:10px; font-weight:800; font-size:19px; letter-spacing:-0.02em; }
+  .gnb div::before { content:""; width:12px; height:12px; border-top:3px solid var(--red); border-right:3px solid var(--red); }
+  main { max-width:1100px; margin:0 auto; padding:28px 16px 10px; }
+  h1 { margin:0 0 6px; font-size:40px; font-weight:800; }
+  .stage { position:relative; background:#000; overflow:hidden; width:100%; aspect-ratio:16/9; }
+  .stage canvas { width:100%; height:100%; display:block; }
+  .ctrl { display:flex; gap:8px; margin:12px 0; flex-wrap:wrap; align-items:center; }
+  .list { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:0; margin-top:16px; border-top:2px solid var(--ink); }
+  .film { background:#fff; border-bottom:1px solid var(--line); border-right:1px solid var(--line); padding:14px 16px; cursor:pointer; border-left:4px solid var(--c); }
+  .film:hover { background:var(--tint); }
+  .film.on { background:var(--tint); box-shadow:inset 0 -3px 0 var(--blue-2); }
+  .film b { display:block; font-size:17px; margin-bottom:2px; }
+  label.inline { display:inline-flex; gap:6px; align-items:center; }
+</style>
+</head>
+<body>
+<header class="gnb"><div>Relay Story Live</div></header>
+<main id="main">불러오는 중…</main>
+<div class="credit" id="credit"></div>
+<script src="js/config.js"></script>
+<script>if (window.RSL_CONFIG.firebase && !new URLSearchParams(location.search).has("demo")) document.write('<script src="vendor/firebase-app-compat.js"><\/script><script src="vendor/firebase-auth-compat.js"><\/script><script src="vendor/firebase-database-compat.js"><\/script>');</script>
+<script src="js/pixelart.js"></script>
+<script src="js/theater.js"></script>
+<script src="js/bus.js"></script>
+<script>
+"use strict";
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+$("#credit").textContent = window.RSL_CONFIG.credit || "";
+const P = RSLBus.params, room = (P.get("r") || "").toUpperCase();
+let films = null, th = null, cur = null;
+(async () => {
+  try { films = room ? await RSLBus.readFilms(room) : null; } catch (e) { $("#main").innerHTML = `<div class="card"><h2>열지 못했어요</h2><p>${esc(RSLBus.explain(e))}</p></div>`; return; }
+  if (!films || !Object.keys(films).length) { $("#main").innerHTML = `<div class="card"><h2>영상이 없어요</h2><p class="dim">선생님이 4단계에서 영상을 만든 뒤에 볼 수 있어요. 수업 기록을 지우면 영상관도 사라져요.</p></div>`; return; }
+  const list = Object.values(films);
+  $("#main").innerHTML = `<div class="eyebrow" style="font-size:28px">Our Class</div><h1 class="brk">우리 반 영상관</h1><div class="dim">${esc(list[0].topic)} · 이야기 ${list.length}편 · 우리 반에만 공유해 주세요</div>
+    <div class="stage" id="stage" style="margin-top:12px"><canvas id="cv"></canvas></div>
+    <div class="ctrl"><button class="primary" id="play">▶ 재생</button><button id="pause">⏸</button><button id="skip">⏭ 장면 넘기기</button>
+      <label class="inline"><input type="checkbox" id="vOn" checked> 🔊 음성</label><button id="fs">전체 화면</button><span id="now" class="dim"></span></div>
+    <div class="list">${list.map((f) => `<div class="film" data-id="${f.id}" style="--c:${f.teamColor}"><b>${esc(f.title)}</b><span class="dim">${esc(f.team)} · by ${esc(f.writers.join(", "))}</span></div>`).join("")}</div>`;
+  th = new RSLTheater.Theater($("#cv"));
+  const pick = async (id) => {
+    th.stop(); cur = await RSLTheater.prepare(films[id], {});
+    document.querySelectorAll(".film").forEach((x) => x.classList.toggle("on", x.dataset.id === id));
+    $("#now").textContent = films[id].title; th.poster(cur);
+  };
+  document.querySelectorAll(".film").forEach((el) => el.onclick = () => pick(el.dataset.id));
+  $("#play").onclick = () => { if (cur) { th.voiceOn = $("#vOn").checked; th.play(cur); } };
+  $("#pause").onclick = () => th.pause(!th.paused);
+  $("#skip").onclick = () => th.next();
+  $("#fs").onclick = () => { const s = $("#stage"); (s.requestFullscreen || s.webkitRequestFullscreen).call(s); };
+  pick(P.get("s") && films[P.get("s")] ? P.get("s") : list[0].id);
+})();
+</script>
+</body>
+</html>

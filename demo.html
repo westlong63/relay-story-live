@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Relay Story Live · 시연 모드</title>
+<link rel="stylesheet" href="fonts/pretendard/pretendardvariable-dynamic-subset.css">
+<link rel="stylesheet" href="css/app.css">
+<style>
+  html, body { height:100%; overflow:hidden; }
+  body { display:flex; flex-direction:column; background:#E9EAEC; }
+  .bar { display:flex; gap:12px; align-items:center; padding:10px 16px; background:#fff; border-bottom:1px solid var(--line); font-size:15px; flex-wrap:wrap; }
+  .bar b { font-weight:800; }
+  .bar .tag { margin-right:2px; }
+  .wrap { flex:1; display:flex; gap:12px; padding:12px; min-height:0; }
+  .host { flex:1; min-width:0; position:relative; overflow:hidden; background:#fff; border:1px solid var(--line-2); }
+  .phones { display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; gap:12px; width:min(44vw, 640px); }
+  .phone { position:relative; overflow:hidden; background:#fff; border:6px solid var(--ink); border-radius:18px; }
+  .phone .lab { position:absolute; bottom:6px; right:8px; z-index:2; font-size:12px; color:#fff; background:var(--navy); padding:2px 8px; }
+  iframe { border:0; position:absolute; top:0; left:0; transform-origin:0 0; background:var(--bg); }
+  .credit { padding:6px; font-size:12px; }
+</style>
+</head>
+<body>
+<div class="bar"><span class="tag">DEMO</span><b>시연 모드</b> 이 컴퓨터 안에서만 연결돼요. 왼쪽이 전자칠판(교사) 화면, 오른쪽이 학생 디벗 4대예요.
+  <span class="dim">왼쪽 아래 버튼으로 가상 학생을 더 넣을 수 있어요.</span><span style="flex:1"></span>
+  <button id="again">처음부터 다시</button><a href="index.html">첫 화면</a></div>
+<div class="wrap">
+  <div class="host" id="hostBox"><iframe id="hostF" data-w="1600" data-h="980" allow="fullscreen; autoplay"></iframe></div>
+  <div class="phones" id="phones"></div>
+</div>
+<div class="credit" id="credit"></div>
+<script src="js/config.js"></script>
+<script src="js/bus.js"></script>
+<script>
+  document.getElementById("credit").textContent = (window.RSL_CONFIG || {}).credit || "";
+  const room = "D" + RSLBus.newCode().slice(0, 4);
+  const kids = [["Moonlight", 0], ["Pancake", 0], ["Blue Whale", 1], ["Sunny", 1]];
+  document.getElementById("hostF").src = `host.html?demo=1&r=${room}`;
+  const ph = document.getElementById("phones");
+  kids.forEach(([n, t], i) => {
+    const d = document.createElement("div"); d.className = "phone";
+    d.innerHTML = `<span class="lab">학생 ${i + 1} · ${n}</span><iframe data-w="420" data-h="820" src="play.html?demo=1&r=${room}&as=${i + 1}&name=${encodeURIComponent(n)}&team=${t}"></iframe>`;
+    ph.appendChild(d);
+  });
+  function fit() {
+    document.querySelectorAll("iframe").forEach((f) => {
+      const box = f.parentElement, w = +f.dataset.w, h = +f.dataset.h;
+      const s = Math.min(box.clientWidth / w, box.clientHeight / h);
+      const sw = box.clientWidth / s, sh = box.clientHeight / s;
+      f.style.width = sw + "px"; f.style.height = sh + "px"; f.style.transform = `scale(${s})`;
+    });
+  }
+  addEventListener("resize", fit); fit(); setTimeout(fit, 300);
+  document.getElementById("again").onclick = () => location.reload();
+</script>
+</body>
+</html>

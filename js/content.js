@@ -1,0 +1,76 @@
+/* Relay Story Live · 수업 내용 (주제, 단어, 반전 카드, 금지어)
+   단어는 모두 2022 개정 영어과 교육과정 [별책14] 기본 어휘 목록의 ** 표시(중학교 권장) 단어입니다.
+   선생님 화면의 '주제 만들기'로 새 주제를 추가할 수 있어서 이 파일은 고치지 않아도 됩니다. */
+window.RSL_CONTENT = (function () {
+  const MJ = {
+    Narrator: { gender: "n" },
+    Mina: { gender: "f", look: "15-year-old girl, short black bob hair, yellow hoodie", color: "#ffce3c" },
+    Jun: { gender: "m", look: "15-year-old boy, spiky brown hair, round glasses, blue jacket", color: "#6eaaff" },
+  };
+  const withChars = (extra) => Object.assign(JSON.parse(JSON.stringify(MJ)), extra || {});
+  const W = (word, ko, pos, ex) => ({ word, ko, pos, ex });
+  return {
+    note: "단어는 2022 개정 영어과 교육과정 기본 어휘(중학교 권장) 목록에서 골랐습니다.",
+    topics: [
+      { id: "night", title: "The Night Before High School", seed: "On the night before high school starts, something strange happens at your old middle school.",
+        characters: withChars(), screens: ["Mina walks past her old school at night.", "A golden key shines on the classroom floor.", "Mina and Jun run up the stairs to the rooftop.", "Mina and Jun watch the sunrise on the rooftop."],
+        words: [W("strange", "이상한, 낯선", "형용사", "Mina saw a strange light in the window."), W("whisper", "속삭이다", "동사", "Let's whisper, so nobody can hear us."),
+          W("shine", "빛나다", "동사", "The old key began to shine."), W("secret", "비밀; 비밀의", "명사·형용사", "They found a secret room on the rooftop."),
+          W("curious", "궁금한, 호기심 많은", "형용사", "Mina was curious about the light."), W("promise", "약속; 약속하다", "명사·동사", "They made a promise to stay friends.")] },
+      { id: "future", title: "A Message from 2035", seed: "One morning, you get a message from yourself, ten years in the future.",
+        characters: withChars(), screens: ["Jun looks at his phone in his bedroom in the morning.", "Mina reads the message in the classroom.", "Mina and Jun walk on the street after school.", "Mina and Jun stand on the rooftop in the sunrise."],
+        words: [W("imagine", "상상하다", "동사", "Can you imagine your life in 2035?"), W("expect", "기대하다, 예상하다", "동사", "Jun didn't expect a message from himself."),
+          W("achieve", "이루다, 성취하다", "동사", "You will achieve your dream someday."), W("career", "직업, 경력", "명사", "Mina wants a career in science."),
+          W("challenge", "도전; 도전하다", "명사·동사", "High school will be a new challenge."), W("advice", "조언, 충고", "명사", "The message had some good advice.")] },
+      { id: "planet", title: "New Kid from Another Planet", seed: "A new student joins your class. There is one secret: the student is from another planet.",
+        characters: withChars({ Zoe: { gender: "f", look: "a friendly alien girl", color: "#96e6aa" } }), screens: ["Zoe stands in front of the classroom.", "Mina and Zoe talk in the hallway.", "Jun shows Zoe the school gate.", "Zoe looks at her planet in space."],
+        words: [W("planet", "행성", "명사", "Zoe came from a small blue planet."), W("language", "언어", "명사", "She spoke a language nobody knew."),
+          W("communicate", "의사소통하다", "동사", "They used pictures to communicate."), W("gesture", "몸짓, 제스처", "명사", "Jun made a friendly gesture."),
+          W("greet", "인사하다, 맞이하다", "동사", "The class greeted the new student."), W("respect", "존중; 존중하다", "명사·동사", "We respect different cultures.")] },
+      { id: "cat", title: "The Missing Cat Mystery", seed: "Your neighbor's cat, Coco, is missing. You and your friends become detectives for one day.",
+        characters: withChars(), screens: ["Mina knocks on her neighbor's door.", "Jun looks for a cat under a tree in the park.", "Mina and Jun walk on the street at night with a map.", "A small cat sleeps on the rooftop."],
+        words: [W("neighbor", "이웃", "명사", "My neighbor has a fluffy white cat."), W("search", "찾다, 수색하다", "동사", "Let's search the park for Coco."),
+          W("clue", "단서", "명사", "Mina found a clue under the bench."), W("notice", "알아차리다", "동사", "Did you notice the small footprints?"),
+          W("mystery", "수수께끼, 미스터리", "명사", "The missing cat was a big mystery."), W("solve", "해결하다, 풀다", "동사", "Together, we can solve this mystery.")] },
+      { id: "game", title: "Trapped in a Video Game", seed: "You wake up inside a video game. To go home, you must clear the last level.",
+        characters: withChars(), screens: ["Mina wakes up in a pixel game world.", "Jun jumps over a trap in the game world.", "Mina and Jun find a golden key in the game.", "Mina and Jun walk through the exit door."],
+        words: [W("escape", "탈출하다", "동사", "We have to escape from this game!"), W("rule", "규칙", "명사", "The first rule is: never give up."),
+          W("level", "단계, 레벨", "명사", "Mina finished the last level."), W("mission", "임무", "명사", "Our mission is to find the golden key."),
+          W("skill", "기술, 능력", "명사", "Jun has a special skill: he can fly."), W("trap", "덫, 함정", "명사·동사", "Watch out! There is a trap on the floor.")] },
+      { id: "festival", title: "The School Festival Surprise", seed: "The school festival is tomorrow. But this morning, everything goes wrong!",
+        characters: withChars(), screens: ["Mina and Jun decorate the classroom in the morning.", "Jun practices a song on the stage.", "The stage is dark and the audience waits.", "Mina and Jun sing on the stage."],
+        words: [W("prepare", "준비하다", "동사", "We prepared our show for two weeks."), W("practice", "연습; 연습하다", "명사·동사", "Let's practice one more time."),
+          W("perform", "공연하다", "동사", "Mina will perform a song on stage."), W("stage", "무대", "명사", "The lights on the stage went out."),
+          W("audience", "관객", "명사", "The audience clapped and cheered."), W("decorate", "장식하다", "동사", "Let's decorate the classroom with balloons.")] },
+      { id: "time", title: "Time Travel Field Trip", seed: "On a field trip to a museum, your class falls 500 years into the past.",
+        characters: withChars(), screens: ["Mina and Jun look at an old map in the museum hallway.", "Mina and Jun stand in front of a palace.", "Jun talks to a king in the palace.", "Mina and Jun come back to the museum."],
+        words: [W("museum", "박물관", "명사", "Our class went to a history museum."), W("past", "과거", "명사", "We traveled 500 years into the past."),
+          W("century", "세기, 100년", "명사", "This old map is from the 16th century."), W("palace", "궁전, 궁궐", "명사", "The king lived in a beautiful palace."),
+          W("tradition", "전통", "명사", "Making rice cakes is a Korean tradition."), W("experience", "경험; 경험하다", "명사·동사", "It was the best experience of my life.")] },
+      { id: "store", title: "The Magic Convenience Store", seed: "A new convenience store opens near school. Everything it sells is a little bit magic.",
+        characters: withChars(), screens: ["Mina and Jun walk into a small store.", "Jun holds a strange candy in the store.", "Mina flies over the street.", "Mina and Jun wave goodbye to the store."],
+        words: [W("magic", "마법; 마법의", "명사·형용사", "This magic gum makes you fly."), W("price", "가격", "명사", "The price is one smile."),
+          W("item", "물건, 품목", "명사", "Every item in the store was strange."), W("exchange", "교환하다; 교환", "동사·명사", "Can I exchange this for a different one?"),
+          W("choice", "선택", "명사", "You have one choice: red or blue."), W("surprise", "놀라움; 놀라게 하다", "명사·동사", "What a surprise! The candy started to sing.")] },
+      { id: "robot", title: "My Robot Friend", seed: "You build a robot for the science fair. That night, it opens its eyes and starts to talk.",
+        characters: withChars({ Robo: { gender: "robot", look: "a small cute robot", color: "#aab4c8" } }), screens: ["Jun and Robo in his bedroom at night.", "Robo waves hello in the classroom.", "Mina repairs Robo's arm at the desk.", "Jun and Robo watch the sunrise on the rooftop."],
+        words: [W("invent", "발명하다", "동사", "Jun invented a robot for the science fair."), W("machine", "기계", "명사", "The machine made a strange sound."),
+          W("battery", "배터리", "명사", "Robo's battery is almost empty."), W("repair", "수리하다; 수리", "동사·명사", "Can you repair my robot arm?"),
+          W("emotion", "감정", "명사", "Robo wanted to learn about human emotions."), W("pretend", "~인 척하다", "동사", "Let's pretend we are robots.")] },
+      { id: "island", title: "The Island Not on the Map", seed: "After a storm, your class boat arrives at a small island that is not on any map.",
+        characters: withChars(), screens: ["A small boat in the ocean during a storm.", "Mina and Jun walk on the beach of the island.", "Jun finds a map under a tree in the park.", "A rainbow over the island in the morning."],
+        words: [W("storm", "폭풍", "명사", "The storm was loud and scary."), W("island", "섬", "명사", "We found a small island in the ocean."),
+          W("ocean", "바다, 대양", "명사", "The ocean was blue and calm."), W("journey", "여행, 여정", "명사", "Our journey is just beginning."),
+          W("adventure", "모험", "명사", "This is the biggest adventure of our lives."), W("rainbow", "무지개", "명사", "A rainbow appeared over the island.")] },
+    ],
+    twists: [
+      "Suddenly, the lights go out.", "Someone finds an old photo.", "A cat follows the main character.", "It starts to snow, in the middle of the story.",
+      "A phone rings, but nobody is there.", "The main character finds a map.", "Someone says: \"I've never seen that before.\"", "A door that was locked is now open.",
+      "Everyone hears music from far away.", "A small robot appears.", "It starts to rain.", "Someone gets a strange letter.",
+    ],
+    /* 학교에서 함께 보는 영상이라 막는 말 (영어는 뒤에 붙는 형태도 같이 막음: kill → killed). 선생님 화면에서 더 추가할 수 있어요. */
+    banned: ["kill", "blood", "gun", "knife", "drunk", "beer", "cigarette", "stupid", "idiot", "loser", "sexy", "kiss", "fight",
+      "fuck", "shit", "bitch", "drug", "suicide", "porn", "nude",
+      "바보", "죽어", "시발", "씨발", "병신", "존나", "개새", "ㅅㅂ", "ㅂㅅ", "꺼져"],
+  };
+})();

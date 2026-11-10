@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Relay Story Live · 교사 화면</title>
+<link rel="stylesheet" href="fonts/pretendard/pretendardvariable-dynamic-subset.css">
+<link rel="stylesheet" href="css/app.css">
+<style>
+  header { display:flex; align-items:stretch; gap:6px; padding:0 28px; height:76px; background:#fff; border-bottom:1px solid var(--line); position:sticky; top:0; z-index:5; }
+  header .brand { display:flex; align-items:center; gap:10px; font-weight:800; font-size:20px; letter-spacing:-0.02em; margin-right:22px; white-space:nowrap; }
+  header .brand::before { content:""; width:14px; height:14px; border-top:3px solid var(--red); border-right:3px solid var(--red); }
+  .step { background:transparent; border:0; border-radius:0; color:var(--ink); padding:0 16px; font-size:19px; font-weight:500; position:relative; white-space:nowrap; }
+  .step::after { content:""; position:absolute; left:12px; right:12px; bottom:-1px; height:3px; background:transparent; }
+  .step:hover:not(:disabled) { color:var(--blue); }
+  .step.on { font-weight:800; color:var(--navy); }
+  .step.on::after { background:var(--blue-2); }
+  .step .n { font-size:13px; font-weight:600; color:var(--light); margin-right:6px; font-variant-numeric:tabular-nums; }
+  .step.on .n { color:var(--red); }
+  header .sp { flex:1; }
+  header .meta { display:flex; align-items:center; gap:10px; white-space:nowrap; }
+  .code { font-weight:800; letter-spacing:4px; background:var(--navy); color:#fff; padding:7px 12px 7px 16px; font-variant-numeric:tabular-nums; }
+  body { padding-bottom:110px; }
+  main { padding:32px 36px 16px; }
+  h1 { font-size:54px; font-weight:800; margin:4px 0 12px; line-height:1.12; }
+  h2 { font-size:28px; font-weight:800; margin:0 0 14px; }
+  .eyebrow { font-size:30px; }
+  .seed { font-size:24px; color:var(--ink-2); max-width:1100px; line-height:1.5; }
+  .row { display:flex; gap:24px; flex-wrap:wrap; align-items:flex-start; }
+  .teams { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:12px; margin-top:24px; }
+  .team { background:#fff; border:1px solid var(--line); border-top:4px solid var(--c); padding:14px 16px; }
+  .team h3 { margin:0 0 8px; font-size:20px; display:flex; align-items:baseline; gap:8px; }
+  .qr { background:#fff; padding:10px; display:inline-block; }
+  .qr svg { display:block; width:250px; height:250px; }
+  .bigcode { font-size:58px; font-weight:800; letter-spacing:10px; color:var(--navy); font-variant-numeric:tabular-nums; }
+  .card.navy .bigcode { color:#fff; }
+  .word { font-size:104px; font-weight:800; margin:6px 0 0; letter-spacing:-0.03em; }
+  .ko { font-size:40px; color:var(--blue); font-weight:700; }
+  .ex { font-size:34px; margin-top:22px; line-height:1.45; }
+  .ex mark { background:linear-gradient(transparent 58%, var(--pink) 58%); color:inherit; text-decoration:none; }
+  .settings { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-top:20px; color:var(--ink-2); font-size:17px; padding:14px 16px; background:#fff; border:1px solid var(--line); }
+  .timer { font-size:84px; font-weight:800; font-variant-numeric:tabular-nums; color:var(--navy); line-height:1; }
+  .timer.low { color:var(--red); }
+  .w { display:inline-block; padding:5px 11px; border:1px solid var(--line); background:var(--bar); margin:3px 4px 0 0; font-size:16px; }
+  .w.done { background:var(--navy); border-color:var(--navy); color:#fff; font-weight:700; }
+  .story { background:var(--bar); border-left:3px solid var(--line-2); padding:8px 10px; margin-top:7px; font-size:15px; }
+  .story.rep { border-left-color:var(--red); background:#fff; outline:1px solid var(--line); }
+  .stage { position:relative; background:#000; overflow:hidden; width:100%; aspect-ratio:16/9; max-height:74vh; margin:0 auto; }
+  .stage canvas { width:100%; height:100%; display:block; object-fit:contain; }
+  .stage:fullscreen { max-height:none; }
+  .floaty { position:absolute; bottom:6%; font-size:54px; pointer-events:none; animation:floaty 2.4s ease-out forwards; }
+  @keyframes floaty { from { transform:translateY(0) scale(.6); opacity:0; } 15% { opacity:1; transform:translateY(-30px) scale(1.1); } to { transform:translateY(-360px) scale(1); opacity:0; } }
+  .ctrl { display:flex; gap:8px; align-items:center; margin-top:12px; flex-wrap:wrap; }
+  .ctrl button { font-size:18px; }
+  .rx { font-size:30px; margin-right:16px; font-variant-numeric:tabular-nums; }
+  .award { font-size:28px; margin:8px 0; padding:12px 0; border-bottom:1px solid var(--line); }
+  .award b { color:var(--navy); }
+  .foot { position:fixed; right:16px; bottom:16px; background:#fff; border:1px solid var(--line); padding:10px 14px; display:flex; gap:12px; align-items:center; z-index:4; box-shadow:0 6px 24px rgba(29,32,33,.12); }
+  .foot .qr { padding:0; }
+  .foot .qr svg { width:96px; height:96px; }
+  .demobar { position:fixed; left:16px; bottom:16px; z-index:4; display:flex; gap:6px; flex-wrap:wrap; max-width:60vw; }
+  .demobar button { font-size:14px; padding:8px 12px; background:#fff; border:1px dashed var(--red); color:var(--red); }
+  .report { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:0; margin-top:12px; border-top:2px solid var(--ink); }
+  .report div { background:#fff; border-bottom:1px solid var(--line); border-right:1px solid var(--line); padding:14px 16px; font-size:15px; color:var(--dim); }
+  .report b { display:block; font-size:26px; color:var(--navy); font-variant-numeric:tabular-nums; margin-top:4px; line-height:1.25; }
+  .guide { background:var(--tint); border-left:4px solid var(--blue); padding:12px 16px; color:var(--ink); font-size:17px; margin:14px 0; line-height:1.6; }
+  .credit { position:static; }
+  label.inline { display:inline-flex; gap:6px; align-items:center; }
+</style>
+</head>
+<body>
+<header>
+  <span class="brand">Relay Story Live</span>
+  <button class="step" data-p="topic"><span class="n">01</span>오늘의 Topic</button>
+  <button class="step" data-p="words"><span class="n">02</span>단어</button>
+  <button class="step" data-p="write"><span class="n">03</span>릴레이 소설</button>
+  <button class="step" data-p="video"><span class="n">04</span>AI 영상</button>
+  <button class="step" data-p="watch"><span class="n">05</span>함께 보기</button>
+  <span class="sp"></span>
+  <span class="meta"><span id="mode" class="badge"></span><span id="count" class="dim"></span><span class="code" id="codeTop"></span></span>
+</header>
+<main id="main">불러오는 중…</main>
+<div id="stageWrap" hidden style="padding:0 30px">
+  <div class="stage" id="stage"><canvas id="screen"></canvas></div>
+</div>
+<div class="credit" id="credit"></div>
+<div class="foot" id="foot" hidden><div class="qr" id="qrSmall"></div><div class="dim">늦게 온 학생<br>코드 <b id="footCode" style="color:var(--gold)"></b></div></div>
+<div class="demobar" id="demoBar" hidden></div>
+<div id="modal"></div>
+
+<script src="js/config.js"></script>
+<script>if (window.RSL_CONFIG.firebase && !new URLSearchParams(location.search).has("demo")) document.write('<script src="vendor/firebase-app-compat.js"><\/script><script src="vendor/firebase-auth-compat.js"><\/script><script src="vendor/firebase-database-compat.js"><\/script>');</script>
+<script src="js/content.js"></script>
+<script src="js/qrcode.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/pixelart.js"></script>
+<script src="js/theater.js"></script>
+<script src="js/bus.js"></script>
+<script>
+"use strict";
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const ITEM_ICON = { bgm: "", voice_cast: "", bonus_scene: "" };
+const EMO = { clap: "👏", laugh: "😂", wow: "😮", heart: "❤️" };
+const DEMO = RSLBus.isDemo();
+const store = RSLBus.store;
+let E = null, link = null, V = null;
+$("#credit").textContent = (window.RSL_CONFIG.credit || "");
+
+/* ---------- 교사가 정하는 것 (이 컴퓨터에 저장) ---------- */
+function loadList(k) { try { return JSON.parse(store.get(k) || "[]"); } catch (e) { return []; } }
+const custom = () => loadList("rsl-custom-topics");
+function content() {
+  const C = JSON.parse(JSON.stringify(window.RSL_CONTENT));
+  C.topics = C.topics.concat(custom().map((t) => Object.assign({ custom: true }, t)));
+  return C;
+}
+
+/* ---------- 시작 ---------- */
+async function boot() {
+  const qs = RSLBus.params;
+  let room = qs.get("r") || (DEMO ? null : store.get("rsl-host-room"));
+  try {
+    link = await RSLBus.host(room, onAction);
+  } catch (e) { $("#main").innerHTML = `<div class="card"><h2>연결하지 못했어요</h2><p>${esc(RSLBus.explain(e))}</p><p class="dim">시연 모드는 <a href="demo.html">여기</a>에서 바로 열 수 있어요.</p></div>`; return; }
+  room = link.room;
+  if (!DEMO) store.set("rsl-host-room", room);
+  const saved = await link.loadState();
+  E = new RSLEngine(content(), saved, { room, realNames: loadList("rsl-real-names"), extraBanned: loadList("rsl-extra-banned"), onEvent });
+  E.S.room = room;
+  $("#mode").textContent = DEMO ? "시연 모드" : "수업 모드";
+  $("#mode").className = "badge" + (DEMO ? " demo" : "");
+  changed();
+  setInterval(() => { if (E.tick()) changed(); updateTimer(); }, 1000);
+  if (DEMO) demoBar();
+}
+function onAction(pid, type, body) {
+  const res = E.playerAction(pid, type, body);
+  changed();
+  return res;
+}
+function act(b) { if (E.hostAction(b)) changed(); }
+let pubTimer = null, renderPending = false;
+function changed() {
+  link.saveState(E.S);
+  if (!pubTimer) pubTimer = setTimeout(publish, 120);
+  if (!renderPending) { renderPending = true; requestAnimationFrame(() => { renderPending = false; render(); }); }
+}
+function publish() {
+  pubTimer = null;
+  const views = {};
+  const off = link.offset || 0, sv = (v) => { if (v.write && v.write.endsAt) v.write.endsAt += off; return v; };
+  for (const pid of Object.keys(E.S.players)) views[pid] = sv(E.playerView(pid));
+  link.publish(sv(E.playerView(null)), views);
+}
+function joinUrl() {
+  const base = location.href.replace(/host\.html.*$/, "");
+  return DEMO ? `${base}play.html?demo=1&r=${E.S.room}` : `${base}play.html?r=${E.S.room}`;
+}
+function galleryUrl() { const base = location.href.replace(/host\.html.*$/, ""); return `${base}watch.html?r=${E.S.room}${DEMO ? "&demo=1" : ""}`; }
+function qrSvg(text, cell) { const q = qrcode(0, "M"); q.addData(text); q.make(); return q.createSvgTag({ cellSize: cell || 6, margin: 2, scalable: true }); }
+function onEvent(kind, data) {
+  if (kind === "react" && V && V.phase === "watch") floatEmoji(EMO[data.emoji]);
+}
+
+/* ---------- 그리기 ---------- */
+document.querySelectorAll(".step").forEach((b) => b.onclick = () => act({ action: "phase", phase: b.dataset.p }));
+document.addEventListener("keydown", (e) => {
+  if (!V || /INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return;
+  if (V.phase === "words" && (e.key === "ArrowRight" || e.key === "ArrowLeft")) act({ action: "word", d: e.key === "ArrowRight" ? 1 : -1 });
+  if (V.phase === "words" && e.key === " ") { e.preventDefault(); speakWord(V.topic.words[V.wordIndex].word); }
+});
+function speakWord(word, sentence) {
+  const w = V.topic.words.find((x) => x.word === word);
+  let spoke = false;
+  const fallback = () => { if (spoke) return; spoke = true; try { const u = new SpeechSynthesisUtterance(sentence && w ? w.ex : word); u.lang = "en-US"; u.rate = 0.85; speechSynthesis.speak(u); } catch (e) {} };
+  const a = new Audio(`assets/audio/${encodeURIComponent(word)}${sentence ? "_ex" : ""}.mp3`);
+  a.onerror = fallback; a.play().catch(fallback);
+}
+let lastPhase = null;
+function render() {
+  if (!E) return;
+  const a = document.activeElement;
+  const typing = a && ((a.tagName === "INPUT" && a.type !== "checkbox") || a.tagName === "TEXTAREA" || a.tagName === "SELECT") && !a.closest("#modal");
+  if (typing && V && V.phase === E.S.phase) { clearTimeout(render.retry); render.retry = setTimeout(changed, 800); return; }
+  V = E.hostView();
+  if (V.phase !== "watch" && $("#watchInfo")) $("#watchInfo").remove();
+  document.querySelectorAll(".step").forEach((b) => b.classList.toggle("on", b.dataset.p === V.phase));
+  $("#count").textContent = `참여 ${V.players.length}명`;
+  $("#codeTop").textContent = V.room;
+  $("#foot").hidden = V.phase === "topic" || V.phase === "watch";
+  $("#qrSmall").innerHTML = qrSvg(joinUrl(), 3); $("#footCode").textContent = V.room;
+  if (V.phase !== lastPhase && lastPhase === "watch") stopTheater();
+  lastPhase = V.phase;
+  $("#stageWrap").hidden = V.phase !== "watch" || V.watchIndex >= V.screen.length;
+  ({ topic: rTopic, words: rWords, write: rWrite, video: rVideo, watch: rWatch })[V.phase]();
+}
+
+function rTopic() {
+  const T = V.topic, url = joinUrl();
+  $("#main").innerHTML = `
+  <div class="row">
+    <div style="flex:1;min-width:520px">
+      <div class="eyebrow">Today's Topic</div>
+      <h1 class="brk">${esc(T.title)}</h1>
+      <div class="seed">${esc(T.seed)}</div>
+      <div style="margin-top:14px;font-size:20px">등장인물: ${T.characters.map((c) => `<span class="chip">${esc(c)}</span>`).join("")} <span class="dim">+ 새 인물 자유</span></div>
+      <div class="guide"><span class="tag blue">안내 멘트</span> "오늘은 이 주제로 모둠 친구들과 영어 이야기를 이어 쓰고, 마지막에 영상으로 다 같이 봐요. 화면의 QR을 찍거나 코드를 넣고 별명으로 들어오세요."</div>
+      <div class="settings">
+        주제 <select id="selTopic">${V.topics.map((t) => `<option value="${t.id}" ${t.id === T.id ? "selected" : ""}>${t.custom ? "★ " : ""}${esc(t.title)}</option>`).join("")}</select>
+        <button id="btnNewTopic">＋ 주제 만들기</button>
+      </div>
+      <div class="settings">
+        모둠 수 <select id="selTeams">${[2, 3, 4, 5, 6, 7, 8].map((n) => `<option ${n === V.teamCount ? "selected" : ""}>${n}</option>`).join("")}</select>
+        돌려 쓰기 라운드 <select id="selRounds">${[2, 3, 4, 5, 6].map((n) => `<option ${n === V.write.rounds ? "selected" : ""}>${n}</option>`).join("")}</select>
+        라운드 시간 <select id="selSec">${[120, 180, 240, 300].map((n) => `<option value="${n}" ${n === V.write.roundSec ? "selected" : ""}>${n / 60}분</option>`).join("")}</select>
+        <button id="btnSafety">실명·금지어 설정</button>
+        <button id="btnReset">새 수업 (처음부터)</button>
+      </div>
+      <div class="dim" style="margin-top:8px;font-size:15px">권장(45분): 모둠 6개(4~5명) · 라운드 4 · 3분 → 쓰기 약 13분</div>
+    </div>
+    <div class="card navy" style="text-align:center">
+      <div class="qr">${qrSvg(url, 8)}</div>
+      <div class="dim" style="margin-top:8px">참여 코드</div>
+      <div class="bigcode">${esc(V.room)}</div>
+      <div class="dim" style="font-size:14px;max-width:290px;word-break:break-all">${esc(url.replace(/^https?:\/\//, ""))}</div>
+    </div>
+  </div>
+  <div class="teams">${V.teams.map((t) => `
+    <div class="team" style="--c:${t.color}"><h3>${esc(t.name)} <span class="dim" style="font-size:15px;font-weight:500">${t.members.length}명</span></h3>
+    ${V.players.filter((p) => p.team === t.id).map((p) => `<span class="chip" data-kick="${p.id}" title="눌러서 내보내기">${esc(p.name)}</span>`).join("") || '<span class="dim">아직 없음</span>'}</div>`).join("")}
+  </div>`;
+  $("#selTopic").onchange = (e) => { e.target.blur(); act({ action: "topic", topic: e.target.value }); };
+  $("#selTeams").onchange = (e) => { e.target.blur(); act({ action: "teams", n: e.target.value }); };
+  $("#selRounds").onchange = (e) => { e.target.blur(); act({ action: "rounds", n: e.target.value }); };
+  $("#selSec").onchange = (e) => { e.target.blur(); act({ action: "roundSec", n: e.target.value }); };
+  $("#btnReset").onclick = () => { if (confirm("참가자, 점수, 이야기를 모두 지우고 처음부터 시작할까요?")) act({ action: "reset" }); };
+  $("#btnSafety").onclick = safetyModal;
+  $("#btnNewTopic").onclick = topicModal;
+  document.querySelectorAll("[data-kick]").forEach((c) => c.onclick = () => { if (confirm(`'${c.textContent}' 학생을 내보낼까요?`)) act({ action: "kick", pid: c.dataset.kick }); });
+}
+
+function rWords() {
+  const W = V.topic.words, w = W[V.wordIndex];
+  const ex = esc(w.ex).replace(new RegExp("\\b(" + w.word + "\\w*)", "i"), "<mark>$1</mark>");
+  const teams = V.teams.filter((t) => t.members.length);
+  const quizPart = V.quiz === "closed" ? `
+      <button class="primary" id="qOpen" style="font-size:22px;padding:16px 22px">단어 퀴즈 시작 (${V.questions}문제)</button>
+      <div class="dim" style="margin:10px 0">모둠 정답률이 높으면 영상 아이템을 얻어요</div>
+      ${V.items.map((it) => `<div class="item">${ITEM_ICON[it.id]} ${esc(it.name)} · ${Math.round(it.min * 100)}% 이상</div>`).join("")}` : `
+      <h2>${V.quiz === "open" ? "퀴즈 진행 중" : "영상 아이템 결과"}</h2>
+      ${teams.map((t) => `<div style="margin:10px 0;--c:${t.color}">
+        <div style="display:flex;justify-content:space-between"><b style="color:${t.color}">${esc(t.name)}</b><span>${t.quiz.acc}% <span class="dim">(${t.quiz.answered}개 답)</span></span></div>
+        <div class="bar"><i style="width:${t.quiz.acc}%"></i>${V.items.map((it) => `<span class="tick" style="left:${it.min * 100}%"></span>`).join("")}</div>
+        ${V.quiz === "results" ? V.items.map((it) => `<span class="item ${t.quiz.items.includes(it.id) ? "got" : ""}">${ITEM_ICON[it.id]} ${esc(it.name)}</span>`).join("") : ""}
+      </div>`).join("") || '<div class="dim">아직 입장한 모둠이 없어요</div>'}
+      ${V.quiz === "open" ? `<button class="primary" id="qRes">결과 보기 (퀴즈 마감)</button>` : `<button id="qAgain">퀴즈 다시 열기</button> <button class="primary" id="goWrite">3 릴레이 소설로 →</button>`}`;
+  $("#main").innerHTML = `
+  <div class="guide">단어 카드를 넘기며 🔊 버튼으로 발음을 들려주세요. 선생님은 영어를 읽지 않아도 돼요. 다 보면 오른쪽 퀴즈를 시작하세요.</div>
+  <div class="row">
+    <div class="card" style="flex:1.4;min-width:560px">
+      <div class="dim" style="font-size:19px">WORD ${V.wordIndex + 1} / ${W.length} · 2022 기본 어휘(중학교) · ${esc(w.pos)}</div>
+      <div class="word">${esc(w.word)}</div>
+      <div class="ko">${esc(w.ko)}</div>
+      <div class="ex">${ex}</div>
+      <div style="margin-top:24px;display:flex;gap:10px;flex-wrap:wrap">
+        <button id="prev" style="font-size:22px">◀</button><button id="say" style="font-size:20px">🔊 단어</button><button id="sayEx" style="font-size:20px">🔊 예문</button><button id="next" style="font-size:22px">▶</button>
+        <span class="dim" style="align-self:center">← → 키로 넘기기 · 스페이스 = 발음</span>
+      </div>
+    </div>
+    <div class="card" style="flex:1;min-width:380px">${quizPart}</div>
+  </div>`;
+  $("#prev").onclick = () => act({ action: "word", d: -1 });
+  $("#next").onclick = () => act({ action: "word", d: 1 });
+  $("#say").onclick = () => speakWord(w.word);
+  $("#sayEx").onclick = () => speakWord(w.word, true);
+  if ($("#qOpen")) $("#qOpen").onclick = () => act({ action: "quiz", state: "open" });
+  if ($("#qRes")) $("#qRes").onclick = () => act({ action: "quiz", state: "results" });
+  if ($("#qAgain")) $("#qAgain").onclick = () => act({ action: "quiz", state: "open" });
+  if ($("#goWrite")) $("#goWrite").onclick = () => act({ action: "phase", phase: "write" });
+}
+
+function fmt(sec) { sec = Math.max(0, sec | 0); return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`; }
+function updateTimer() {
+  const el = $("#timer"); if (!el || !E) return;
+  const w = E.S.write;
+  if (w.closingAt) { el.textContent = "저장 중…"; el.classList.add("low"); return; }
+  const left = w.endsAt ? Math.round((w.endsAt - Date.now()) / 1000) : 0;
+  el.textContent = fmt(left); el.classList.toggle("low", left <= 30);
+}
+function rWrite() {
+  const w = V.write, st = V.roundStatus, teams = V.teams.filter((t) => t.writers.length || t.members.length);
+  const head = w.done ? `<h2>돌려 쓰기 끝! 이야기 ${V.report.stories}편 완성</h2><button class="primary" id="goVideo" style="font-size:22px;padding:14px 22px">4 AI 영상 만들기로 →</button>` : `
+    <div class="row" style="align-items:center">
+      <div><div class="dim" style="font-size:20px">ROUND ${w.round + 1} / ${w.rounds}</div><div class="timer" id="timer"></div></div>
+      <div style="flex:1;min-width:300px">
+        <div style="font-size:22px">제출 <b>${st.done}</b> / ${st.total}</div>
+        <div class="bar" style="margin:8px 0"><i style="width:${st.total ? Math.round((100 * st.done) / st.total) : 0}%"></i></div>
+        <div class="dim">모두 제출하면 바로 다음 라운드로 넘어가요. 시간이 끝나면 쓰던 내용이 자동으로 저장돼요. <a href="#" id="restart" style="font-size:14px">처음부터 다시</a></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button id="plus" style="font-size:18px">+1분</button><button id="nextR" style="font-size:18px">다음 라운드로 ▶</button></div>
+    </div>`;
+  $("#main").innerHTML = `
+  <h2 style="margin-bottom:4px">돌려 쓰기 릴레이 소설 · ${esc(V.topic.title)}</h2>
+  <div class="guide">"${w.round === 0 && !w.done ? "각자 자기 이야기의 1화를 쓰세요. 미션 단어 3개를 넣으면 영상에서 금색으로 빛나요!" : "옆 친구가 쓴 이야기를 읽고 다음 화를 이어 쓰세요. 앞사람이 남긴 갈림길 A/B도 골라 주세요."}"</div>
+  ${head}
+  <div class="teams">${teams.map((t) => `
+    <div class="team" style="--c:${t.color}">
+      <h3>${esc(t.name)} ${t.quiz.items.map((i) => ITEM_ICON[i]).join(" ")}</h3>
+      <div>${t.writers.map((x) => `<span class="w ${x.done ? "done" : ""}">${x.done ? "✓ " : "✏️ "}${esc(x.name)}</span>`).join("") || '<span class="dim">쓰기 시작 뒤 들어온 학생은 읽기만 해요</span>'}</div>
+      ${t.stories.map((s) => `<div class="story"><b>${esc(s.title || s.starter + "의 이야기")}</b> <span class="dim">${s.n}화 · 단어 ${s.used}/${s.total}</span></div>`).join("")}
+    </div>`).join("") || '<div class="dim">입장한 학생이 없어요</div>'}
+  </div>`;
+  updateTimer();
+  if ($("#plus")) $("#plus").onclick = () => act({ action: "addTime", sec: 60 });
+  if ($("#nextR")) $("#nextR").onclick = () => { if (confirm("아직 쓰는 학생이 있어도 다음 라운드로 넘길까요? (쓰던 내용은 자동 저장돼요)")) act({ action: "nextRound" }); };
+  if ($("#goVideo")) $("#goVideo").onclick = () => act({ action: "phase", phase: "video" });
+  if ($("#restart")) $("#restart").onclick = (e) => { e.preventDefault(); if (confirm("지금까지 쓴 이야기를 모두 지우고 1라운드부터 다시 시작할까요?")) act({ action: "restartWriting" }); };
+}
+
+/* ---------- 4 영상 만들기 ---------- */
+const prepCache = {};
+async function prepFilm(story) {
+  const film = E.buildFilm(story), key = JSON.stringify(film);
+  if (!prepCache[story.id] || prepCache[story.id].key !== key) prepCache[story.id] = { key, p: RSLTheater.prepare(film, { topicId: E.S.topicId }) };
+  return prepCache[story.id].p;
+}
+let making = null, mkPct = 0;
+async function makeFilms() {
+  if (making) return making;
+  const stories = E.S.stories.filter((s) => s.episodes.length);
+  const prog = { done: 0, total: stories.length };
+  making = (async () => {
+    for (const s of stories) { await prepFilm(s); prog.done++; const el = $("#mkProg"); mkPct = Math.round((100 * prog.done) / prog.total); if (el) el.style.width = mkPct + "%"; await new Promise((r) => setTimeout(r, 60)); }
+    link.publishFilms(E.allFilms());
+    act({ action: "makeFilms" });
+    making = null;
+  })();
+  return making;
+}
+function rVideo() {
+  const teams = V.teams.filter((t) => t.stories.some((s) => s.n));
+  $("#main").innerHTML = `
+  <h2>AI 영상 만들기 · 모둠 대표작 고르기</h2>
+  <div class="guide">"모둠 이야기 중에서 다 같이 볼 대표작 1편을 각자 디벗에서 골라 주세요." 표가 가장 많은 이야기가 ★대표작이 되고, 선생님이 눌러서 바꿀 수도 있어요.</div>
+  ${V.filmsMade ? `<div class="ok" style="font-size:20px">영상 ${V.report.stories}편 완성! 썸네일을 눌러 미리 볼 수 있어요.</div>` : `
+    <button class="primary" id="mk" style="font-size:22px;padding:14px 22px">모든 이야기를 영상으로 만들기</button>
+    <div class="bar" style="margin:10px 0;max-width:600px"><i id="mkProg" style="width:${mkPct}%"></i></div>
+    <div class="dim">장면 그림 → 자막 → 영어 음성 → 배경음악 순서로 이 화면에서 바로 만들어져요. 기다릴 필요 없어요.</div>`}
+  <div class="teams">${teams.map((t) => `
+    <div class="team" style="--c:${t.color}"><h3>${esc(t.name)} ${t.quiz.items.map((i) => ITEM_ICON[i]).join(" ")}</h3>
+      ${t.stories.filter((s) => s.n).map((s) => `<div class="story ${t.rep === s.id ? "rep" : ""}">
+        ${t.rep === s.id ? "★ " : ""}<b>${esc(s.title || s.starter + "의 이야기")}</b> <span class="dim">by ${esc([...new Set(s.writers)].join(", "))}</span><br>
+        <span class="dim">${s.n}화 · 단어 ${s.used}/${s.total} · ${s.votes}표</span>
+        <div class="thumbs" data-thumbs="${s.id}"></div>
+        <div style="margin-top:6px;display:flex;gap:6px"><button data-prev="${s.id}" style="font-size:14px;padding:6px 10px">▶ 미리보기</button>${t.rep !== s.id ? `<button data-pick="${s.id}" data-team="${t.id}" style="font-size:14px;padding:6px 10px">★ 대표작으로</button>` : ""}</div>
+      </div>`).join("")}
+    </div>`).join("") || '<div class="dim">아직 쓴 이야기가 없어요</div>'}
+  </div>
+  <div style="margin-top:20px"><button class="primary" id="goWatch" style="font-size:22px;padding:14px 22px" ${V.filmsMade ? "" : "disabled"}>5 함께 보기로 →</button></div>`;
+  if ($("#mk")) { if (making) $("#mk").disabled = true; $("#mk").onclick = () => { $("#mk").disabled = true; makeFilms(); }; }
+  $("#goWatch").onclick = () => act({ action: "phase", phase: "watch" });
+  document.querySelectorAll("[data-pick]").forEach((b) => b.onclick = () => act({ action: "pick", team: +b.dataset.team, story: b.dataset.pick }));
+  document.querySelectorAll("[data-prev]").forEach((b) => b.onclick = () => previewModal(b.dataset.prev));
+  if (V.filmsMade) document.querySelectorAll("[data-thumbs]").forEach(async (el) => {
+    const s = E.S.stories.find((x) => x.id === el.dataset.thumbs); if (!s) return;
+    const p = await prepFilm(s);
+    el.innerHTML = "";
+    p.thumbs.slice(0, 6).forEach((th) => { const c = document.createElement("canvas"); c.width = 320; c.height = 180; c.getContext("2d").drawImage(th.canvas, 0, 0); el.appendChild(c); });
+  });
+}
+function previewModal(storyId) {
+  const s = E.S.stories.find((x) => x.id === storyId); if (!s) return;
+  $("#modal").innerHTML = `<div class="modal"><div class="card" style="width:min(1100px,100%)">
+    <div style="display:flex;justify-content:space-between;align-items:center"><h2 style="margin:0">선생님 미리보기</h2><button id="mClose">닫기 ✕</button></div>
+    <div class="dim" style="margin:6px 0 10px">학생들과 보기 전에 내용과 그림을 확인하세요. (프로젝터를 잠시 끄고 보셔도 돼요)</div>
+    <div class="stage"><canvas id="pv"></canvas></div>
+    <div class="ctrl"><button class="primary" id="pvPlay">▶ 재생</button><button id="pvNext">⏭ 장면 넘기기</button></div>
+    <div id="pvText" style="margin-top:12px;font-size:15px;line-height:1.6"></div></div></div>`;
+  const th = new RSLTheater.Theater($("#pv"));
+  prepFilm(s).then((p) => {
+    th.poster(p);
+    $("#pvText").innerHTML = p.film.episodes.map((e, i) => `<div style="margin-top:8px"><b style="color:var(--gold)">EP${i + 1} ${esc(e.title)}</b> <span class="dim">by ${esc(e.writer)}</span>${e.scenes.map((sc) => `<div class="dim">${esc(sc.screen)}</div>${sc.lines.map((l) => `<div>${l[0] !== "Narrator" ? `<b>${esc(l[0])}:</b> ` : ""}${esc(l[1])}</div>`).join("")}`).join("")}</div>`).join("");
+    $("#pvPlay").onclick = () => th.play(p);
+    $("#pvNext").onclick = () => th.next();
+  });
+  $("#mClose").onclick = () => { th.stop(); $("#modal").innerHTML = ""; };
+}
+
+/* ---------- 5 함께 보기 ---------- */
+let theater = null, shownKey = "";
+function stopTheater() { if (theater) theater.stop(); shownKey = ""; }
+function floatEmoji(e) {
+  const st = $("#stage"); if (!st || $("#stageWrap").hidden) return;
+  const d = document.createElement("div"); d.className = "floaty"; d.textContent = e; d.style.left = (8 + Math.random() * 84) + "%";
+  st.appendChild(d); setTimeout(() => d.remove(), 2500);
+}
+function rWatch() {
+  const list = V.screen, i = V.watchIndex;
+  if (!list.length) { $("#main").innerHTML = "<h2>아직 상영할 영상이 없어요. 4단계에서 영상을 만들어 주세요.</h2>"; return; }
+  if (i >= list.length) { stopTheater(); return rAwards(); }
+  const cur = list[i], t = V.teams[cur.team], s = E.S.stories.find((x) => x.id === cur.story);
+  const key = cur.story + ":" + i;
+  const counts = `${Object.keys(EMO).map((e) => `<span class="rx">${EMO[e]} ${t.reactions[e] || 0}</span>`).join("")}<span class="dim">Best Story 투표 ${t.votes}</span>`;
+  if (key === shownKey && $("#rxCounts")) { $("#rxCounts").innerHTML = counts; return; }
+  $("#main").innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><h2 style="margin:0;color:${t.color}">${i + 1} / ${list.length} · ${esc(t.name)}</h2>
+      <span class="dim">by ${esc([...new Set((t.stories.find((x) => x.id === cur.story) || { writers: [] }).writers)].join(", "))}</span><span style="flex:1"></span>
+      <button id="pv" style="font-size:18px">◀ 이전</button><button id="nx" class="primary" style="font-size:18px">${i + 1 < list.length ? "다음 모둠 ▶" : "시상식 ▶"}</button></div>`;
+  $("#pv").onclick = () => act({ action: "watch", d: -1 });
+  $("#nx").onclick = () => act({ action: "watch", d: 1 });
+  let info = $("#watchInfo");
+  if (!info) { info = document.createElement("div"); info.id = "watchInfo"; info.style.padding = "0 30px"; $("#stageWrap").after(info); }
+  info.innerHTML = `<div class="ctrl"><button class="primary" id="play">▶ 재생</button><button id="pause">⏸ 일시정지</button><button id="skip">⏭ 장면 넘기기</button>
+      <label class="inline"><input type="checkbox" id="vOn" ${!theater || theater.voiceOn ? "checked" : ""}> 🔊 음성</label>
+      <label class="inline"><input type="checkbox" id="mOn" ${!theater || theater.musicOn ? "checked" : ""}> 음악</label>
+      <button id="fs">전체 화면</button><span style="flex:1"></span>
+      <span id="rxCounts">${counts}</span></div>
+    <div class="dim" style="margin-top:6px">학생 디벗: 반응 이모지 보내기 · 다른 모둠 Best Story 투표</div>`;
+  if (!theater) theater = new RSLTheater.Theater($("#screen"), {});
+  shownKey = key; theater.stop();
+  prepFilm(s).then((p) => { if (shownKey === key) theater.poster(p); });
+  $("#play").onclick = async () => { const p = await prepFilm(s); theater.voiceOn = $("#vOn").checked; theater.setMusic($("#mOn").checked); theater.play(p); };
+  $("#pause").onclick = () => { theater.pause(!theater.paused); $("#pause").textContent = theater.paused ? "▶ 이어서" : "⏸ 일시정지"; };
+  $("#skip").onclick = () => theater.next();
+  $("#vOn").onchange = (e) => { theater.voiceOn = e.target.checked; };
+  $("#mOn").onchange = (e) => theater.setMusic(e.target.checked);
+  $("#fs").onclick = () => { const st = $("#stage"); (st.requestFullscreen || st.webkitRequestFullscreen).call(st); };
+  $("#stage").onclick = (e) => { if (!theater.playing && e.target.tagName === "CANVAS") $("#play").click(); };
+}
+function rAwards() {
+  const info = $("#watchInfo"); if (info) info.innerHTML = "";
+  const active = V.teams.filter((t) => t.stories.some((s) => s.n));
+  const by = (f) => active.slice().sort((a, b) => f(b) - f(a))[0];
+  const best = by((t) => t.votes), words = by((t) => (t.missionTotal ? t.missionUsed / t.missionTotal : 0)), aud = by((t) => Object.values(t.reactions).reduce((a, b) => a + b, 0));
+  const R = V.report, gal = galleryUrl();
+  $("#main").innerHTML = `<div class="eyebrow">Today's</div><h1 class="brk">Awards</h1>
+    <div class="row"><div style="flex:1;min-width:480px">
+      <div class="award">Best Story (친구 투표): <b>${esc(best.name)}</b> <span class="dim">${best.votes}표</span></div>
+      <div class="award">Word Master (미션 단어 사용률): <b>${esc(words.name)}</b> <span class="dim">${words.missionUsed}/${words.missionTotal}</span></div>
+      <div class="award">👏 Audience Favorite (반응): <b>${esc(aud.name)}</b></div>
+      <h2 style="margin-top:22px">오늘의 수업 기록 <span class="dim" style="font-size:16px">학급 스티커 판단에 참고하세요</span></h2>
+      <div class="report">
+        <div>참여 학생<b>${R.players}명</b></div><div>퀴즈 참여 · 정답률<b>${R.quizzed}명 · ${R.quizAcc}%</b></div>
+        <div>함께 쓴 이야기<b>${R.stories}편</b></div><div>쓴 화 · 문장<b>${R.episodes}화 · ${R.sentences}문장</b></div>
+        <div>미션 단어 사용<b>${R.missionUsed} / ${R.missionTotal}</b></div><div>보낸 반응<b>${R.reactions}개</b></div>
+      </div>
+      <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap"><button id="back">◀ 영상으로</button><button id="del">오늘 수업 기록 지우기</button></div>
+    </div>
+    <div class="card" style="text-align:center"><div class="qr">${qrSvg(gal, 6)}</div><div style="margin-top:8px"><b>우리 반 영상관</b></div>
+      <div class="dim" style="font-size:14px;max-width:280px">모든 이야기 영상을 디벗에서 다시 볼 수 있어요.<br>우리 반에만 공유해 주세요.</div></div></div>`;
+  $("#back").onclick = () => act({ action: "watch", d: -1 });
+  $("#del").onclick = async () => {
+    if (!confirm("오늘 수업의 이야기와 영상관을 서버에서 지울까요? 지우면 되돌릴 수 없어요.")) return;
+    await link.destroy(); store.del("rsl-host-room");
+    $("#main").innerHTML = `<div class="card"><h2>지웠어요.</h2><p><a href="host.html${DEMO ? "?demo=1" : ""}">새 수업 시작하기</a></p></div>`;
+  };
+}
+
+/* ---------- 설정 창 ---------- */
+function safetyModal() {
+  $("#modal").innerHTML = `<div class="modal"><div class="card">
+    <h2>실명·금지어 설정 <span class="dim" style="font-size:15px">이 컴퓨터에만 저장돼요</span></h2>
+    <p class="dim">학생 실명(영어·한글)을 넣어 두면 이야기에 친구 실명을 쓸 수 없어요. 한 줄에 하나씩.</p>
+    <textarea id="names" style="width:100%;min-height:140px" placeholder="김서연&#10;Seoyeon&#10;박민준">${esc(loadList("rsl-real-names").join("\n"))}</textarea>
+    <p class="dim">더 막고 싶은 말 (기본 금지어 ${window.RSL_CONTENT.banned.length}개는 이미 적용돼 있어요)</p>
+    <textarea id="bans" style="width:100%;min-height:80px">${esc(loadList("rsl-extra-banned").join("\n"))}</textarea>
+    <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end"><button id="mCancel">취소</button><button class="primary" id="mSave">저장</button></div></div></div>`;
+  $("#mCancel").onclick = () => ($("#modal").innerHTML = "");
+  $("#mSave").onclick = () => {
+    const split = (s) => s.split("\n").map((x) => x.trim()).filter(Boolean);
+    store.set("rsl-real-names", JSON.stringify(split($("#names").value))); store.set("rsl-extra-banned", JSON.stringify(split($("#bans").value)));
+    E.realNames = loadList("rsl-real-names"); E.extraBanned = loadList("rsl-extra-banned");
+    $("#modal").innerHTML = ""; changed();
+  };
+}
+let VOCAB = null;
+async function topicModal() {
+  if (!VOCAB) { try { VOCAB = new Set((await (await fetch("assets/vocab_middle_2022.json")).json()).words.map((w) => w.toLowerCase())); } catch (e) { VOCAB = new Set(); } }
+  const rows = Array.from({ length: 6 }, (_, i) => `<div style="display:grid;grid-template-columns:1fr 1fr 2fr;gap:6px;margin-top:6px">
+      <input data-w="${i}" placeholder="단어 ${i + 1}"><input data-k="${i}" placeholder="뜻"><input data-x="${i}" placeholder="예문 (단어가 들어가게)"></div>`).join("");
+  $("#modal").innerHTML = `<div class="modal"><div class="card">
+    <h2>＋ 새 주제 만들기 <span class="dim" style="font-size:15px">이 컴퓨터에 저장돼요</span></h2>
+    <input id="tTitle" style="width:100%" placeholder="주제 제목 (영어) 예: The Day Our Teacher Became a Cat">
+    <textarea id="tSeed" style="width:100%;margin-top:6px;min-height:60px" placeholder="시작 상황 한두 문장 (영어) 예: One morning, our homeroom teacher turns into a cat."></textarea>
+    <p class="dim" style="margin-bottom:0">단어 6개 · 2022 기본 어휘(중학교) 목록에 있는지 자동으로 확인해요</p>${rows}
+    <div id="tMsg" class="warn" style="margin-top:8px"></div>
+    ${custom().length ? `<p class="dim">내가 만든 주제: ${custom().map((t) => `<span class="chip">${esc(t.title)} <a href="#" data-del="${t.id}">지우기</a></span>`).join("")}</p>` : ""}
+    <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end"><button id="mCancel">취소</button><button class="primary" id="mSave">저장하고 이 주제로</button></div></div></div>`;
+  document.querySelectorAll("[data-w]").forEach((el) => el.oninput = () => { const w = el.value.trim().toLowerCase(); el.style.outline = !w ? "" : VOCAB.size && !VOCAB.has(w) ? "2px solid var(--bad)" : "2px solid var(--ok)"; });
+  document.querySelectorAll("[data-del]").forEach((a) => a.onclick = (e) => { e.preventDefault(); store.set("rsl-custom-topics", JSON.stringify(custom().filter((t) => t.id !== a.dataset.del))); E.C = content(); topicModal(); changed(); });
+  $("#mCancel").onclick = () => ($("#modal").innerHTML = "");
+  $("#mSave").onclick = () => {
+    const title = $("#tTitle").value.trim(), seed = $("#tSeed").value.trim();
+    const words = [0, 1, 2, 3, 4, 5].map((i) => ({ word: $(`[data-w="${i}"]`).value.trim(), ko: $(`[data-k="${i}"]`).value.trim(), pos: "", ex: $(`[data-x="${i}"]`).value.trim() }));
+    const bad = words.filter((w) => !w.word || !w.ko || !w.ex || !RSLEngine.wordRe(w.word).test(w.ex));
+    if (!title || !seed) return ($("#tMsg").textContent = "제목과 시작 상황을 써 주세요.");
+    if (bad.length) return ($("#tMsg").textContent = "단어 6개 모두 뜻과 예문을 넣어 주세요. 예문에는 그 단어가 들어가야 해요.");
+    const t = { id: "c" + Date.now().toString(36), title, seed, characters: JSON.parse(JSON.stringify(window.RSL_CONTENT.topics[0].characters)), words, screens: [] };
+    store.set("rsl-custom-topics", JSON.stringify(custom().concat([t])));
+    E.C = content(); $("#modal").innerHTML = ""; act({ action: "topic", topic: t.id });
+  };
+}
+
+/* ---------- 시연 도우미 (시연 모드에서만) ---------- */
+function demoBar() {
+  const bar = $("#demoBar"); bar.hidden = false;
+  const bots = ["Tiger", "Cookie", "Rocket", "Mango", "Pixel", "Bubble", "Nova", "Panda", "Comet", "Kiwi", "Lemon", "Otter"];
+  bar.innerHTML = `<button id="dJoin">가상 학생 8명 입장</button><button id="dQuiz">퀴즈 자동 풀기</button><button id="dWrite">이번 라운드 자동 쓰기</button><button id="dVote">대표작·투표 자동</button>`;
+  $("#dJoin").onclick = () => { bots.slice(0, 8).forEach((n, i) => E.playerAction("bot" + i, "join", { name: n, team: i % Math.min(4, E.S.teams.length) })); changed(); };
+  $("#dQuiz").onclick = () => {
+    if (E.S.quiz !== "open") E.hostAction({ action: "quiz", state: "open" });
+    const qs = E.questions();
+    for (const p of Object.values(E.S.players)) if (p.id.startsWith("bot")) {
+      const skill = 0.55 + (p.team % 3) * 0.17;
+      for (const q of qs) if (!p.answers[q.id]) E.playerAction(p.id, "answer", { qid: q.id, choice: Math.random() < skill ? q.answer : q.options.find((o) => o !== q.answer) });
+    }
+    changed();
+  };
+  $("#dWrite").onclick = () => {
+    if (E.S.phase !== "write") E.hostAction({ action: "phase", phase: "write" });
+    const r = E.S.write.round;
+    for (const pid of Object.keys(E.S.players)) {
+      if (!pid.startsWith("bot")) continue;
+      const s = E.heldStory(pid); if (!s || s.episodes.some((e) => e.k === r)) continue;
+      const j = E.teamStories(s.team).indexOf(s), prev = s.episodes.filter((e) => e.k < r).pop();
+      E.playerAction(pid, "submit", Object.assign(RSLEngine.sample(E.topic(), r, j, !!(prev && prev.next)), { round: r }));
+    }
+    changed();
+  };
+  $("#dVote").onclick = () => {
+    for (const p of Object.values(E.S.players)) {
+      if (!p.id.startsWith("bot")) continue;
+      const mine = E.teamStories(p.team).filter((s) => s.episodes.length);
+      if (mine.length && E.S.phase === "video") E.playerAction(p.id, "teamVote", { story: mine[Math.floor(Math.random() * mine.length)].id });
+      if (E.S.phase === "watch") { const others = E.screenList().filter((x) => x.team.id !== p.team); if (others.length) E.playerAction(p.id, "vote", { team: others[Math.floor(Math.random() * others.length)].team.id }); const cur = E.screenList()[E.S.watchIndex]; if (cur) E.playerAction(p.id, "react", { team: cur.team.id, emoji: ["clap", "laugh", "wow", "heart"][Math.floor(Math.random() * 4)] }); }
+    }
+    changed();
+  };
+}
+boot();
+</script>
+</body>
+</html>
