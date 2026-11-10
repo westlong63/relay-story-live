@@ -155,10 +155,10 @@ function publish() {
   link.publish(sv(E.playerView(null)), views);
 }
 function joinUrl() {
-  const base = location.href.replace(/host\.html.*$/, "");
+  const base = new URL("./", location.href).href; /* /host, /host.html 모두 같은 폴더 주소 */
   return DEMO ? `${base}play.html?demo=1&r=${E.S.room}` : `${base}play.html?r=${E.S.room}`;
 }
-function galleryUrl() { const base = location.href.replace(/host\.html.*$/, ""); return `${base}watch.html?r=${E.S.room}${DEMO ? "&demo=1" : ""}`; }
+function galleryUrl() { const base = new URL("./", location.href).href; return `${base}watch.html?r=${E.S.room}${DEMO ? "&demo=1" : ""}`; }
 function qrSvg(text, cell) { const q = qrcode(0, "M"); q.addData(text); q.make(); return q.createSvgTag({ cellSize: cell || 6, margin: 2, scalable: true }); }
 function onEvent(kind, data) {
   if (kind === "react" && V && V.phase === "watch") floatEmoji(EMO[data.emoji]);
@@ -224,6 +224,7 @@ function rTopic() {
       <div class="qr">${qrSvg(url, 8)}</div>
       <div class="dim" style="margin-top:8px">참여 코드</div>
       <div class="bigcode">${esc(V.room)}</div>
+      ${DEMO ? '<div style="font-size:14px;max-width:290px;margin:6px auto 4px;background:#fff;color:var(--red);padding:6px 8px">시연 모드라서 이 QR은 이 컴퓨터 안에서만 돼요. 디벗으로 찍으려면 첫 화면의 <b>수업 시작하기</b>로 다시 여세요.</div>' : ""}
       <div class="dim" style="font-size:14px;max-width:290px;word-break:break-all">${esc(url.replace(/^https?:\/\//, ""))}</div>
     </div>
   </div>

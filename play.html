@@ -67,6 +67,9 @@ async function boot() {
     $("#main").innerHTML = `<div class="card"><h2>연결하지 못했어요</h2><p>${esc(RSLBus.explain(e))}</p><button onclick="location.reload()">다시 시도</button></div>`; return;
   }
   link.onView(onView);
+  setTimeout(() => { if (!V) $("#main").innerHTML = `<h1 class="brk">Relay Story Live</h1><div class="card"><h2>선생님 화면을 기다리는 중이에요</h2>
+    <p class="dim">${DEMO ? "시연 모드 주소예요. 시연 모드는 선생님 컴퓨터 안에서만 연결돼요. 선생님 화면의 '수업 모드' QR을 다시 찍어 주세요." : "선생님 화면(전자칠판)이 열려 있는지 확인해 주세요. 열려 있으면 잠시 뒤 자동으로 연결돼요."}</p>
+    <button onclick="location.reload()">다시 시도</button></div>`; }, 8000);
   setInterval(tickTimer, 500);
   if (P.get("name") && P.get("team") != null) setTimeout(() => autoJoin(P.get("name"), +P.get("team")), 600);
 }
