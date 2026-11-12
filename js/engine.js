@@ -79,9 +79,9 @@
     }
     /* ---------- 단어 낚시: 문제를 맞혀 미끼를 얻고, 낚은 물고기로 코인을 모아요 ---------- */
     teamFish(teamId) {
-      const ms = this.members(teamId); let earned = 0, caught = 0, n = 0;
-      for (const p of ms) { const f = p.fish || {}; if (f.earned || f.caught) n++; earned += f.earned || 0; caught += f.caught || 0; }
-      return { earned, caught, players: n, members: ms.length, avg: ms.length ? Math.round(earned / ms.length) : 0 };
+      const ms = this.members(teamId); let earned = 0, caught = 0, laps = 0, n = 0;
+      for (const p of ms) { const f = p.fish || {}; if (f.earned || f.caught) n++; earned += f.earned || 0; caught += f.caught || 0; laps += f.laps || 0; }
+      return { earned, caught, laps, players: n, members: ms.length, avg: ms.length ? Math.round(earned / ms.length) : 0 };
     }
     fishRanking() {
       return this.S.teams.map((t) => Object.assign({ id: t.id }, this.teamFish(t.id))).filter((t) => t.members).sort((a, b) => b.avg - a.avg || b.earned - a.earned);
@@ -285,7 +285,7 @@
         if (S.phase !== "words" || S.quiz !== "open") return { ok: false, msg: "지금은 낚시 시간이 아니에요" };
         const num = (v, max) => Math.max(0, Math.min(max, parseInt(v, 10) || 0));
         const f = pl.fish && pl.fish.earned != null ? pl.fish : (pl.fish = { earned: 0, caught: 0, best: 0, rod: 0, pond: 0, coins: 0 });
-        f.earned = Math.max(f.earned, num(b.earned, 1000000)); f.caught = Math.max(f.caught, num(b.caught, 100000));
+        f.earned = Math.max(f.earned, num(b.earned, 1000000)); f.caught = Math.max(f.caught, num(b.caught, 100000)); f.laps = Math.max(f.laps || 0, num(b.laps, 1000));
         f.best = Math.max(f.best || 0, num(b.best, 4)); f.rod = num(b.rod, 2); f.pond = num(b.pond, 2); f.coins = num(b.coins, 1000000);
         if (b.rare && (b.rare.kind === "goal" || b.rare.kind === "fever")) {
           S.catchFeed = (S.catchFeed || []).concat({ name: pl.name, team: pl.team, kind: b.rare.kind, at: Date.now() }).slice(-8);
@@ -389,7 +389,7 @@
       if (this.extraBanned.length) out.bannedX = this.extraBanned;
       if (S.phase === "words") {
         const as = p.answers || {}, sc = Engine.score(Object.values(as)), f = p.fish || {};
-        out.game = { done: Object.keys(as).join(","), ok: sc.ok, n: sc.n, earned: f.earned || 0, caught: f.caught || 0 };
+        out.game = { done: Object.keys(as).join(","), ok: sc.ok, n: sc.n, earned: f.earned || 0, caught: f.caught || 0, laps: f.laps || 0 };
         if (S.quiz !== "closed") {
           const tr = this.fishRanking(), ti = tr.findIndex((x) => x.id === p.team), tf = tr[ti] || {};
           out.game.team = { avg: tf.avg || 0, earned: tf.earned || 0, rank: ti + 1, of: tr.length };

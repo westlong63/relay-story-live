@@ -95,6 +95,10 @@
   .fgrid { display:grid; grid-template-columns:1fr; gap:0 12px; }
   .fgrid > .card { margin-top:6px; }
   .pondCard { padding:12px !important; }
+  .gswitch { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:0 0 10px; }
+  .gswitch button { font-size:18px; padding:8px 10px; display:flex; align-items:center; justify-content:center; gap:6px; flex-wrap:wrap; }
+  .gswitch button small { font-family:var(--font); font-size:12px; font-weight:600; opacity:.8; }
+  .gswitch button.on { background:var(--blue); color:#fff; }
   .pond { position:relative; height:230px; overflow:hidden; background:linear-gradient(var(--s1, #bfe6ff), var(--s2, #e8f6ff) 34%, var(--w1, #7cc8f0) 34%, var(--w2, #2f7fc0)); cursor:pointer; user-select:none; -webkit-user-select:none; touch-action:manipulation; border:3px solid #14233d; }
   .pond canvas.pxpond { position:absolute; inset:0; width:100%; height:100%; image-rendering:crisp-edges; image-rendering:pixelated; }
   .pond .pn, .pond .msg, .catchCard .fn, .catchCard .fc, .tierTag { font-family:"Galmuri11", var(--font); font-weight:700; letter-spacing:0; }
@@ -263,6 +267,7 @@ function topicOf(t) {
   return l ? Object.assign({}, l, { characters: Object.keys(l.characters).filter((n) => n !== "Narrator") }) : null;
 }
 const banned = () => window.RSL_CONTENT.banned.concat((V && V.bannedX) || []);
+const hkOf = (v) => { const held = v.held || {}; return [v.phase, v.me ? 1 : 0, v.write && v.write.round, v.write && v.write.done, v.write && v.write.started, held.id, held.submitted, v.quiz, v.quizGame, v.me ? curGame() : "", v.wordIndex, v.watching && v.watching.id].join("|"); };
 function onView(v) {
   if (!v) return;
   const T = topicOf(v.topic);
@@ -271,7 +276,7 @@ function onView(v) {
   V = v;
   endsAt = v.write && v.write.endsAt ? v.write.endsAt - (link.offset || 0) : 0;
   const held = v.held || {};
-  const hk = [v.phase, v.me ? 1 : 0, v.write && v.write.round, v.write && v.write.done, v.write && v.write.started, held.id, held.submitted, v.quiz, v.quizGame, v.wordIndex, v.watching && v.watching.id].join("|");
+  const hk = hkOf(v);
   const key = JSON.stringify(v, (k, val) => (k === "v" || k === "left" ? undefined : val));
   if (v.write && v.write.closing) autoSave();
   if (hk !== hardKey) { hardKey = hk; lastKey = key; if (typing()) document.activeElement.blur(); render(); return; }
@@ -398,7 +403,8 @@ function fishState() {
 const saveF = () => store.set(FK(), JSON.stringify({ bait: FS.bait, coins: FS.coins, earned: FS.earned, caught: FS.caught, best: FS.best, rod: FS.rod, pond: FS.pond, pass: FS.pass, rep: FS.rep }));
 function sendFish(rare) {
   clearTimeout(fSendT);
-  const go = () => link.send("fish", { earned: FS.earned, caught: FS.caught, best: FS.best, rod: FS.rod, pond: FS.pond, coins: FS.coins, rare: rare || null })
+  const R = runState(); /* 두 게임 점수는 합쳐서 보내요 */
+  const go = () => link.send("fish", { earned: FS.earned + R.earned, caught: FS.caught, laps: R.laps, best: FS.best, rod: FS.rod, pond: FS.pond, coins: FS.coins, rare: rare || null })
     .then((r) => { if (!(r && r.ok) && !(r && r.msg)) fSendT = setTimeout(go, 3000); });
   if (rare) go(); else fSendT = setTimeout(go, 1000);
 }
@@ -565,7 +571,8 @@ function runState() {
 const saveR = () => store.set(RK(), JSON.stringify({ earned: RS.earned, laps: RS.laps, best: RS.best, tries: RS.tries, pass: RS.pass, rep: RS.rep }));
 function sendRun(rare) {
   saveR(); clearTimeout(rSendT);
-  const go = () => link.send("fish", { earned: RS.earned, caught: RS.laps, best: 0, rod: 0, pond: 0, coins: RS.earned, rare: rare || null })
+  const F = fishState(); /* 두 게임 점수는 합쳐서 보내요 */
+  const go = () => link.send("fish", { earned: RS.earned + F.earned, caught: F.caught, laps: RS.laps, best: F.best, rod: F.rod, pond: F.pond, coins: F.coins, rare: rare || null })
     .then((r) => { if (!(r && r.ok) && !(r && r.msg)) rSendT = setTimeout(go, 3000); });
   if (rare) go(); else rSendT = setTimeout(go, 1000);
 }
@@ -619,18 +626,26 @@ function runMount() {
     score: (rare) => sendRun(rare), left: () => fishLeft(), say: (w) => playWord(w),
   });
   el.addEventListener("click", (e) => { const b = e.target.closest("[data-rsay]"); if (b) playWord(V.topic.words[+b.dataset.rsay]); });
-  if (RS.earned > ((V.game || {}).earned || 0)) sendRun();
+  if (RS.earned + fishState().earned > ((V.game || {}).earned || 0)) sendRun();
+}
+/* 학생이 디벗에서 두 게임을 언제든 바꿔요. 처음에는 선생님이 고른 게임 */
+const GPK = () => `rsl-gpick-${room}-${V.me.id}`;
+function curGame() { let p = null; try { p = store.get(GPK()); } catch (e) {} return p === "run" || p === "fish" ? p : (V.quizGame === "run" ? "run" : "fish"); }
+function gameSwitch() {
+  const g = curGame();
+  return `<div class="gswitch" role="tablist">${[["fish", "🎣", "Word Fishing", "단어 낚시"], ["run", "🏃", "Word Run", "단어 달리기"]].map(([k, e, a, b]) =>
+    `<button role="tab" aria-selected="${g === k}" data-gsw="${k}" class="${g === k ? "on" : ""}"><span>${e}</span> ${a}<small>${b}</small></button>`).join("")}</div>`;
 }
 function rGame() {
-  if (V.quizGame === "run") return `<div id="runRoot"></div>`;
-  return `<div id="fishRoot"><div class="fhud px pxt" id="fhud"></div>
+  if (curGame() === "run") return gameSwitch() + `<div id="runRoot"></div>`;
+  return gameSwitch() + `<div id="fishRoot"><div class="fhud px pxt" id="fhud"></div>
     <div class="fgrid"><div class="card pondCard px"><div id="pond" class="pond"></div><div id="pondCtl"></div></div><div class="card" id="qbox"></div></div></div>`;
 }
 function rReview() {
   const W = V.topic.words, gm = V.game || {}, top = gm.top || [], mine = (gm.mine || []).filter((i) => !top.includes(i)), tm = gm.team || {};
-  const run = V.quizGame === "run", ic = run ? "⭐" : "🪙";
-  return `<div class="card px" style="text-align:center">${window.PX ? PX.puangImg("cheer", 72) : ""}<div class="dim">${run ? "내가 모은 점수" : "내가 모은 코인"}</div><div class="rank pxt">${ic} ${(gm.earned || 0).toLocaleString()}</div>
-      ${gm.rank ? `<div>우리 반 ${gm.of}명 중 <b>${gm.rank}등</b> · ${run ? `신서중 완주 ${gm.caught || 0}번` : `물고기 ${gm.caught || 0}마리`} · 한 번에 맞힌 문제 ${gm.ok}/${gm.n}</div>` : ""}
+  const ic = "⭐", got = [gm.caught ? `물고기 ${gm.caught}마리` : "", gm.laps ? `신서중 완주 ${gm.laps}번` : ""].filter(Boolean).join(" · ");
+  return `<div class="card px" style="text-align:center">${window.PX ? PX.puangImg("cheer", 72) : ""}<div class="dim">내가 모은 점수 (낚시 + 달리기)</div><div class="rank pxt">${ic} ${(gm.earned || 0).toLocaleString()}</div>
+      ${gm.rank ? `<div>우리 반 ${gm.of}명 중 <b>${gm.rank}등</b>${got ? " · " + got : ""} · 한 번에 맞힌 문제 ${gm.ok}/${gm.n}</div>` : ""}
       ${tm.rank ? `<div style="margin-top:6px;color:${V.team.color};font-weight:800">${esc(V.team.name)} ${tm.rank}등 (1인 평균 ${ic} ${tm.avg.toLocaleString()})</div>` : ""}</div>
     <h2 style="margin-top:18px">우리 반이 많이 틀린 단어 ${top.length ? "TOP " + top.length : ""}</h2>
     ${top.length ? top.map((i) => wordCard(W[i], i, 0)).join("") : `<div class="card ok">우리 반 모두 거의 다 맞혔어요! 👏</div>`}
@@ -725,6 +740,7 @@ function bind() {
   document.querySelectorAll("[data-rx]").forEach((b) => b.onclick = () => { if (V.watching) link.send("react", { team: V.watching.id, emoji: b.dataset.rx }); b.animate([{ transform: "scale(1.35)" }, { transform: "scale(1)" }], 250); });
   document.querySelectorAll("[data-vote]").forEach((b) => b.onclick = () => link.send("vote", { team: +b.dataset.vote }));
   document.querySelectorAll("[data-tv]").forEach((b) => b.onclick = () => link.send("teamVote", { story: b.dataset.tv }));
+  document.querySelectorAll("[data-gsw]").forEach((b) => b.onclick = () => { if (b.classList.contains("on")) return; try { store.set(GPK(), b.dataset.gsw); } catch (e) {} hardKey = hkOf(V); render(); });
   if (V.phase === "write" && V.held && !V.write.done) bindWrite();
 }
 function bindAns(root) {
