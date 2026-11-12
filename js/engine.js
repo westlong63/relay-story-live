@@ -474,19 +474,19 @@
   Engine.FISH = {
     startBait: 3,
     ponds: [
-      { name: "Sunny Pond", ko: "햇살 연못", cost: 0, mult: 1, water: ["#7cc8f0", "#2f7fc0"], sky: ["#bfe6ff", "#e8f6ff"],
+      { name: "Sinseo Pond", ko: "신서중 연못", cost: 0, mult: 1, water: ["#7cc8f0", "#2f7fc0"], sky: ["#bfe6ff", "#e8f6ff"],
         fish: [["Little Minnow", "피라미", "🐟"], ["Puffy Puffer", "통통 복어", "🐡"], ["Rainbow Trout", "무지개 송어", "🐠"], ["Lotus Turtle", "연꽃 거북", "🐢"], ["Golden Carp", "황금 잉어", "👑"]] },
       { name: "Coral Sea", ko: "산호 바다", cost: 150, mult: 2.5, water: ["#3fd0c9", "#0b6f8f"], sky: ["#ffd9a8", "#fff1dc"],
         fish: [["Sea Bream", "도미", "🐟"], ["Spiky Puffer", "가시 복어", "🐡"], ["Clownfish", "흰동가리", "🐠"], ["Giant Octopus", "왕문어", "🐙"], ["Crystal Shark", "수정 상어", "🦈"]] },
-      { name: "Star Lake", ko: "별빛 호수", cost: 500, mult: 6, water: ["#5b4bb7", "#1b1440"], sky: ["#20194d", "#3c2f80"],
-        fish: [["Comet Fish", "혜성 물고기", "☄️"], ["Moon Squid", "달 오징어", "🦑"], ["Nebula Ray", "성운 가오리", "🌌"], ["Space Whale", "우주 고래", "🐋"], ["Galaxy Dragon", "은하 용", "🐉"]] },
+      { name: "Blue Dragon Pond", ko: "중앙대 청룡연못", cost: 500, mult: 6, water: ["#3561b8", "#0d1f4f"], sky: ["#0f1a44", "#2a4596"],
+        fish: [["Comet Fish", "혜성 물고기", "☄️"], ["Moon Squid", "달 오징어", "🦑"], ["Nebula Ray", "성운 가오리", "🌌"], ["Space Whale", "우주 고래", "🐋"], ["Blue Dragon", "청룡", "🐉"]] },
     ],
     rods: [
       { name: "Basic Rod", ko: "기본 낚싯대", cost: 0, odds: [62, 25, 10, 2.6, 0.4], wait: [1200, 2800], window: 1300 },
       { name: "Pro Rod", ko: "프로 낚싯대", cost: 80, odds: [45, 30, 17, 6.5, 1.5], wait: [900, 2000], window: 1500 },
       { name: "Magic Rod", ko: "마법 낚싯대", cost: 300, odds: [30, 32, 24, 11, 3], wait: [600, 1400], window: 1700 },
     ],
-    tiers: [{ ko: "흔함", value: 5 }, { ko: "보통", value: 12 }, { ko: "희귀", value: 30 }, { ko: "아주 희귀", value: 80 }, { ko: "전설", value: 300 }],
+    tiers: [{ en: "Common", ko: "흔함", value: 5 }, { en: "Uncommon", ko: "보통", value: 12 }, { en: "Rare", ko: "희귀", value: 30 }, { en: "Epic", ko: "아주 희귀", value: 80 }, { en: "Legendary", ko: "전설", value: 300 }],
     /* 미끼: 한 번에 맞히면 2개, 다시 해서 맞히면 1개, 3연속 정답마다 1개 더 */
     bait: (first, combo) => (first ? 2 : 1) + (first && combo > 0 && combo % 3 === 0 ? 1 : 0),
   };

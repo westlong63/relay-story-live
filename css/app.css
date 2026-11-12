@@ -74,3 +74,14 @@ mark, .hl { background:linear-gradient(transparent 58%, var(--pink) 58%); color:
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; }
 }
+
+/* 게임 화면 픽셀 글꼴: 갈무리 (Galmuri11 Bold, SIL OFL 1.1, fonts/galmuri/LICENSE.txt) */
+@font-face { font-family:"Galmuri11"; src:url("../fonts/galmuri/Galmuri11-Bold.woff2") format("woff2"); font-weight:400 900; font-display:swap; }
+.pxt, .px h1, .px h2, .px h3, .px button, .px b, .px .pxt { font-family:"Galmuri11", var(--font); font-weight:700; letter-spacing:0; }
+img.pxi, canvas.pxi { image-rendering:crisp-edges; image-rendering:pixelated; vertical-align:middle; }
+/* 픽셀 버튼: 굵은 테두리 + 아래 그림자, 누르면 쏙 들어가요 */
+.px button:not(.mini) { border:3px solid #14233d; border-radius:0; box-shadow:inset -3px -3px 0 rgba(0,0,0,.18), inset 3px 3px 0 rgba(255,255,255,.4), 0 4px 0 #14233d; transition:none; }
+.px button:not(.mini):active:not(:disabled) { transform:translateY(3px); box-shadow:inset -3px -3px 0 rgba(0,0,0,.18), inset 3px 3px 0 rgba(255,255,255,.4), 0 1px 0 #14233d; }
+.px .card, .card.px { border:3px solid #14233d; border-radius:0; box-shadow:4px 4px 0 rgba(20,35,61,.18); }
+.pxbar { height:20px; background:#dfe6f1; border:3px solid #14233d; position:relative; }
+.pxbar i { display:block; height:100%; background:var(--c, var(--blue)); background-image:repeating-linear-gradient(90deg, transparent 0 10px, rgba(255,255,255,.35) 10px 12px); transition:width .4s steps(8); }
