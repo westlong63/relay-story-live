@@ -125,14 +125,14 @@
     return lines;
   }
   function drawSubtitle(g, speaker, text, words, color, ko) {
-    const ef = ko ? 34 : 38;
+    const ef = 44; /* 영어 자막이 주인공: 크게 */
     g.font = `700 ${ef}px ${FONT}`;
     const pats = (words || []).map((w) => new RegExp("^" + escRe(w) + "\\w*$", "i"));
     const tokens = text.split(/\s+/).filter(Boolean).map((t) => { const m = t.match(/^(.*?)([^\w']*)$/); return { t, core: m[1], tail: m[2], hit: pats.some((p) => p.test(m[1].replace(/^[^\w]+/, ""))) }; });
-    const lines = wrap(g, tokens, 1040), lh = ko ? 47 : 52;
+    const lines = wrap(g, tokens, 1040), lh = 58;
     let kl = [];
-    if (ko) { g.font = `600 29px ${FONT}`; kl = wrap(g, ko.split(/\s+/).filter(Boolean).map((t) => ({ t })), 1040).slice(0, 2); }
-    const kh = kl.length ? 14 + 40 * kl.length : 0, boxH = 30 + lh * lines.length + kh, y0 = CH - 34 - boxH;
+    if (ko) { g.font = `500 22px ${FONT}`; kl = wrap(g, ko.split(/\s+/).filter(Boolean).map((t) => ({ t })), 1040).slice(0, 2); g.font = `700 ${ef}px ${FONT}`; }
+    const kh = kl.length ? 8 + 30 * kl.length : 0, boxH = 30 + lh * lines.length + kh, y0 = CH - 34 - boxH;
     g.fillStyle = "rgba(14,12,30,0.80)"; rr(g, 90, y0, CW - 180, boxH, 22); g.fill();
     if (speaker && speaker !== "Narrator") {
       g.font = `800 28px ${FONT}`;
@@ -158,10 +158,9 @@
       }
     });
     if (kl.length) {
-      g.font = `600 29px ${FONT}`; g.fillStyle = "#cfe0ff";
+      g.font = `500 22px ${FONT}`; g.fillStyle = "rgba(207,224,255,0.85)";
       const yk = y0 + 15 + lh * lines.length + 8;
-      g.fillRect(CW / 2 - 40, yk - 6, 80, 2);
-      kl.forEach((ln, i) => { const t = ln.map((x) => x.t).join(" "); g.fillText(t, (CW - g.measureText(t).width) / 2, yk + 32 + i * 40); });
+      kl.forEach((ln, i) => { const t = ln.map((x) => x.t).join(" "); g.fillText(t, (CW - g.measureText(t).width) / 2, yk + 26 + i * 30); });
     }
   }
   function drawCard(g, bg, rows, t) {

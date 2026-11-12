@@ -36,8 +36,8 @@
   .bigcode { font-size:58px; font-weight:800; letter-spacing:10px; color:var(--navy); font-variant-numeric:tabular-nums; }
   .card.navy .bigcode { color:#fff; }
   .word { font-size:104px; font-weight:800; margin:6px 0 0; letter-spacing:-0.03em; }
-  .ko { font-size:40px; color:var(--blue); font-weight:700; }
-  .ex { font-size:34px; margin-top:22px; line-height:1.45; }
+  .ko { font-size:28px; color:var(--blue); font-weight:700; }
+  .ex { font-size:40px; margin-top:22px; line-height:1.4; }
   .ex mark { background:linear-gradient(transparent 58%, var(--pink) 58%); color:inherit; text-decoration:none; }
   .settings { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-top:20px; color:var(--ink-2); font-size:17px; padding:14px 16px; background:#fff; border:1px solid var(--line); }
   .timer { font-size:84px; font-weight:800; font-variant-numeric:tabular-nums; color:var(--navy); line-height:1; }
@@ -69,8 +69,8 @@
   label.inline { display:inline-flex; gap:6px; align-items:center; }
   .wemo { font-size:110px; line-height:1; }
   .syl { font-size:34px; color:var(--ink-2); margin:2px 0 4px; } .syl b.st { color:var(--red); font-size:40px; } .syl i { color:var(--line-2); font-style:normal; margin:0 6px; }
-  .hook { background:#FFF7E0; border-left:5px solid #E0A400; padding:12px 16px; margin:14px 0 0; font-size:24px; line-height:1.45; }
-  .exko { font-size:24px; color:var(--dim); margin-top:6px; }
+  .hook { background:#FFF7E0; border-left:5px solid #E0A400; padding:10px 14px; margin:14px 0 0; font-size:18px; line-height:1.45; }
+  .exko { font-size:18px; color:var(--dim); margin-top:6px; }
   .dot { padding:7px 12px; font-size:16px; } .dot.on { background:var(--navy); color:#fff; border-color:var(--navy); }
   .gsteps div { font-size:18px; padding:8px 0; border-bottom:1px solid var(--line); } .gsteps span:first-child { font-size:24px; margin-right:8px; }
 </style>
@@ -224,10 +224,10 @@ function rTopic() {
   <div class="row">
     <div style="flex:1;min-width:520px">
       <div class="eyebrow">오늘의 주제 <span class="tag blue" style="font-size:15px;vertical-align:middle">${T.custom ? "직접 만든 주제" : "자동 추천"}</span> ${T.genre ? `<span class="tag" style="font-size:15px;vertical-align:middle">${esc(T.genre)}</span>` : ""}</div>
-      <h1 class="brk">${esc(T.ko || T.title)}</h1>
-      ${T.ko ? `<div style="font-size:26px;font-weight:700;color:var(--blue);margin:-4px 0 10px">${esc(T.title)}</div>` : ""}
-      <div class="seed">${esc(T.seedKo || "")}</div>
-      <div class="seed dim" style="font-size:19px;margin-top:4px">${esc(T.seed)}</div>
+      <h1 class="brk">${esc(T.title)}</h1>
+      ${T.ko ? `<div style="font-size:20px;font-weight:600;color:var(--blue);margin:-4px 0 12px">${esc(T.ko)}</div>` : ""}
+      <div class="seed">${esc(T.seed)}</div>
+      ${T.seedKo ? `<div class="dim" style="font-size:16px;margin-top:4px">${esc(T.seedKo)}</div>` : ""}
       <div style="margin-top:14px;font-size:19px">오늘의 단어 ${T.words.map((w) => `<span class="chip" style="font-size:17px">${esc(w.emoji || "")} ${esc(w.word)} <span class="dim">${esc(w.ko.split(",")[0])}</span></span>`).join("")}</div>
       <div class="settings">
         <button class="primary" id="btnRec">🎲 다른 주제 추천</button>
@@ -276,7 +276,7 @@ function topicListModal() {
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px">${list.map((t) => `
       <button data-tp="${t.id}" style="text-align:left;padding:14px;line-height:1.45;${t.id === cur ? "outline:3px solid var(--blue);" : ""}${used[t.id] ? "opacity:.6;" : ""}">
         <div style="font-size:13px;color:var(--red);font-weight:700">${esc(t.genre || (t.custom ? "직접 만든 주제" : ""))}${(t.months || []).includes(m) ? " · 지금 계절" : ""}${used[t.id] ? " · ✓ 했음" : ""}</div>
-        <div style="font-size:18px;font-weight:800">${esc(t.ko || t.title)}</div><div class="dim" style="font-size:14px">${esc(t.title)}</div>
+        <div style="font-size:18px;font-weight:800">${esc(t.title)}</div>${t.ko ? `<div class="dim" style="font-size:13px">${esc(t.ko)}</div>` : ""}
         <div style="font-size:13px;margin-top:4px;color:var(--ink-2)">${t.words.map((w) => esc(w.word)).join(" · ")}</div></button>`).join("")}</div>
     ${Object.keys(used).length ? `<p style="margin-top:12px"><a href="#" id="clrUsed" class="dim">'했음' 기록 지우기</a></p>` : ""}</div></div>`;
   $("#mClose").onclick = () => ($("#modal").innerHTML = "");
@@ -507,7 +507,7 @@ function previewModal(storyId) {
   const th = new RSLTheater.Theater($("#pv"));
   prepFilm(s).then((p) => {
     th.poster(p);
-    $("#pvText").innerHTML = p.film.episodes.map((e, i) => `<div style="margin-top:8px"><b style="color:var(--gold)">EP${i + 1} ${esc(e.title)}</b> <span class="dim">by ${esc(e.writer)}</span>${e.scenes.map((sc) => `<div class="dim">${esc(sc.screen)}</div>${sc.lines.map((l) => `<div>${l[0] !== "Narrator" ? `<b>${esc(l[0])}:</b> ` : ""}${esc(l[1])}${l[2] ? ` <span class="dim">· ${esc(l[2])}</span>` : ""}</div>`).join("")}`).join("")}</div>`).join("");
+    $("#pvText").innerHTML = p.film.episodes.map((e, i) => `<div style="margin-top:8px"><b style="color:var(--gold)">EP${i + 1} ${esc(e.title)}</b> <span class="dim">by ${esc(e.writer)}</span>${e.scenes.map((sc) => `<div class="dim">${esc(sc.screen)}</div>${sc.lines.map((l) => `<div>${l[0] !== "Narrator" ? `<b>${esc(l[0])}:</b> ` : ""}${esc(l[1])}${l[2] ? ` <span class="dim" style="font-size:12px">· ${esc(l[2])}</span>` : ""}</div>`).join("")}`).join("")}</div>`).join("");
     $("#pvPlay").onclick = () => { th.koOn = $("#pvKo").checked; th.fast = $("#pvFast").checked; th.play(p); };
     $("#pvKo").onchange = (e) => (th.koOn = e.target.checked); $("#pvFast").onchange = (e) => (th.fast = e.target.checked);
     $("#pvNext").onclick = () => th.next();

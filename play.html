@@ -40,9 +40,9 @@
   .wemo { font-size:52px; line-height:1.1; margin-top:6px; }
   .syl { font-size:22px; margin:4px 0 6px; color:var(--ink-2); }
   .syl b.st { color:var(--red); font-size:26px; } .syl i { color:var(--line-2); font-style:normal; margin:0 3px; }
-  .wko { color:var(--blue); font-weight:800; font-size:22px; }
-  .hook { background:#FFF7E0; border-left:4px solid #E0A400; padding:10px 12px; margin:10px 0; font-size:15px; line-height:1.5; }
-  .wex { font-size:18px; line-height:1.5; margin:10px 0 2px; } .wex mark { background:linear-gradient(transparent 58%, #FFD6D3 58%); color:inherit; }
+  .wko { color:var(--blue); font-weight:700; font-size:16px; }
+  .hook { background:#FFF7E0; border-left:4px solid #E0A400; padding:8px 11px; margin:10px 0; font-size:13px; line-height:1.5; }
+  .wex { font-size:21px; font-weight:600; line-height:1.45; margin:10px 0 2px; } .wex mark { background:linear-gradient(transparent 58%, #FFD6D3 58%); color:inherit; }
   .two { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
   /* 단어 게임 */
   .ghead { display:flex; justify-content:space-between; align-items:center; font-weight:700; padding:10px 0 4px; }
@@ -82,8 +82,8 @@
   #sheet .tabs button.on { font-weight:800; color:var(--navy); box-shadow:inset 0 -3px 0 var(--blue); }
   #sheet .body { overflow:auto; padding:10px 14px 16px; max-width:640px; width:100%; margin:0 auto; box-sizing:border-box; }
   #sheet .grp { font-size:13px; font-weight:800; color:var(--red); margin:12px 0 4px; }
-  #sheet .ins { display:block; width:100%; text-align:left; margin:5px 0; padding:9px 12px; font-size:16px; background:var(--bar); border:1px solid var(--line); }
-  #sheet .ins small { display:block; color:var(--dim); font-size:13px; margin-top:2px; }
+  #sheet .ins { display:block; width:100%; text-align:left; margin:5px 0; padding:9px 12px; font-size:18px; font-weight:600; background:var(--bar); border:1px solid var(--line); }
+  #sheet .ins small { display:block; color:var(--dim); font-size:12px; font-weight:400; margin-top:2px; }
   #sheet .ins.w { display:inline-block; width:auto; margin:4px 6px 0 0; }
   #sheet input { width:100%; font-size:17px; padding:10px; }
   #sheet .close { position:absolute; right:8px; top:-46px; width:auto; padding:8px 12px; background:#fff; }
@@ -182,7 +182,7 @@ function rJoin() {
   const d = JSON.parse(store.get(JK) || "{}");
   $("#main").innerHTML = `
     <h1 class="brk">Relay Story Live</h1>
-    <div class="card"><div class="dim">오늘의 주제</div><h2>${esc(V.topic.title)}</h2>${V.topic.ko ? `<div style="font-weight:700;color:var(--blue)">${esc(V.topic.ko)}</div>` : ""}<div class="dim" style="margin-top:6px">${esc(V.topic.seed)}</div></div>
+    <div class="card"><div class="dim">오늘의 주제</div><h2>${esc(V.topic.title)}</h2>${V.topic.ko ? `<div style="font-weight:600;color:var(--blue);font-size:14px">${esc(V.topic.ko)}</div>` : ""}<div class="dim" style="margin-top:6px">${esc(V.topic.seed)}</div></div>
     <div class="card"><label>닉네임 (실명 말고 별명!)</label><input id="nm" maxlength="12" placeholder="예: Moonlight" value="${esc(d.name || "")}">
     <label>모둠 고르기</label>
     ${V.teams.map((t) => `<button class="teamBtn ${d.team === t.id ? "sel" : ""}" data-team="${t.id}" style="--c:${t.color}">${esc(t.name)} <span class="dim">${t.count}명</span></button>`).join("")}
@@ -206,8 +206,8 @@ function rJoin() {
 }
 function rTopic() {
   const T = V.topic;
-  return `<div class="card"><div class="dim">오늘의 주제</div><h1>${esc(T.title)}</h1>${T.ko ? `<div style="font-weight:800;color:var(--blue);font-size:19px">${esc(T.ko)}</div>` : ""}
-    <p>${esc(T.seed)}</p>${T.seedKo ? `<p class="dim">${esc(T.seedKo)}</p>` : ""}
+  return `<div class="card"><div class="dim">오늘의 주제</div><h1>${esc(T.title)}</h1>${T.ko ? `<div style="font-weight:600;color:var(--blue);font-size:14px">${esc(T.ko)}</div>` : ""}
+    <p style="font-size:19px">${esc(T.seed)}</p>${T.seedKo ? `<p class="dim" style="font-size:14px">${esc(T.seedKo)}</p>` : ""}
     <div>등장인물: ${T.characters.map((c) => `<span class="chip">${esc(c)}</span>`).join("")} + 새 인물도 OK</div></div>
     <div class="card"><h2>우리 모둠</h2>${V.team.members.map((m) => `<span class="chip">${esc(m)}</span>`).join("")}
     <p class="dim">곧 오늘의 단어 6개를 배우고, 단어 게임을 한 뒤, 모둠 친구들과 이야기를 돌려 써요. 선생님 화면을 봐 주세요!</p></div>`;
@@ -227,7 +227,7 @@ function wordCard(w, i, n) {
     ${w.emoji ? `<div class="wemo">${esc(w.emoji)}</div>` : ""}<div class="big">${esc(w.word)}</div>
     ${w.syl && w.syl.includes("-") ? `<div class="syl">${sylHtml(w)} <span class="dim" style="font-size:13px">빨간 부분을 세게</span></div>` : ""}
     <div class="wko">${esc(w.ko)}</div>${w.hook ? `<div class="hook">💡 ${esc(w.hook)}</div>` : ""}
-    <p class="wex">${hiEx(w)}</p>${w.exKo ? `<p class="dim" style="margin-top:2px">${esc(w.exKo)}</p>` : ""}
+    <p class="wex">${hiEx(w)}</p>${w.exKo ? `<p class="dim" style="margin-top:2px;font-size:13px">${esc(w.exKo)}</p>` : ""}
     <div class="two"><button data-say="${i}">🔊 단어</button><button data-sayex="${i}">🔊 예문</button></div></div>`;
 }
 function teamPart() {
@@ -275,7 +275,7 @@ function rGame() {
   if (q.kind === "spell") body = `<div class="gq">${esc(q.emoji || "")} ${esc(q.prompt)}</div>
     <div class="slots">${q.answer.split("").map((c, i) => `<span>${esc(g.spell[i] || "")}</span>`).join("")}</div>
     <div class="tiles">${q.options.map((c, i) => `<button data-tile="${i}" ${g.used.includes(i) ? "disabled" : ""}>${esc(c)}</button>`).join("")}</div>`;
-  if (q.kind === "blank") body = `<div class="gq s">${esc(q.prompt).replace("_____", "<b style='color:var(--red)'>_____</b>")}</div>${q.hint ? `<p class="dim">${esc(q.hint)}</p>` : ""}
+  if (q.kind === "blank") body = `<div class="gq s">${esc(q.prompt).replace("_____", "<b style='color:var(--red)'>_____</b>")}</div>${q.hint ? `<p class="dim" style="font-size:13px">${esc(q.hint)}</p>` : ""}
     <div class="opts">${q.options.map((o) => `<button data-ans="${esc(o)}">${esc(o)}</button>`).join("")}</div>`;
   return head + `<div class="card"><div class="stage-n">${sn}</div><div class="dim" style="font-size:14px">${sd}${g.tries > 1 ? " · <b class='warn'>다시 해 봐요!</b>" : ""}</div>${body}</div>`;
 }
@@ -306,7 +306,7 @@ function rWords() {
 }
 function epHtml(e, i) {
   return `<div class="ep"><b>EP${i + 1} ${esc(e.title || "")}</b> <span class="dim">by ${esc(e.writer)}</span>
-    ${e.scenes.map((s) => `${s.screen ? `<p class="dim">${esc(s.screen)}</p>` : ""}<p>${esc(s.text).replace(/\n/g, "<br>")}</p>${s.ko ? `<p class="dim" style="font-size:15px">${esc(s.ko).replace(/\n/g, "<br>")}</p>` : ""}`).join("")}
+    ${e.scenes.map((s) => `${s.screen ? `<p class="dim">${esc(s.screen)}</p>` : ""}<p>${esc(s.text).replace(/\n/g, "<br>")}</p>${s.ko ? `<p class="dim" style="font-size:13px">${esc(s.ko).replace(/\n/g, "<br>")}</p>` : ""}`).join("")}
     ${e.next ? `<p class="dim">❓ ${esc(e.next.question)} (A) ${esc(e.next.a)} / (B) ${esc(e.next.b)}</p>` : ""}</div>`;
 }
 const dk = () => `rsl-draft-${room}-${V.me.id}-${V.write.round}`;
