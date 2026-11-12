@@ -52,7 +52,7 @@ let films = null, th = null, cur = null;
     <div class="ctrl"><button class="primary" id="play">▶ 재생</button><button id="pause">⏸</button><button id="skip">⏭ 장면 넘기기</button>
       <label class="inline"><input type="checkbox" id="vOn" checked> 🔊 음성</label><label class="inline"><input type="checkbox" id="kOn" checked> 우리말 자막</label><label class="inline"><input type="checkbox" id="fOn"> 빠르게</label><button id="fs">전체 화면</button><span id="now" class="dim"></span></div>
     <div class="list">${list.map((f) => `<div class="film" data-id="${f.id}" style="--c:${f.teamColor}"><b>${esc(f.title)}</b><span class="dim">${esc(f.team)} · by ${esc(f.writers.join(", "))}</span></div>`).join("")}</div>`;
-  th = new RSLTheater.Theater($("#cv"));
+  th = new RSLTheater.Theater($("#cv"), { holdMs: 8000 }); /* 사건 영상의 "범인은 누구?" 카드는 8초 뒤에 저절로 넘어가요 */
   const pick = async (id) => {
     th.stop(); cur = await RSLTheater.prepare(films[id], {});
     document.querySelectorAll(".film").forEach((x) => x.classList.toggle("on", x.dataset.id === id));

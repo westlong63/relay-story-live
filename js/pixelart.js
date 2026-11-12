@@ -167,8 +167,80 @@
     };
     return CHARACTERS[name];
   }
-  function kid(name, pose = "stand", mouth = "smile") {
-    const c = charStyle(name);
+  /* 사건 카드 속 동물·유령 용의자: 아이 그림과 같은 칸(28×46, 발바닥이 맨 아래)에 그려서 같은 자리에 서요 */
+  const FUR = { dog: [[184, 126, 74], [128, 82, 46], [244, 226, 196]], cat: [[238, 152, 72], [196, 108, 42], [252, 232, 200]], hamster: [[242, 196, 132], [206, 150, 90], [255, 244, 224]],
+    bear: [[138, 92, 60], [96, 62, 40], [214, 176, 136]], monkey: [[156, 104, 66], [108, 70, 44], [238, 204, 164]] };
+  function critter(kind, mouth) {
+    const s = new R(28, 46), eye = (x, y) => s.rect(x, y, x, y + 1, P.INK), o = mouth === "o";
+    if (kind === "slime") {
+      const G = [112, 212, 124], GD = [62, 160, 92];
+      s.ellipse(3, 24, 24, 47, G); s.rect(3, 36, 24, 45, G); s.rect(3, 43, 24, 45, GD);
+      s.ellipse(7, 27, 11, 30, [200, 248, 200]); eye(10, 34); eye(17, 34); s.px(8, 37, P.BLUSH); s.px(19, 37, P.BLUSH);
+      if (o) s.rect(13, 37, 14, 39, GD); else s.line([[12, 38], [15, 38]], GD);
+      return s;
+    }
+    if (kind === "ghost") {
+      const W1 = [242, 242, 252], W2 = [206, 212, 238];
+      s.roundRect(5, 6, 22, 34, 8, W1); s.rect(19, 12, 22, 34, W2);
+      for (const x of [5, 11, 17]) s.ellipse(x, 30, x + 5, 39, x === 17 ? W2 : W1);
+      s.rect(10, 16, 11, 19, P.INK); s.rect(16, 16, 17, 19, P.INK); s.px(8, 21, P.BLUSH); s.px(19, 21, P.BLUSH);
+      if (o) s.ellipse(12, 22, 15, 26, P.INK); else s.line([[12, 23], [15, 23]], P.INK);
+      return s;
+    }
+    if (kind === "bird") {
+      const G = [70, 190, 110], GD = [40, 140, 84], RD = [230, 80, 70];
+      s.polygon([[9, 36], [2, 45], [11, 41]], [60, 120, 220]); s.ellipse(7, 22, 21, 43, G); s.ellipse(8, 27, 16, 40, GD);
+      s.ellipse(11, 11, 23, 25, RD); s.polygon([[22, 16], [27, 20], [22, 23]], P.GOLD); s.rect(17, 15, 20, 18, P.WHITE); s.rect(18, 16, 19, 17, P.INK);
+      s.rect(11, 43, 12, 45, P.GOLD); s.rect(16, 43, 17, 45, P.GOLD);
+      return s;
+    }
+    const [F, FD, FL] = FUR[kind] || FUR.dog;
+    if (kind === "bear") {
+      s.ellipse(4, 1, 9, 6, F); s.ellipse(18, 1, 23, 6, F); s.px(6, 3, FL); s.px(7, 3, FL); s.px(20, 3, FL); s.px(21, 3, FL);
+      s.rect(1, 23, 3, 35, F); s.rect(24, 23, 26, 35, F); s.rect(6, 41, 11, 45, FD); s.rect(16, 41, 21, 45, FD);
+      s.roundRect(4, 20, 23, 42, 4, F); s.ellipse(8, 25, 19, 40, FL); s.roundRect(5, 4, 22, 21, 5, F);
+      s.ellipse(10, 12, 17, 19, FL); s.rect(13, 13, 14, 14, P.INK); eye(9, 10); eye(18, 10);
+      if (o) s.rect(13, 16, 14, 17, [160, 60, 70]); else s.line([[12, 17], [15, 17]], [120, 60, 50]);
+      return s;
+    }
+    if (kind === "monkey") {
+      s.line([[19, 36], [24, 32], [25, 24], [22, 21]], FD, 2); s.rect(5, 25, 7, 38, F); s.rect(20, 25, 22, 38, F); s.rect(9, 39, 12, 45, FD); s.rect(15, 39, 18, 45, FD);
+      s.rect(8, 23, 19, 39, F); s.ellipse(10, 26, 17, 37, FL); s.ellipse(3, 11, 8, 17, F); s.ellipse(19, 11, 24, 17, F); s.px(5, 14, FL); s.px(22, 14, FL);
+      s.roundRect(7, 7, 20, 22, 4, F); s.ellipse(9, 10, 18, 21, FL); eye(11, 13); eye(16, 13);
+      if (o) s.rect(13, 17, 14, 19, [160, 60, 70]); else s.line([[12, 18], [15, 18]], [120, 60, 50]);
+      return s;
+    }
+    if (kind === "hamster") {
+      s.ellipse(5, 21, 10, 26, FD); s.ellipse(17, 21, 22, 26, FD); s.ellipse(4, 24, 23, 47, F); s.ellipse(8, 32, 19, 46, FL);
+      s.rect(7, 44, 11, 45, FD); s.rect(16, 44, 20, 45, FD); eye(10, 30); eye(17, 30); s.rect(13, 33, 14, 33, [240, 130, 150]); s.px(8, 34, P.BLUSH); s.px(19, 34, P.BLUSH);
+      s.rect(10, 37, 11, 39, F); s.rect(16, 37, 17, 39, F);
+      return s;
+    }
+    /* 네발 동물: 강아지, 고양이 (오른쪽을 봐요) */
+    const cat = kind === "cat";
+    if (cat) s.line([[5, 34], [2, 27], [4, 22]], FD, 2); else s.line([[5, 33], [1, 27]], FD, 2);
+    s.rect(5, 41, 7, 45, FD); s.rect(15, 41, 17, 45, FD); s.rect(9, 41, 10, 45, F); s.rect(18, 41, 19, 45, F);
+    s.rect(4, 31, 19, 41, F); s.rect(6, 37, 17, 41, FL);
+    if (cat) { for (const x of [7, 10, 13]) s.line([[x, 31], [x, 34]], FD); }
+    s.roundRect(13, 19, 26, 32, 3, F);
+    if (cat) { s.polygon([[13, 20], [15, 14], [18, 20]], F); s.polygon([[21, 20], [24, 14], [26, 20]], F); s.px(15, 18, [240, 130, 150]); s.px(24, 18, [240, 130, 150]); s.rect(18, 27, 22, 30, FL); s.px(20, 27, [240, 130, 150]); }
+    else { s.rect(12, 19, 14, 28, FD); s.rect(25, 19, 27, 27, FD); s.rect(18, 26, 23, 31, FL); s.rect(20, 26, 21, 27, P.INK); s.rect(13, 32, 18, 33, [220, 60, 60]); }
+    eye(17, 23); eye(22, 23);
+    if (o) s.rect(20, 29, 20, 30, [160, 60, 70]);
+    return s;
+  }
+  /* 어린이는 몸통과 다리를 몇 줄 줄여서 작게 */
+  function shorter(src) {
+    const s = new R(src.w, src.h), cut = [24, 25, 26, 27, 36, 37, 38, 39]; let y2 = src.h - 1;
+    for (let y = src.h - 1; y >= 0; y--) { if (cut.includes(y)) continue; for (let x = 0; x < src.w; x++) { const i = (y * src.w + x) * 4, j = (y2 * src.w + x) * 4; for (let k = 0; k < 4; k++) s.d[j + k] = src.d[i + k]; } y2--; }
+    return s;
+  }
+  function kid(name, pose = "stand", mouth = "smile", look) {
+    let c = charStyle(name);
+    if (look && look.kind === "robot") return robot(pose);
+    if (look && look.kind) return critter(look.kind, mouth);
+    if (look && look.small) return shorter(kid(name, pose, mouth));
+    if (look && look.old) c = Object.assign({}, c, { hair: [228, 228, 236], style: c.style === "spiky" ? "bob" : c.style });
     if (c.robot) return robot(pose);
     const s = new R(28, 46), o = 4;
     s.rect(o + 5, 33, o + 8, 42, c.pants); s.rect(o + 11, 33, o + 14, 42, c.pants);
@@ -209,8 +281,8 @@
     if (pose === "wave") s.rect(o + 17, 9, o + 19, 19, MD); else if (pose === "hold") s.rect(o + 17, 21, o + 23, 23, MD); else s.rect(o + 17, 19, o + 19, 30, MD);
     return s;
   }
-  function putKid(d, name, x, foot, scale = 1, pose = "stand", flip = false, mouth = "smile") {
-    const s = kid(name, pose, mouth);
+  function putKid(d, name, x, foot, scale = 1, pose = "stand", flip = false, mouth = "smile", look) {
+    const s = kid(name, pose, mouth, look);
     d.blit(s, Math.round(x - (s.w * scale) / 2), Math.round(foot - s.h * scale), scale, flip);
   }
   function key(d, x, y, scale = 1, glowing = true) {
@@ -374,24 +446,24 @@
   };
   const BACKGROUNDS = [
     [["sunrise", "sun came", "dawn", "sun rose"], "dawn"],
-    [["airport", "plane", "airplane", "flight", "passport", "suitcase", "boarding"], "airport"],
+    [["airport", "plane", "airplane", "flight", "passport", "suitcase", "boarding", "baggage", "lost-and-found"], "airport"],
     [["cinema", "movie theater", "popcorn", "movie screen", "into the movie"], "cinema"],
-    [["video game", "game world", "pixel", "level", "game"], "game"],
-    [["stage", "concert", "festival", "audience", "perform", "show"], "stage"],
+    [["video game", "game world", "pixel", "level", "game", "treasure room", "boss room", "castle"], "game"],
+    [["stage", "concert", "festival", "audience", "perform", "show", "dance studio", "music room", "gym"], "stage"],
     [["palace", "king", "queen", "joseon", "hanok", "village"], "palace"],
-    [["store", "shop", "convenience", "candy", "gum", "counter"], "store"],
+    [["store", "shop", "convenience", "candy", "gum", "counter", "kitchen", "dressing room"], "store"],
     [["island", "ocean", "beach", "boat", "sea", "storm", "wave"], "beach"],
     [["planet", "space", "spaceship", "rocket", "alien", "galaxy", "ufo"], "space"],
     [["rooftop", "roof"], "rooftop"],
     [["letter", "envelope", "secret room", "shelf", "shelves", "library"], "letters"],
-    [["bedroom", "bed", "my room", "his room", "her room", "phone", "message", "woke up"], "bedroom"],
+    [["bedroom", "bed", "my room", "his room", "her room", "phone", "message", "woke up", "nurse's office"], "bedroom"],
     [["stairs", "stair", "upstairs"], "stairs"],
     [["hallway", "locker", "clock", "corridor", "museum"], "hallway"],
-    [["classroom", "desk", "blackboard", "board", "class", "teacher", "lesson", "science fair", "lab"], "classroom"],
+    [["classroom", "desk", "blackboard", "board", "class", "teacher", "lesson", "science fair", "lab", "cafeteria"], "classroom"],
     [["park", "tree", "garden", "bench", "flower"], "park"],
-    [["door", "entrance", "inside", "floor"], "entrance"],
-    [["window", "building", "school", "gate"], "school"],
-    [["street", "walk", "road", "home", "outside", "lamp", "town"], "street"],
+    [["door", "entrance", "inside", "floor", "lobby", "lift", "elevator"], "entrance"],
+    [["window", "building", "school", "gate", "running track"], "school"],
+    [["street", "walk", "road", "home", "outside", "lamp", "town", "lantern", "photo booth"], "street"],
   ];
   const DAY_WORDS = ["morning", "afternoon", "lunch", "sunny", "daytime", "bright", "breakfast", "day."];
   const has = (low, w) => (w.includes(" ") || w.length > 5 ? low.includes(w) : new RegExp("\\b" + w.replace(".", "\\.") + "s?\\b").test(low));
@@ -401,16 +473,16 @@
     if (/\bsnow/.test(low)) for (let i = 0; i < 90; i++) { const x = r() * W, y = r() * H; d.px(x, y, P.WHITE, 230); if (r() < 0.4) d.px(x + 1, y, P.WHITE, 160); }
     if (/\brain/.test(low)) for (let i = 0; i < 70; i++) { const x = r() * W, y = r() * H; d.line([[x, y], [x - 2, y + 6]], [170, 200, 255], 1, 150); }
     if (/\bmusic|\bsong|\bsing/.test(low)) for (let i = 0; i < 6; i++) { const x = 30 + r() * 260, y = 20 + r() * 60; d.ellipse(x, y + 5, x + 3, y + 8, P.GOLD); d.line([[x + 3, y + 6], [x + 3, y]], P.GOLD); d.line([[x + 3, y], [x + 6, y + 2]], P.GOLD); }
-    if (/lights? (went|go|goes) out|\bdark\b|blackout/.test(low)) for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) d.px(x, y, [5, 5, 15], 120);
+    /* 불이 꺼지면 아주 어둡게, 그냥 'dark'는 인물이 보일 만큼만 어둡게 */
+    const dim = /lights? (went|go|goes) out|blackout/.test(low) ? 120 : /\bdark\b/.test(low) ? 70 : 0;
+    if (dim) for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) d.px(x, y, [5, 5, 15], dim);
     if (/\bmap\b/.test(low)) { d.rect(236, 112, 262, 130, [240, 225, 180], [180, 150, 100]); d.line([[240, 118], [250, 124], [258, 116]], [200, 60, 60]); }
     if (/\bphoto|\bpicture/.test(low)) { d.rect(240, 108, 262, 126, P.WHITE, [120, 110, 130]); d.rect(243, 111, 259, 121, [120, 170, 220]); }
   }
 
   function compose(text, names, seed, opts) {
-    const low = String(text || "").toLowerCase();
-    let bg = "sky";
-    for (const [keys, id] of BACKGROUNDS) if (keys.some((k) => has(low, k))) { bg = id; break; }
-    const day = DAY_WORDS.some((w) => has(low, w.replace(".", ""))) && bg !== "dawn";
+    const low = String(text || "").toLowerCase(), looks = (opts && opts.looks) || {};
+    const { bg, day } = pickBackground(text, opts && opts.bgText);
     const asset = opts && opts.asset ? opts.asset(bg, day) : null;
     const d = new R(W, H, asset ? null : [0, 0, 0]);
     if (!asset) BG[bg](d, day, false, low);
@@ -422,11 +494,12 @@
     const surprised = /surpris|suddenly|strange|\bwow\b|!|scared|shock/.test(low);
     cast.forEach((n, i) => {
       const pose = holding && i === 0 ? "hold" : /\bwave|hello|\bhi\b|goodbye|bye/.test(low) && i === cast.length - 1 ? "wave" : r() < 0.25 ? "wave" : "stand";
-      putKid(d, n, slots[i], 176, 2, pose, i === cast.length - 1 && cast.length > 1, surprised ? "o" : "smile");
+      const lk = looks[n] && (looks[n].kind || looks[n].old || looks[n].small) ? looks[n] : null;
+      putKid(d, n, slots[i], lk && lk.kind === "ghost" ? 168 : 176, 2, pose, i === cast.length - 1 && cast.length > 1, surprised ? "o" : "smile", lk);
     });
     if (/\bkey\b/.test(low)) key(d, slots.length ? slots[0] + 24 : 160, 120, 2);
     if (/letter|envelope/.test(low) && bg !== "letters") envelope(d, 200, 100, 22, 15);
-    if (/\bcats?\b|kitten/.test(low)) cat(d, slots.length ? slots[0] - 30 : 150, 178, false);
+    if (/\bcats?\b|kitten/.test(low) && !cast.some((n) => looks[n] && looks[n].kind === "cat")) cat(d, slots.length ? slots[0] - 30 : 150, 178, false);
     effects(d, low, seed || 1);
     const small = d.toCanvas();
     const big = document.createElement("canvas"); big.width = W * 4; big.height = H * 4;
@@ -447,5 +520,11 @@
     return big;
   }
   const BG_IDS = Object.keys(BG);
-  global.PixelArt = { compose, starfield, W, H, charStyle, BG_IDS, pickBackground(text) { const low = String(text || "").toLowerCase(); for (const [keys, id] of BACKGROUNDS) if (keys.some((k) => has(low, k))) return { bg: id, day: DAY_WORDS.some((w) => has(low, w.replace(".", ""))) && id !== "dawn" }; return { bg: "sky", day: false }; } };
+  /* 배경 고르기: 화면 묘사 줄(first)에 장소가 있으면 그것부터 써요. 대사 속 낱말(gum, phone …) 때문에 엉뚱한 곳이 되지 않게요 */
+  function pickBackground(text, first) {
+    const low = String(text || "").toLowerCase(), find = (t) => { for (const [keys, id] of BACKGROUNDS) if (keys.some((k) => has(t, k))) return id; return null; };
+    const bg = (first && find(String(first).toLowerCase())) || find(low) || "sky";
+    return { bg, day: DAY_WORDS.some((w) => has(low, w.replace(".", ""))) && bg !== "dawn" };
+  }
+  global.PixelArt = { compose, starfield, W, H, charStyle, BG_IDS, pickBackground, kid };
 })(window);

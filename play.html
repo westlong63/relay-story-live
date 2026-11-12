@@ -207,7 +207,7 @@
   .ccard small { display:block; font-size:12px; color:var(--dim); }
   .ccard i { display:block; font-style:normal; font-size:12px; color:var(--blue); font-weight:600; margin-top:2px; }
   .ccard p { margin:6px 0 0; font-size:13px; text-align:left; background:var(--tint); padding:5px 7px; border-radius:4px; }
-  .ccard.why { grid-column:1 / -1; text-align:left; } .ccard.why b { font-size:16px; }
+  .ccard.c-why { grid-column:1 / -1; text-align:left; } .ccard.c-why b { font-size:16px; }
   .envl { text-align:center; background:#FFF7E0; border:2px dashed #E0A400; border-radius:8px; padding:16px; margin:8px 0 12px; line-height:1.5; }
   .envl .em { font-size:44px; line-height:1.2; }
   .order { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-top:6px; font-size:14px; }
@@ -748,7 +748,9 @@ function cardsHtml(part, opened) {
   const cs = CS(); if (!cs || !part) return "";
   if (part.locked) return `<div class="envl"><div class="em">🔒</div><b>비밀 봉투</b><div class="dim">범인이 누구인지는 지금 쓰는 친구만 열어 볼 수 있어요. 글에서 곧 밝혀져요!</div></div>`;
   if (part.role === "solve" && !opened) return `<div class="envl"><div class="em">✉️</div><b>비밀 봉투가 도착했어요</b><div class="dim">범인, 찾은 곳, 이유가 들어 있어요. 모둠 친구들에게는 글로 알려 줘요.</div><button class="primary" id="envOpen">봉투 열기</button></div>`;
-  return `<div class="ccards">${RSL_CLUE.cards(cs, part).map((c) => `<div class="ccard ${c.t}"><span class="lab">${esc(c.label)}</span>${c.t === "why" ? "" : `<span class="em">${c.emoji}</span>`}<b>${esc(c.en)}</b><small>${esc(c.ko)}</small>${c.sub ? `<i>${esc(c.sub)} · ${esc(c.subKo)}</i>` : ""}${c.note ? `<p>${esc(c.note)}<small>${esc(c.noteKo)}</small></p>` : ""}</div>`).join("")}</div>`;
+  /* 카드 6장(사건 발생)은 3장씩 두 줄, 나머지는 한 줄에 */
+  const list = RSL_CLUE.cards(cs, part), n = list.filter((c) => c.t !== "why").length;
+  return `<div class="ccards" style="grid-template-columns:repeat(${n > 4 ? 3 : n || 1},1fr)">${list.map((c) => `<div class="ccard c-${c.t}"><span class="lab">${esc(c.label)}</span>${c.t === "why" ? "" : `<span class="em">${c.emoji}</span>`}<b>${esc(c.en)}</b><small>${esc(c.ko)}</small>${c.sub ? `<i>${esc(c.sub)} · ${esc(c.subKo)}</i>` : ""}${c.note ? `<p>${esc(c.note)}<small>${esc(c.noteKo)}</small></p>` : ""}</div>`).join("")}</div>`;
 }
 function prevHtml(eps) {
   const k = eps.length; if (!k) return "";
@@ -854,8 +856,8 @@ function rWatch() {
     <div class="card"><h2>Best Story 투표 (우리 모둠 말고)</h2>
       ${others.map((t) => `<button class="teamBtn ${V.voted === t.id ? "sel" : ""}" data-vote="${t.id}" style="--c:${t.color}">${esc(t.name)} ${V.voted === t.id ? "✔" : ""}</button>`).join("")}
       <p class="dim">영상을 다 본 뒤에 바꿔도 돼요.</p></div>
-    <div class="card"><h2>우리 반 영상관</h2><p class="dim">수업이 끝나도 모든 이야기 영상을 다시 볼 수 있어요.${V.myStory ? " 우리 모둠 이야기도 있어요!" : ""}</p>
-      <a href="${gal}${V.myStory ? "&s=" + V.myStory : ""}" target="_blank"><button>영상관 열기 ↗</button></a></div>`;
+    ${V.clue && w ? "" : `<div class="card"><h2>우리 반 영상관</h2><p class="dim">수업이 끝나도 모든 이야기 영상을 다시 볼 수 있어요.${V.myStory ? " 우리 모둠 이야기도 있어요!" : ""}</p>
+      <a href="${gal}${V.myStory ? "&s=" + V.myStory : ""}" target="_blank"><button>영상관 열기 ↗</button></a></div>`}`; /* 사건 영상은 범인을 먼저 보면 안 되니까 영상관은 시상식에서 열려요 */
 }
 
 /* ---------- 버튼 ---------- */

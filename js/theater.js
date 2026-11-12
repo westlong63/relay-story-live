@@ -184,6 +184,51 @@
     g.globalAlpha = 1; g.textAlign = "left";
   }
 
+  /* "범인은 누구?" 카드와 정답 카드 (사건 카드로 쓴 이야기만) */
+  function fit(g, text, maxW, size, weight) { let z = size; do { g.font = `${weight} ${z}px ${FONT}`; z -= 2; } while (g.measureText(text).width > maxW && z > 14); }
+  function drawGuess(g, s, t, ko, note, tap) {
+    const C = s.clue, n = C.options.length, w = 262, gap = 22, x0 = (CW - (w * n + gap * (n - 1))) / 2, y0 = 268, h = 258;
+    g.drawImage(s.bg, 0, 0, CW, CH); g.fillStyle = "rgba(10,8,30,0.45)"; g.fillRect(0, 0, CW, CH);
+    g.textAlign = "center";
+    g.globalAlpha = Math.min(1, t / 400);
+    g.fillStyle = GOLD; g.font = `800 84px ${FONT}`; g.fillText("WHO DID IT?", CW / 2, 118);
+    g.fillStyle = "#fff"; fit(g, C.q, CW - 160, 38, 700); g.fillText(C.q, CW / 2, 176);
+    if (ko) { g.fillStyle = "rgba(207,224,255,0.9)"; g.font = `500 24px ${FONT}`; g.fillText(C.qKo, CW / 2, 216); }
+    C.options.forEach((o, i) => {
+      const a = Math.max(0, Math.min(1, (t - 500 - i * 220) / 400)), x = x0 + i * (w + gap);
+      g.globalAlpha = a;
+      g.fillStyle = "rgba(255,255,255,0.12)"; rr(g, x, y0, w, h, 18); g.fill();
+      g.strokeStyle = "rgba(255,214,72,0.7)"; g.lineWidth = 3; rr(g, x, y0, w, h, 18); g.stroke();
+      g.fillStyle = "#fff"; g.font = `72px ${FONT}`; g.fillText(o.emoji, x + w / 2, y0 + 92);
+      g.fillStyle = GOLD; fit(g, o.name, w - 24, 34, 800); g.fillText(o.name, x + w / 2, y0 + 146);
+      g.fillStyle = "#e9e6ff"; fit(g, o.role, w - 24, 22, 600); g.fillText(o.role, x + w / 2, y0 + 180);
+      if (ko) { g.fillStyle = "rgba(207,224,255,0.85)"; fit(g, `${o.ko} · ${o.roleKo}`, w - 20, 19, 500); g.fillText(`${o.ko} · ${o.roleKo}`, x + w / 2, y0 + 210); }
+      g.fillStyle = "rgba(255,255,255,0.75)"; fit(g, o.trait, w - 20, 18, 500); g.fillText(o.trait, x + w / 2, y0 + 238);
+    });
+    g.globalAlpha = Math.max(0, Math.min(1, (t - 1600) / 400));
+    g.fillStyle = "#fff"; g.font = `700 30px ${FONT}`; g.fillText(note || "Think about the clues!", CW / 2, 604);
+    if (ko) { g.fillStyle = "rgba(207,224,255,0.9)"; g.font = `500 22px ${FONT}`; g.fillText("영상에 나온 단서를 떠올려 봐요. 디벗에서 범인을 골라요!", CW / 2, 644); }
+    if (tap) { g.fillStyle = "rgba(255,255,255,0.55)"; g.font = `500 18px ${FONT}`; g.fillText("선생님: 화면을 누르면 투표를 마감하고 마지막 화가 시작돼요", CW / 2, 692); }
+    g.globalAlpha = 1; g.textAlign = "left";
+  }
+  function drawAnswer(g, s, t, ko) {
+    const C = s.clue, c = C.options[C.answer], show = (ms) => Math.max(0, Math.min(1, (t - ms) / 450));
+    g.drawImage(s.bg, 0, 0, CW, CH); g.fillStyle = "rgba(10,8,30,0.45)"; g.fillRect(0, 0, CW, CH);
+    g.textAlign = "center";
+    g.globalAlpha = show(0); g.fillStyle = GOLD; g.font = `800 84px ${FONT}`; g.fillText("CASE CLOSED!", CW / 2, 120);
+    g.globalAlpha = show(700); g.fillStyle = "#fff"; g.font = `110px ${FONT}`; g.fillText(c.emoji, CW / 2, 262);
+    g.fillStyle = "#fff"; fit(g, `It was ${c.name}, ${c.role}!`, CW - 160, 50, 800); g.fillText(`It was ${c.name}, ${c.role}!`, CW / 2, 340);
+    if (ko) { g.fillStyle = "rgba(207,224,255,0.9)"; g.font = `500 24px ${FONT}`; g.fillText(`범인은 ${c.ko} (${c.roleKo})`, CW / 2, 378); }
+    const rows = [[`${C.item.emoji}  Clue: ${C.item.en}`, `단서: ${C.item.ko}`], [`${C.where.emoji}  Found ${C.where.prep || "in"} ${C.where.en}`, `찾은 곳: ${C.where.ko}`], [`💬  "${C.why}"`, C.whyKo]];
+    rows.forEach(([en, k2], i) => {
+      g.globalAlpha = show(1500 + i * 700);
+      const y = 446 + i * (ko ? 78 : 62);
+      g.fillStyle = i === 2 ? GOLD : "#e9e6ff"; fit(g, en, CW - 200, 32, 700); g.fillText(en, CW / 2, y);
+      if (ko) { g.fillStyle = "rgba(207,224,255,0.85)"; fit(g, k2, CW - 200, 21, 500); g.fillText(k2, CW / 2, y + 30); }
+    });
+    g.globalAlpha = 1; g.textAlign = "left";
+  }
+
   /* ---------- 이야기 → 장면 목록 ---------- */
   function sceneNames(film, sc) {
     const names = [], text = sc.screen + " " + sc.lines.map((l) => l[1]).join(" ");
@@ -196,13 +241,17 @@
     opts = opts || {};
     const topicId = opts.topicId || "", shots = [], thumbs = [];
     const bg = PixelArt.starfield(7);
-    shots.push({ kind: "card", dur: 4200, say: `${film.team} presents. ${film.title}.`, rows: [
+    /* 사건 카드로 쓴 이야기: 마지막 화(범인 밝히기) 앞에서 멈추고 "범인은 누구?"를 묻고, 끝에 정답 카드를 보여 줘요 */
+    const C = film.clue || null, guess = C ? { kind: "guess", hold: true, bg, clue: C, say: "Who did it?" } : null;
+    shots.push({ kind: "card", dur: C ? 5200 : 4200, say: `${film.team} presents. ${film.title}.`, rows: [
       { text: `${film.team} presents`, size: 30, color: lighten(film.teamColor || "#aaa6d6", 0.45), weight: 700 },
-      { text: film.title, size: 76, color: GOLD, gap: 110 },
+      { text: film.title, size: film.title.length > 24 ? 60 : 76, color: GOLD, gap: 110 },
+      ...(C ? [{ text: `🔎 ${C.q}`, size: 34, color: "#ffffff", weight: 700, gap: 76 }] : []),
       { text: `A relay story by ${film.writers.join(", ")}`, size: 28, color: "#e9e6ff", weight: 600, gap: 70 },
       { text: film.topic, size: 24, color: "#aaa6d6", weight: 600, gap: 50 }], bg });
-    let n = 0;
+    let n = 0, asked = false;
     for (const [i, ep] of film.episodes.entries()) {
+      if (guess && ep.role === "solve" && !asked) { shots.push(guess); asked = true; }
       shots.push({ kind: "card", dur: 3000, bg, rows: [
         { text: `EPISODE ${i + 1}`, size: 30, color: "#aaa6d6", weight: 700 },
         { text: ep.title, size: 60, color: GOLD, gap: 90 },
@@ -210,18 +259,19 @@
         { chips: ep.mission.map((w) => ({ t: w, on: (ep.used || []).includes(w) })), size: 28, gap: 84 }] });
       for (const sc of ep.scenes) {
         const text = sc.screen + " " + sc.lines.map((l) => l[1]).join(" ");
-        const pick = PixelArt.pickBackground(text);
+        const pick = PixelArt.pickBackground(text, sc.screen);
         const asset = await findAsset(topicId, pick.bg, pick.day);
-        const art = PixelArt.compose(text, sceneNames(film, sc), 17 + n * 31, { asset: asset ? () => asset : null });
+        const art = PixelArt.compose(text, sceneNames(film, sc), 17 + n * 31, { asset: asset ? () => asset : null, bgText: sc.screen, looks: film.characters });
         thumbs.push({ id: sc.id, canvas: art.canvas, screen: sc.screen, lines: sc.lines, ep: i, ai: art.ai });
         shots.push({ kind: "scene", img: art.big, lines: sc.lines, words: ep.mission, n: n++ });
       }
       if (ep.choice) shots.push({ kind: "choice", dur: 4200, bg, q: ep.choice.question, options: ep.choice.options, picked: ep.choice.picked });
     }
+    if (guess) { if (!asked) shots.push(guess); const c = C.options[C.answer]; shots.push({ kind: "answer", dur: 10000, bg, clue: C, say: `Case closed! It was ${c.name}.` }); }
     const used = film.episodes.reduce((a, e) => a + (e.used || []).length, 0), tot = film.episodes.reduce((a, e) => a + e.mission.length, 0);
     const stars = Object.keys(film.characters).filter((c) => c !== "Narrator" && thumbs.some((t) => t.lines.some((l) => l[0] === c) || new RegExp("\\b" + escRe(c) + "\\b").test(t.screen)));
-    shots.push({ kind: "card", dur: 6500, bg, say: "The end?", rows: [
-      { text: "THE END ...?", size: 80, color: GOLD },
+    shots.push({ kind: "card", dur: 6500, bg, say: C ? "The end." : "The end?", rows: [
+      { text: C ? "THE END" : "THE END ...?", size: 80, color: GOLD },
       { text: `Starring  ${stars.join(" · ") || "our heroes"}`, size: 30, color: "#e9e6ff", weight: 600, gap: 90 },
       { text: `Writers  ${film.writers.join(" · ")}`, size: 30, color: "#e9e6ff", weight: 600, gap: 52 },
       { text: `Mission words used  ${used} / ${tot}`, size: 30, color: GOLD, weight: 700, gap: 60 },
@@ -259,7 +309,7 @@
         const s = prep.shots[k];
         this.index = k; this.skip = false;
         this.state = { shot: s, t0: performance.now(), line: null };
-        if (this.opts.onShot) this.opts.onShot(k, prep.shots.length);
+        if (this.opts.onShot) this.opts.onShot(k, prep.shots.length, s);
         if (s.kind === "scene") {
           const f = this.fast ? 0.45 : 1;
           await sleep(500 * f);
@@ -274,6 +324,14 @@
             await sleep(260 * f);
           }
           if (alive() && !this.skip) await sleep(700 * f);
+        } else if (s.hold) {
+          /* 멈춤 카드: 선생님이 '계속'을 누를 때까지 기다려요 (영상관처럼 혼자 볼 때는 holdMs 뒤에 저절로 넘어가요) */
+          if (s.say && this.voiceOn && this.cast.Narrator) Voice.speak(s.say, this.cast.Narrator, () => !alive() || this.skip);
+          this.go = false; this.holding = true; this.note = "";
+          if (this.opts.onHold) this.opts.onHold(s);
+          const until = this.opts.holdMs != null ? performance.now() + this.opts.holdMs : Infinity;
+          while (alive() && !this.skip && !this.go && performance.now() < until) await sleep(100);
+          if (alive()) { this.holding = false; if (this.opts.onResume) this.opts.onResume(s); }
         } else {
           if (s.say && this.voiceOn && this.cast.Narrator) Voice.speak(s.say, this.cast.Narrator, () => !alive() || this.skip);
           const end = performance.now() + s.dur * (this.fast ? 0.6 : 1);
@@ -286,7 +344,8 @@
     async waitPause(alive) { while (this.paused && alive()) await sleep(120); }
     pause(on) { this.paused = on; try { on ? speechSynthesis.pause() : speechSynthesis.resume(); } catch (e) {} }
     next() { this.skip = true; try { speechSynthesis.cancel(); } catch (e) {} }
-    finish() { this.playing = false; if (this.music) { this.music.stop(); this.music = null; } }
+    resume() { this.go = true; }
+    finish() { this.playing = false; this.holding = false; if (this.music) { this.music.stop(); this.music = null; } }
     stop() { this.token++; this.finish(); try { speechSynthesis.cancel(); } catch (e) {} }
     setMusic(on) { this.musicOn = on; if (!on && this.music) { this.music.stop(); this.music = null; } else if (on && this.playing && !this.music && this.prep && this.prep.bonus.includes("bgm")) { this.music = new MusicBox(); this.music.start(); } }
     drawLoop(now) { if (!this.playing) return; this.draw(now); requestAnimationFrame(this.drawLoop); }
@@ -301,6 +360,8 @@
         g.drawImage(s.img, (sx / CW) * s.img.width, (sy / CH) * s.img.height, (sw / CW) * s.img.width, (sh / CH) * s.img.height, 0, 0, CW, CH);
         if (st.line) drawSubtitle(g, st.line.sp, st.line.text, s.words, st.line.color, st.line.ko);
       } else if (s.kind === "card") drawCard(g, s.bg, s.rows, t);
+      else if (s.kind === "guess") drawGuess(g, s, t, this.koOn, this.note, this.holding && this.opts.holdMs == null);
+      else if (s.kind === "answer") drawAnswer(g, s, t, this.koOn);
       else if (s.kind === "choice") {
         const showPick = t > 1700;
         drawCard(g, s.bg, [{ text: "WHAT'S NEXT?", size: 34, color: "#aaa6d6", weight: 700 }, { text: s.q, size: 52, color: GOLD, gap: 84 },
