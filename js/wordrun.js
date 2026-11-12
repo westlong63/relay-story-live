@@ -275,13 +275,13 @@
   };
   P.drawMeHD = function (t) {
     const A = g.PXA.IM, K = 2, x = this.x, air = this.jumpT >= 0 ? Math.sin((this.jumpT / 0.62) * Math.PI) * 20 : 0;
-    const base = Math.round(this.laneY * K), y = Math.round(base - 60 - air * K), px = PX0 * K - 6;
-    x.fillStyle = "rgba(10,25,60,.28)"; x.fillRect(px + 16, base - 3, 30 - Math.round(air / 2), 4);
-    if (this.fever > 0) { const cols = ["#ff3b30", "#ff9f1a", "#ffd84a", "#3fa45a", "#2c67be", "#8a6be6"]; cols.forEach((c, i) => { x.fillStyle = c; x.fillRect(px - 50 + (Math.floor(t / 60) % 2) * 2, y + 30 + i * 4, 64, 4); }); }
-    if (this.inv > 0 && this.fever <= 0 && Math.floor(t / 90) % 2) return;
     const pose = this.hurtT > 0 ? "hurt" : this.jumpT >= 0 ? "jump" : ["run0", "run1", "run2", "run3"][Math.floor(t / (this.fever > 0 ? 60 : 95)) % 4];
-    x.drawImage(A[pose], px, y);
-    if (this.shield) { x.strokeStyle = "rgba(140,200,255,.95)"; x.lineWidth = 2; x.beginPath(); x.arc(px + 32, y + 34, 32, 0, Math.PI * 2); x.stroke(); }
+    const im = A[pose], base = Math.round(this.laneY * K), fy = Math.round(base - air * K), y = fy - (im.height - 4), px = PX0 * K - 6; /* 발바닥은 그림 아래에서 4칸 위 */
+    x.fillStyle = "rgba(10,25,60,.28)"; x.fillRect(px + 16, base - 3, 30 - Math.round(air / 2), 4);
+    if (this.fever > 0) { const cols = ["#ff3b30", "#ff9f1a", "#ffd84a", "#3fa45a", "#2c67be", "#8a6be6"]; cols.forEach((c, i) => { x.fillStyle = c; x.fillRect(px - 50 + (Math.floor(t / 60) % 2) * 2, fy - 34 + i * 4, 64, 4); }); }
+    if (this.inv > 0 && this.fever <= 0 && Math.floor(t / 90) % 2) return;
+    x.drawImage(im, px, y);
+    if (this.shield) { x.strokeStyle = "rgba(140,200,255,.95)"; x.lineWidth = 2; x.beginPath(); x.arc(px + 32, fy - 40, 43, 0, Math.PI * 2); x.stroke(); }
   };
   P.drawLo = function (t) {
     const cv = this.cv, cw = cv.clientWidth || 300, ch = cv.clientHeight || 120;

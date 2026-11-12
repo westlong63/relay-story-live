@@ -249,6 +249,9 @@ $("#credit").textContent = window.RSL_CONFIG.credit || "";
 let link = null, V = null, flash = null, busy = false, endsAt = 0, lastKey = "", hardKey = "", pending = false, autoSent = {};
 const room = (P.get("r") || "").toUpperCase().trim();
 const JK = `rsl-join-${room}-${P.get("as") || ""}`;
+/* 처음 화면으로: 시연 화면(demo.html) 안의 디벗에는 넣지 않아요 */
+const FRAMED = window.top !== window;
+const homeLink = (txt) => (FRAMED ? "" : `<p style="text-align:center;margin:14px 0 0"><a class="homeBtn" href="index.html">${txt || "🏠 처음 화면으로"}</a></p>`);
 
 async function boot() {
   if (!room) return askCode();
@@ -266,7 +269,7 @@ async function boot() {
 }
 function askCode(msg) {
   $("#main").innerHTML = `<h1 class="brk">Relay Story Live</h1><div class="card"><h2>참여 코드</h2><input id="code" class="codeIn" maxlength="5" placeholder="ABCDE" autocomplete="off">
-    <div class="warn">${esc(msg || "")}</div><button class="primary" id="go">들어가기</button></div>`;
+    <div class="warn">${esc(msg || "")}</div><button class="primary" id="go">들어가기</button></div>${homeLink()}`;
   $("#go").onclick = () => { const c = $("#code").value.trim().toUpperCase(); if (c) location.href = `play.html?r=${encodeURIComponent(c)}${DEMO && P.has("demo") ? "&demo=1" : ""}`; };
   $("#code").onkeydown = (e) => { if (e.key === "Enter") $("#go").click(); };
 }
@@ -314,7 +317,7 @@ function render() {
   if (!V) return;
   if (!V.me) return rJoin();
   const t = V.team;
-  const head = `<div class="top"><span>${esc(V.me.name)} · <b style="color:${t.color}">${esc(t.name)}</b></span><span>${esc(V.topic.title)}</span></div>`;
+  const head = `<div class="top"><span style="display:flex;align-items:center;gap:8px;min-width:0">${FRAMED ? "" : `<a class="homeBtn" id="homeBtn" href="index.html" aria-label="처음 화면으로">🏠 처음</a>`}<span>${esc(V.me.name)} · <b style="color:${t.color}">${esc(t.name)}</b></span></span><span>${esc(V.topic.title)}</span></div>`;
   $("#main").innerHTML = head + ({ topic: rTopic, words: rWords, write: rWrite, video: rVideo, watch: rWatch }[V.phase])();
   document.body.classList.toggle("fishing", !!($("#fishRoot") || $("#runRoot")));
   bind();
@@ -333,7 +336,7 @@ function rJoin() {
     ${V.teams.map((t) => `<button class="teamBtn ${d.team === t.id ? "sel" : ""}" data-team="${t.id}" style="--c:${t.color}">${esc(t.name)} <span class="dim">${t.count}명</span></button>`).join("")}
     <div class="pledge"><input type="checkbox" id="pledge" ${d.pledge ? "checked" : ""}><label for="pledge" style="margin:0;color:var(--ink);font-size:15px"><b>작가 서약</b><br>친구를 존중하고, 반 친구들과 함께 볼 수 있는 이야기를 쓸게요. 친구 실명과 나쁜 말은 쓰지 않을게요.</label></div>
     <button class="primary" id="join">입장하기</button>
-    <div id="msg" class="warn"></div></div>`;
+    <div id="msg" class="warn"></div></div>${homeLink()}`;
   const saveJ = (patch) => store.set(JK, JSON.stringify(Object.assign(JSON.parse(store.get(JK) || "{}"), patch)));
   $("#nm").oninput = () => saveJ({ name: $("#nm").value });
   $("#pledge").onchange = () => saveJ({ pledge: $("#pledge").checked });
@@ -749,6 +752,7 @@ function rWatch() {
 
 /* ---------- 버튼 ---------- */
 function bind() {
+  const hb = $("#homeBtn"); if (hb) hb.onclick = (e) => { if (!confirm("처음 화면으로 나갈까요?\n같은 참여 코드로 다시 들어오면 이어서 할 수 있어요.")) e.preventDefault(); };
   document.querySelectorAll("[data-say]").forEach((b) => b.onclick = () => playWord(V.topic.words[+b.dataset.say]));
   document.querySelectorAll("[data-sayex]").forEach((b) => b.onclick = () => playWord(V.topic.words[+b.dataset.sayex], true));
   bindAns(document);

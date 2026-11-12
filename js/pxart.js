@@ -81,7 +81,7 @@
         const span = W + 140, px = o.still ? Math.round(W * 0.6) : Math.round(((t * 0.045) % span) - 70);
         const pose = o.still ? "run0" : ["run0", "run1", "run2", "run3"][Math.floor(t / 110) % 4];
         x.fillStyle = "rgba(10,25,60,.28)"; x.fillRect(px + 16, rt + 41, 30, 3);
-        x.drawImage(IM[pose], px, rt - 20);
+        x.drawImage(IM[pose], px, rt + 44 - IM[pose].height); /* 발바닥은 그림 아래에서 4칸 위 */
         if (o.school && W < 430 && !o.still) { /* 좁은 화면: 학교 대신 빌딩 숲만 */ }
       }
       if (!o.still) requestAnimationFrame(frame);

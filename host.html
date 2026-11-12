@@ -101,7 +101,7 @@
   <button class="step" data-p="video"><span class="n">04</span>AI 영상</button>
   <button class="step" data-p="watch"><span class="n">05</span>함께 보기</button>
   <span class="sp"></span>
-  <span class="meta"><span id="mode" class="badge"></span><span id="count" class="dim"></span><span class="code" id="codeTop"></span></span>
+  <span class="meta"><a class="homeBtn" id="homeBtn" href="index.html">🏠 처음 화면</a><span id="mode" class="badge"></span><span id="count" class="dim"></span><span class="code" id="codeTop"></span></span>
 </header>
 <main id="main">불러오는 중…</main>
 <div id="stageWrap" hidden style="padding:0 30px">
@@ -133,6 +133,9 @@ const DEMO = RSLBus.isDemo();
 const store = RSLBus.store;
 let E = null, link = null, V = null;
 $("#credit").textContent = (window.RSL_CONFIG.credit || "");
+/* 처음 화면으로: 시연 화면(demo.html) 안에서는 위쪽 띠에 이미 있어서 숨겨요 */
+if (window.top !== window) $("#homeBtn").hidden = true;
+else $("#homeBtn").onclick = (e) => { if (!confirm(DEMO ? "처음 화면으로 나갈까요?\n시연 내용은 사라져요." : "처음 화면으로 나갈까요?\n지금까지의 수업은 이 컴퓨터에 저장돼 있어요. '수업 시작하기'를 다시 누르면 이어서 할 수 있어요.")) e.preventDefault(); };
 
 /* ---------- 교사가 정하는 것 (이 컴퓨터에 저장) ---------- */
 function loadList(k) { try { return JSON.parse(store.get(k) || "[]"); } catch (e) { return []; } }

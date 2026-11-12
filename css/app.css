@@ -103,3 +103,10 @@ img.pxi, canvas.pxi { image-rendering:crisp-edges; image-rendering:pixelated; ve
 
 /* 배우는 내용(영어 단어·뜻·문장)이 적힌 버튼은 또렷한 Pretendard로 */
 .learn, .learn button { font-family:var(--font); letter-spacing:-0.01em; }
+
+/* 처음 화면으로 돌아가기 (교사·학생·영상관 화면 위쪽) */
+a.homeBtn { display:inline-flex; align-items:center; gap:5px; padding:6px 11px; font-family:var(--font); font-size:14px; font-weight:700; line-height:1.2; letter-spacing:-.01em; text-decoration:none; white-space:nowrap; border-radius:4px; color:#1d4fc0; background:linear-gradient(#ffffff, #e9f1ff); box-shadow:inset 0 2px 0 #fff, 0 0 0 2px var(--frame-2), 0 3px 0 2px #7d9ed6; text-shadow:none; }
+a.homeBtn[hidden] { display:none; }
+a.homeBtn:hover { filter:brightness(1.05); }
+a.homeBtn:active { transform:translateY(2px); box-shadow:inset 0 2px 0 #fff, 0 0 0 2px var(--frame-2), 0 1px 0 2px #7d9ed6; }
+a.homeBtn:focus-visible { outline:3px solid #ffd23f; outline-offset:2px; }
