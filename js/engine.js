@@ -77,6 +77,15 @@
       }
       return cnt.map((c, i) => ({ i, c })).filter((x) => x.c > 0).sort((a, b) => b.c - a.c);
     }
+    /* ---------- 단어 낚시: 문제를 맞혀 미끼를 얻고, 낚은 물고기로 코인을 모아요 ---------- */
+    teamFish(teamId) {
+      const ms = this.members(teamId); let earned = 0, caught = 0, n = 0;
+      for (const p of ms) { const f = p.fish || {}; if (f.earned || f.caught) n++; earned += f.earned || 0; caught += f.caught || 0; }
+      return { earned, caught, players: n, members: ms.length, avg: ms.length ? Math.round(earned / ms.length) : 0 };
+    }
+    fishRanking() {
+      return this.S.teams.map((t) => Object.assign({ id: t.id }, this.teamFish(t.id))).filter((t) => t.members).sort((a, b) => b.avg - a.avg || b.earned - a.earned);
+    }
     /* ---------- 돌려 쓰기 ---------- */
     missionWords(k) { const W = this.topic().words.map((w) => w.word); return [0, 1, 2].map((j) => W[(k * 3 + j) % W.length]); }
     teamStories(teamId) { return this.S.stories.filter((s) => s.team === teamId); }
@@ -206,7 +215,7 @@
           if (b.phase === "write" && !S.write.started) this.startWriting();
           if (b.phase === "watch" && S.watchIndex < 0) S.watchIndex = 0;
           break;
-        case "topic": if (this.C.topics.some((t) => t.id === b.topic) && b.topic !== S.topicId) { S.topicId = b.topic; S.wordIndex = 0; S.quiz = "closed"; for (const p of Object.values(S.players)) p.answers = {}; } break;
+        case "topic": if (this.C.topics.some((t) => t.id === b.topic) && b.topic !== S.topicId) { S.topicId = b.topic; S.wordIndex = 0; S.quiz = "closed"; S.quizEndsAt = null; S.catchFeed = []; for (const p of Object.values(S.players)) { p.answers = {}; p.fish = {}; } } break;
         case "teams": {
           const n = Math.max(2, Math.min(8, parseInt(b.n, 10) || 6));
           S.teamCount = n; S.teams = makeTeams(n);
@@ -216,7 +225,13 @@
         case "rounds": S.write.rounds = Math.max(2, Math.min(6, parseInt(b.n, 10) || 4)); break;
         case "roundSec": S.write.roundSec = Math.max(60, Math.min(600, parseInt(b.n, 10) || 180)); break;
         case "word": S.wordIndex = Math.max(0, Math.min(this.topic().words.length - 1, b.i != null ? +b.i : S.wordIndex + (b.d || 0))); break;
-        case "quiz": S.quiz = ["open", "results"].includes(b.state) ? b.state : "closed"; break;
+        case "quiz": {
+          const st = ["open", "results"].includes(b.state) ? b.state : "closed";
+          if (st === "open" && b.min) S.quizEndsAt = Date.now() + Math.max(1, Math.min(20, +b.min || 7)) * 60000;
+          if (st !== "open") S.quizEndsAt = null;
+          S.quiz = st; break;
+        }
+        case "quizTime": if (S.quiz === "open" && S.quizEndsAt) S.quizEndsAt += (b.sec || 60) * 1000; break;
         case "addTime": if (S.write.endsAt) { S.write.endsAt += (b.sec || 60) * 1000; S.write.closingAt = null; } break;
         case "nextRound": if (S.write.started && !S.write.done) { S.write.closingAt = Date.now(); } break;
         case "restartWriting": this.startWriting(); break;
@@ -264,6 +279,18 @@
         pl.answers[q.id] = { ok: tries === 1, tries, ms, at: this.S.ansSeq };
         this.bump();
         return { ok: true };
+      }
+      if (type === "fish") {
+        if (S.phase !== "words" || S.quiz !== "open") return { ok: false, msg: "지금은 낚시 시간이 아니에요" };
+        const num = (v, max) => Math.max(0, Math.min(max, parseInt(v, 10) || 0));
+        const f = pl.fish && pl.fish.earned != null ? pl.fish : (pl.fish = { earned: 0, caught: 0, best: 0, rod: 0, pond: 0, coins: 0 });
+        f.earned = Math.max(f.earned, num(b.earned, 1000000)); f.caught = Math.max(f.caught, num(b.caught, 100000));
+        f.best = Math.max(f.best || 0, num(b.best, 4)); f.rod = num(b.rod, 2); f.pond = num(b.pond, 2); f.coins = num(b.coins, 1000000);
+        if (b.rare && num(b.rare.tier, 4) >= 3) {
+          S.catchFeed = (S.catchFeed || []).concat({ name: pl.name, team: pl.team, tier: num(b.rare.tier, 4), pond: num(b.rare.pond, 2), at: Date.now() }).slice(-8);
+        }
+        this.bump();
+        return { ok: true, slow: true };
       }
       if (type === "submit") {
         const w = S.write;
@@ -317,7 +344,7 @@
       return { room: this.S.room, phase: this.S.phase, topic: full || T.custom ? this.publicTopic() : { id: T.id, title: T.title }, wordIndex: this.S.wordIndex, quiz: this.S.quiz,
         write: { started: w.started, round: w.round, rounds: w.rounds, roundSec: w.roundSec, done: w.done, closing: !!w.closingAt,
           endsAt: w.endsAt || null },
-        filmsMade: this.S.filmsMade };
+        filmsMade: this.S.filmsMade, quizEnd: this.S.quiz === "open" ? this.S.quizEndsAt || null : null };
     }
     storyBrief(s, withText) {
       const o = { id: s.id, team: s.team, starter: s.starterName, n: s.episodes.length, title: (s.episodes[0] && s.episodes[0].title) || "",
@@ -330,13 +357,13 @@
       const S = this.S, r = S.write.round;
       return Object.assign(this.common(true), {
         role: "host", items: ITEMS, topics: this.C.topics.map((t) => ({ id: t.id, title: t.title, ko: t.ko || "", genre: t.genre || "", months: t.months || [], custom: !!t.custom })), teamCount: S.teamCount, questions: this.questions().length,
-        missed: S.phase === "words" ? this.missed() : [],
+        missed: S.phase === "words" ? this.missed() : [], feed: S.catchFeed || [],
         players: Object.values(S.players).map((p) => ({ id: p.id, name: p.name, team: p.team })),
         roundStatus: this.roundStatus(), report: this.classReport(),
         teams: S.teams.map((t) => {
           const q = this.teamQuiz(t.id), ro = S.roster[t.id] || [];
           const stories = this.teamStories(t.id);
-          return { id: t.id, name: t.name, color: t.color, members: this.members(t.id).map((p) => p.name), quiz: { acc: Math.round(q.acc * 100), answered: q.answered, items: q.items, avg: q.avg, players: q.players },
+          return { id: t.id, name: t.name, color: t.color, members: this.members(t.id).map((p) => p.name), quiz: { acc: Math.round(q.acc * 100), answered: q.answered, items: q.items, avg: q.avg, players: q.players }, fish: this.teamFish(t.id),
             writers: ro.map((pid) => { const s = this.heldStory(pid); return { name: (S.players[pid] || {}).name || "(나감)", done: !!(s && s.episodes.some((e) => e.k === r)) }; }),
             stories: stories.map((s) => this.storyBrief(s, true)), rep: (this.representative(t.id) || {}).id || null,
             votes: Object.values(S.votes).filter((v) => v === t.id).length, reactions: S.reactions[t.id] || {},
@@ -358,13 +385,17 @@
       });
       if (this.extraBanned.length) out.bannedX = this.extraBanned;
       if (S.phase === "words") {
-        const as = p.answers || {}, sc = Engine.score(Object.values(as));
-        out.game = { done: Object.keys(as).join(","), score: sc.score, ok: sc.ok, n: sc.n, best: sc.best };
+        const as = p.answers || {}, sc = Engine.score(Object.values(as)), f = p.fish || {};
+        out.game = { done: Object.keys(as).join(","), ok: sc.ok, n: sc.n, earned: f.earned || 0, caught: f.caught || 0 };
+        if (S.quiz !== "closed") {
+          const tr = this.fishRanking(), ti = tr.findIndex((x) => x.id === p.team), tf = tr[ti] || {};
+          out.game.team = { avg: tf.avg || 0, earned: tf.earned || 0, rank: ti + 1, of: tr.length };
+        }
         if (S.quiz === "results") {
           out.game.top = this.missed().slice(0, 3).map((x) => x.i);
           out.game.mine = this.questions().filter((x) => as[x.id] && as[x.id].tries > 1).map((x) => x.w).filter((w, i, a) => a.indexOf(w) === i);
-          const all = Object.values(S.players).map((x) => Engine.score(Object.values(x.answers || {})).score).sort((a, b) => b - a);
-          out.game.rank = all.indexOf(sc.score) + 1; out.game.of = all.length;
+          const all = Object.values(S.players).map((x) => (x.fish && x.fish.earned) || 0).sort((a, b) => b - a);
+          out.game.rank = all.indexOf(f.earned || 0) + 1; out.game.of = all.length;
         }
       }
       if (S.phase === "write" && S.write.started) {
@@ -438,6 +469,26 @@
       if (a.ok) { ok++; combo++; best = Math.max(best, combo); } else combo = 0;
     }
     return { score, ok, n: answers.length, best };
+  };
+  /* 단어 낚시 규칙 (교사 화면과 디벗이 같이 씀). 이름과 그림은 이 앱에서 새로 만든 것 */
+  Engine.FISH = {
+    startBait: 3,
+    ponds: [
+      { name: "Sunny Pond", ko: "햇살 연못", cost: 0, mult: 1, water: ["#7cc8f0", "#2f7fc0"], sky: ["#bfe6ff", "#e8f6ff"],
+        fish: [["Little Minnow", "피라미", "🐟"], ["Puffy Puffer", "통통 복어", "🐡"], ["Rainbow Trout", "무지개 송어", "🐠"], ["Lotus Turtle", "연꽃 거북", "🐢"], ["Golden Carp", "황금 잉어", "👑"]] },
+      { name: "Coral Sea", ko: "산호 바다", cost: 150, mult: 2.5, water: ["#3fd0c9", "#0b6f8f"], sky: ["#ffd9a8", "#fff1dc"],
+        fish: [["Sea Bream", "도미", "🐟"], ["Spiky Puffer", "가시 복어", "🐡"], ["Clownfish", "흰동가리", "🐠"], ["Giant Octopus", "왕문어", "🐙"], ["Crystal Shark", "수정 상어", "🦈"]] },
+      { name: "Star Lake", ko: "별빛 호수", cost: 500, mult: 6, water: ["#5b4bb7", "#1b1440"], sky: ["#20194d", "#3c2f80"],
+        fish: [["Comet Fish", "혜성 물고기", "☄️"], ["Moon Squid", "달 오징어", "🦑"], ["Nebula Ray", "성운 가오리", "🌌"], ["Space Whale", "우주 고래", "🐋"], ["Galaxy Dragon", "은하 용", "🐉"]] },
+    ],
+    rods: [
+      { name: "Basic Rod", ko: "기본 낚싯대", cost: 0, odds: [62, 25, 10, 2.6, 0.4], wait: [1200, 2800], window: 1300 },
+      { name: "Pro Rod", ko: "프로 낚싯대", cost: 80, odds: [45, 30, 17, 6.5, 1.5], wait: [900, 2000], window: 1500 },
+      { name: "Magic Rod", ko: "마법 낚싯대", cost: 300, odds: [30, 32, 24, 11, 3], wait: [600, 1400], window: 1700 },
+    ],
+    tiers: [{ ko: "흔함", value: 5 }, { ko: "보통", value: 12 }, { ko: "희귀", value: 30 }, { ko: "아주 희귀", value: 80 }, { ko: "전설", value: 300 }],
+    /* 미끼: 한 번에 맞히면 2개, 다시 해서 맞히면 1개, 3연속 정답마다 1개 더 */
+    bait: (first, combo) => (first ? 2 : 1) + (first && combo > 0 && combo % 3 === 0 ? 1 : 0),
   };
   Engine.ITEMS = ITEMS; Engine.wordRe = wordRe; Engine.freshState = freshState; Engine.clean = clean;
   if (typeof module !== "undefined") module.exports = Engine; else global.RSLEngine = Engine;

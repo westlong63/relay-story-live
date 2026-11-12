@@ -344,6 +344,29 @@
       d.rect(0, 0, W, 14, [190, 40, 70]); glow(d, 160, 110, 70, [255, 240, 190], 120);
       for (let x = 10; x < W; x += 22) d.ellipse(x, 168, x + 14, 184, [30, 20, 34]);
     },
+    airport(d, day) {
+      /* 큰 유리창 너머로 비행기가 보이는 공항 탑승구 */
+      d.rect(0, 0, W, H, [210, 216, 228]); d.rect(0, 138, W, H, [176, 182, 196]);
+      sky(d, day ? P.DAY_TOP : P.NIGHT_TOP, day ? P.DAY_BOTTOM : P.NIGHT_BOTTOM, 14, 112);
+      if (!day) stars(d, 5, 40, 60);
+      for (let x = 0; x <= W; x += 64) d.rect(x, 14, x + 3, 112, [120, 128, 146]);
+      d.rect(0, 10, W, 14, [120, 128, 146]); d.rect(0, 112, W, 116, [120, 128, 146]);
+      d.rect(0, 100, W, 112, [110, 112, 120]);
+      const pl = [235, 238, 245], pd = [150, 160, 180];
+      d.ellipse(150, 78, 262, 96, pl, pd); d.polygon([[196, 86], [228, 86], [206, 108], [190, 108]], pd);
+      d.polygon([[242, 80], [262, 60], [270, 60], [262, 84]], [44, 90, 180]); d.ellipse(150, 82, 166, 92, pl, pd);
+      for (let x = 170; x < 250; x += 8) d.rect(x, 84, x + 3, 87, [70, 110, 170]);
+      d.rect(16, 24, 86, 52, [30, 34, 48], [80, 86, 100]);
+      for (let i = 0; i < 4; i++) { d.rect(20, 28 + i * 6, 50, 30 + i * 6, P.GOLD); d.rect(56, 28 + i * 6, 82, 30 + i * 6, i === 1 ? [255, 90, 90] : [120, 230, 140]); }
+      for (let x = 20; x < 300; x += 26) { d.rect(x, 146, x + 20, 150, [44, 90, 180]); d.rect(x, 150, x + 2, 160, [70, 70, 80]); d.rect(x + 18, 150, x + 20, 160, [70, 70, 80]); }
+    },
+    cinema(d) {
+      /* 어두운 영화관, 빛나는 스크린과 좌석 */
+      d.rect(0, 0, W, H, [18, 14, 26]);
+      d.rect(40, 12, 280, 104, [230, 236, 250]); glow(d, 160, 58, 120, [200, 220, 255], 70);
+      d.rect(40, 12, 280, 14, [60, 50, 70]); for (let x = 0; x < 40; x += 6) d.rect(x, 0, x + 4, 120, [120, 20, 40]); for (let x = 282; x < W; x += 6) d.rect(x, 0, x + 4, 120, [120, 20, 40]);
+      for (let row = 0; row < 3; row++) { const y = 128 + row * 18; for (let x = 6 + row * 4; x < W; x += 20) d.ellipse(x, y, x + 15, y + 16, [70 - row * 10, 20, 40 - row * 6], [40, 10, 20]); }
+    },
     sky(d, day) {
       sky(d, day ? P.DAY_TOP : P.NIGHT_TOP, day ? P.DAY_BOTTOM : P.NIGHT_BOTTOM, 0, H);
       if (!day) stars(d, 9, 120, H); d.rect(0, 150, W, H, day ? P.GRASS : P.GROUND);
@@ -351,6 +374,8 @@
   };
   const BACKGROUNDS = [
     [["sunrise", "sun came", "dawn", "sun rose"], "dawn"],
+    [["airport", "plane", "airplane", "flight", "passport", "suitcase", "boarding"], "airport"],
+    [["cinema", "movie theater", "popcorn", "movie screen", "into the movie"], "cinema"],
     [["video game", "game world", "pixel", "level", "game"], "game"],
     [["stage", "concert", "festival", "audience", "perform", "show"], "stage"],
     [["palace", "king", "queen", "joseon", "hanok", "village"], "palace"],

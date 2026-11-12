@@ -87,6 +87,44 @@
   #sheet .ins.w { display:inline-block; width:auto; margin:4px 6px 0 0; }
   #sheet input { width:100%; font-size:17px; padding:10px; }
   #sheet .close { position:absolute; right:8px; top:-46px; width:auto; padding:8px 12px; background:#fff; }
+  /* 단어 낚시 */
+  .fhud { display:flex; flex-wrap:wrap; gap:4px 14px; align-items:center; font-weight:700; padding:10px 0 6px; font-size:16px; }
+  .fhud b { font-variant-numeric:tabular-nums; } .fhud .tm { margin-left:auto; color:var(--navy); font-size:24px; font-weight:800; font-variant-numeric:tabular-nums; } .fhud .tm.low { color:var(--red); }
+  .fgrid { display:grid; grid-template-columns:1fr; gap:0 12px; }
+  .fgrid > .card { margin-top:6px; }
+  .pondCard { padding:12px !important; }
+  .pond { position:relative; height:230px; overflow:hidden; background:linear-gradient(var(--s1), var(--s2) 30%, var(--w1) 30%, var(--w2)); cursor:pointer; user-select:none; -webkit-user-select:none; touch-action:manipulation; }
+  .pond .pn { position:absolute; left:8px; top:8px; z-index:2; font-weight:800; font-size:15px; background:rgba(255,255,255,.8); padding:2px 8px; color:#14233d; }
+  .pond .pn small { font-weight:500; color:#4a5568; font-size:12px; }
+  .pond svg { position:absolute; inset:0; width:100%; height:100%; }
+  .pond .bob, .pond .rip { display:none; }
+  .pond.wait .bob, .pond.bite .bob { display:inline; }
+  .pond.wait .bob { animation:bob 1.3s ease-in-out infinite; }
+  .pond.bite .bob { animation:dip .18s ease-in-out infinite alternate; }
+  .pond.wait .rip { display:inline; animation:rip 1.6s ease-out infinite; transform-origin:270px 140px; }
+  @keyframes bob { 50% { transform:translateY(4px); } }
+  @keyframes dip { to { transform:translateY(14px); } }
+  @keyframes rip { from { transform:scale(.4); opacity:.9; } to { transform:scale(1.6); opacity:0; } }
+  .pond .bang { position:absolute; left:62%; top:18%; font-size:64px; font-weight:900; color:#ff3b30; text-shadow:0 2px 0 #fff; display:none; z-index:3; }
+  .pond.bite .bang { display:block; animation:bang .3s; }
+  @keyframes bang { from { transform:scale(.3) rotate(-20deg); } }
+  .pond .msg { position:absolute; left:0; right:0; bottom:10px; text-align:center; z-index:3; font-weight:800; font-size:18px; color:#fff; text-shadow:0 1px 3px rgba(0,0,0,.6); }
+  .catchCard { position:absolute; inset:10px; z-index:4; background:rgba(255,255,255,.96); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; animation:pop .35s; padding:8px; }
+  .catchCard .fe { font-size:60px; line-height:1.05; } .catchCard .fn { font-size:24px; font-weight:800; } .catchCard .fk { font-size:13px; color:var(--dim); }
+  .catchCard .fc { font-size:22px; font-weight:800; color:#b7791f; margin-top:2px; }
+  .catchCard .fw { margin-top:6px; font-size:15px; } .catchCard .fw b { font-size:20px; color:var(--navy); }
+  .catchCard.t3 { background:linear-gradient(#eef4ff, #d7e6ff); } .catchCard.t4 { background:linear-gradient(#fff8d6, #ffe27a); }
+  .tierTag { display:inline-block; font-size:12px; font-weight:800; padding:1px 8px; margin-bottom:4px; background:#e2e8f0; color:#334; }
+  .tierTag.t2 { background:#c6f6d5; color:#22543d; } .tierTag.t3 { background:#bee3f8; color:#1a365d; } .tierTag.t4 { background:#d69e2e; color:#fff; }
+  main button.fbtn { font-size:21px; padding:16px; font-weight:800; }
+  main button.fbtn.go { background:var(--navy); color:#fff; border-color:var(--navy); }
+  main button.fbtn.hit { background:var(--red); color:#fff; border-color:var(--red); animation:pulse .35s infinite alternate; }
+  @keyframes pop { from { transform:scale(.6); opacity:0; } }
+  @keyframes pulse { to { transform:scale(1.03); } }
+  .shop { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .shop button { font-size:14px; padding:9px 8px; text-align:left; line-height:1.35; }
+  .shop button small { display:block; color:var(--dim); font-size:12px; }
+  .qtitle { font-size:14px; font-weight:800; color:var(--navy); margin-bottom:4px; }
   /* 디벗(갤럭시 탭): 세로 800px, 가로 1280px 안팎. 글자와 버튼을 통째로 키워요. */
   @media (min-width:700px) {
     main, #sheet, .credit { zoom:1.2; }
@@ -103,6 +141,9 @@
     #sheet .body { max-width:none; }
     body.sheet-open main { margin:0 404px 0 auto; max-width:760px; }
     body.sheet-open .hintBtn { display:none; }
+    body.fishing main { max-width:1000px; }
+    .fgrid { grid-template-columns:1.05fr 1fr; align-items:start; }
+    .pond { height:250px; }
   }
 </style>
 </head>
@@ -175,11 +216,13 @@ function onView(v) {
   if (hk !== hardKey) { hardKey = hk; lastKey = key; if (typing()) document.activeElement.blur(); render(); return; }
   if (key === lastKey) return;
   lastKey = key;
+  if ($("#fishRoot")) { game(); fishHud(); return; } /* 낚시 중에는 화면 전체를 다시 그리지 않아요 (찌·애니메이션 유지) */
   if (typing()) { pending = true; return; }
   render();
 }
 document.addEventListener("focusout", () => setTimeout(() => { if (pending && !typing()) { pending = false; render(); } }, 50));
 function tickTimer() {
+  fishTick();
   const el = $("#tleft"); if (!el || !V || !V.write) return;
   if (V.write.closing) { el.textContent = "저장 중…"; el.classList.add("low"); return; }
   const left = Math.max(0, Math.round((endsAt - Date.now()) / 1000));
@@ -191,7 +234,9 @@ function render() {
   const t = V.team;
   const head = `<div class="top"><span>${esc(V.me.name)} · <b style="color:${t.color}">${esc(t.name)}</b></span><span>${esc(V.topic.title)}</span></div>`;
   $("#main").innerHTML = head + ({ topic: rTopic, words: rWords, write: rWrite, video: rVideo, watch: rWatch }[V.phase])();
+  document.body.classList.toggle("fishing", !!$("#fishRoot"));
   bind();
+  if ($("#fishRoot")) fishMount();
   if (!(V.phase === "write" && V.held && !V.write.done)) hintSheet(false); else if (!$("#sheet").hidden) hintSheet(true);
 }
 
@@ -227,7 +272,7 @@ function rTopic() {
     <p style="font-size:19px">${esc(T.seed)}</p>${T.seedKo ? `<p class="dim" style="font-size:14px">${esc(T.seedKo)}</p>` : ""}
     <div>등장인물: ${T.characters.map((c) => `<span class="chip">${esc(c)}</span>`).join("")} + 새 인물도 OK</div></div>
     <div class="card"><h2>우리 모둠</h2>${V.team.members.map((m) => `<span class="chip">${esc(m)}</span>`).join("")}
-    <p class="dim">곧 오늘의 단어 6개를 배우고, 단어 게임을 한 뒤, 모둠 친구들과 이야기를 돌려 써요. 선생님 화면을 봐 주세요!</p></div>`;
+    <p class="dim">곧 오늘의 단어 6개를 배우고, 🎣 단어 낚시 대회를 한 뒤, 모둠 친구들과 이야기를 돌려 써요. 선생님 화면을 봐 주세요!</p></div>`;
 }
 
 /* ---------- 단어 시간: 카드 → 게임 → 복습 ---------- */
@@ -275,16 +320,67 @@ function sendAns(qid, x) {
   x.sending = true;
   link.send("answer", { qid, tries: x.tries, ms: x.ms }).then((r) => { x.sending = false; if (r.ok) { x.ack = Date.now(); saveG(); } else setTimeout(() => G && G.done[qid] === x && !x.ack && sendAns(qid, x), 2500); });
 }
-function myScore() { const loc = RSLEngine.score(Object.values(G.done).filter((x) => !x.srv)).score; return Math.max(loc, (V.game || {}).score || 0); }
-function rGame() {
-  const g = game(), q = g.qs.find((x) => !g.done[x.id]), n = Object.keys(g.done).filter((id) => g.qs.some((x) => x.id === id)).length;
-  const head = `<div class="ghead"><span>단어 게임 ${Math.min(n + 1, g.qs.length)}/${g.qs.length}</span><span class="sc">⭐ ${myScore().toLocaleString()}점</span><span class="cb">${g.combo >= 2 ? "🔥" + g.combo + " 연속" : ""}</span></div>
-    <div class="bar"><i style="width:${Math.round((100 * n) / g.qs.length)}%"></i></div>`;
-  if (g.fb) return head + `<div class="card fb"><div class="big">⭕</div><b style="font-size:22px">+${g.fb.pts}점</b>${g.fb.combo >= 2 ? `<div class="cb" style="color:var(--red);font-weight:800;margin-top:4px">🔥 ${g.fb.combo}번 연속 정답!</div>` : g.fb.first ? "" : `<div class="dim">다시 도전해서 맞혔어요!</div>`}</div>`;
-  if (!q) return head + `<div class="card" style="text-align:center"><div class="big">🎉</div><h2>다 풀었어요!</h2><div class="rank">${myScore().toLocaleString()}점</div>
-    <p class="dim">선생님이 게임을 마치면 많이 틀린 단어를 함께 다시 봐요.</p></div>` + teamPart();
+/* ---------- 단어 낚시: 문제를 맞혀 미끼 → 던지기 → 찌가 쏙 들어가면 낚아채기 → 코인 → 낚싯대·낚시터 ---------- */
+const FI = RSLEngine.FISH;
+let FS = null, fSendT = null, fTimer = null, AC = null;
+const FK = () => `rsl-fish-${room}-${V.me.id}-${V.topic.id}`;
+function fishState() {
+  const key = V.topic.id + "|" + V.me.id;
+  if (!FS || FS.key !== key) {
+    let s = {}; try { s = JSON.parse(store.get(FK()) || "{}"); } catch (e) {}
+    FS = Object.assign({ bait: FI.startBait, coins: 0, earned: 0, caught: 0, best: 0, rod: 0, pond: 0, pass: 1, rep: {} }, s, { key, mode: "idle", last: null, over: false });
+  }
+  return FS;
+}
+const saveF = () => store.set(FK(), JSON.stringify({ bait: FS.bait, coins: FS.coins, earned: FS.earned, caught: FS.caught, best: FS.best, rod: FS.rod, pond: FS.pond, pass: FS.pass, rep: FS.rep }));
+function sendFish(rare) {
+  clearTimeout(fSendT);
+  const go = () => link.send("fish", { earned: FS.earned, caught: FS.caught, best: FS.best, rod: FS.rod, pond: FS.pond, coins: FS.coins, rare: rare || null })
+    .then((r) => { if (!(r && r.ok) && !(r && r.msg)) fSendT = setTimeout(go, 3000); });
+  if (rare) go(); else fSendT = setTimeout(go, 1000);
+}
+function sfx(k) {
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)(); const t0 = AC.currentTime;
+    const tone = (f, d, at, type, vol) => { const o = AC.createOscillator(), g = AC.createGain(); o.type = type || "sine"; o.frequency.setValueAtTime(f, t0 + at); g.gain.setValueAtTime(vol || 0.1, t0 + at); g.gain.exponentialRampToValueAtTime(0.001, t0 + at + d); o.connect(g); g.connect(AC.destination); o.start(t0 + at); o.stop(t0 + at + d + 0.02); };
+    if (k === "cast") { tone(420, 0.12, 0, "triangle", 0.08); tone(200, 0.2, 0.1, "triangle", 0.06); }
+    if (k === "bite") { tone(880, 0.1, 0, "square", 0.05); tone(990, 0.1, 0.13, "square", 0.05); }
+    if (k === "catch") [523, 659, 784].forEach((f, i) => tone(f, 0.18, i * 0.08, "triangle", 0.09));
+    if (k === "rare") [523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, 0.24, i * 0.09, "triangle", 0.1));
+    if (k === "miss") tone(200, 0.3, 0, "sawtooth", 0.04);
+  } catch (e) {}
+}
+const fishLeft = () => (V && V.quizEnd ? Math.round((V.quizEnd - (link.offset || 0) - Date.now()) / 1000) : null);
+function fishTick() {
+  const el = $("#ftime"); if (!el || !FS) return;
+  const l = fishLeft(); if (l == null) { el.textContent = ""; return; }
+  el.textContent = "⏱ " + `${Math.floor(Math.max(0, l) / 60)}:${String(Math.max(0, l) % 60).padStart(2, "0")}`; el.classList.toggle("low", l <= 30);
+  if (l <= 0 && !FS.over) { FS.over = true; clearTimeout(fTimer); FS.mode = "idle"; FS.last = null; pondDraw("⏰ 낚시 끝! 선생님 화면을 봐요"); fishCtl(); renderQ(); }
+}
+function fishHud() {
+  const h = $("#fhud"); if (!h || !FS) return;
+  const tm = (V.game || {}).team || {};
+  h.innerHTML = `<span>🪱 미끼 <b>${FS.bait}</b></span><span>🪙 코인 <b>${FS.coins.toLocaleString()}</b></span><span class="dim" style="font-weight:500">모은 코인 ${FS.earned.toLocaleString()} · ${FS.caught}마리</span>
+    ${tm.rank ? `<span style="color:${V.team.color}">${esc(V.team.name)} ${tm.rank}등 / ${tm.of}</span>` : ""}<span class="tm" id="ftime"></span>`;
+  fishTick();
+}
+/* 지금 풀 문제: 처음엔 순서대로, 다 풀면 처음부터 다시 돌아요 (다시 도는 문제는 미끼만 받아요) */
+function curQ() {
+  const g = game();
+  let q = g.qs.find((x) => !g.done[x.id]);
+  if (q) return { q, first: true };
+  q = g.qs.find((x) => !FS.rep[x.id]);
+  if (!q) { FS.rep = {}; FS.pass++; saveF(); q = g.qs[0]; }
+  return { q, first: false };
+}
+function renderQ() {
+  const box = $("#qbox"); if (!box) return;
+  const g = game();
+  if (FS.over) { box.innerHTML = `<div class="fb"><div class="big">⏰</div><h2>시간 끝!</h2><p class="dim">선생님 화면에서 우리 모둠 순위를 확인해요.</p></div>`; return; }
+  if (g.fb) { box.innerHTML = `<div class="fb"><div class="big">⭕</div><b style="font-size:24px">미끼 +${g.fb.got} 🪱</b>${g.fb.combo >= 2 ? `<div style="color:var(--red);font-weight:800;margin-top:4px">🔥 ${g.fb.combo}번 연속 정답!</div>` : g.fb.first ? "" : `<div class="dim">다시 도전해서 맞혔어요!</div>`}</div>`; return; }
+  const { q, first } = curQ(), n = Object.keys(g.done).filter((id) => g.qs.some((x) => x.id === id)).length;
   if (g.cur !== q.id) { g.cur = q.id; g.t0 = Date.now(); g.tries = 1; g.spell = ""; g.used = []; if (q.kind === "listen") setTimeout(() => playWord(V.topic.words[q.w]), 250); }
-  const [sn, sd] = STAGE[q.kind], w = V.topic.words[q.w];
+  const [sn, sd] = STAGE[q.kind];
   let body = "";
   if (q.kind === "door") body = `<div class="gq">${esc(q.prompt)}</div><div class="doors">${q.options.map((o, i) => `<button data-ans="${esc(o)}" data-l="문 ${"ABCD"[i]}">${esc(o)}</button>`).join("")}</div>`;
   if (q.kind === "egg") body = `<div class="gq">${esc(q.prompt)}</div><div class="eggs">${q.options.map((o, i) => `<button data-ans="${i}">${esc(o)}</button>`).join("")}</div><button data-say="${q.w}" class="ghost">🔊 다시 듣기</button>`;
@@ -294,22 +390,111 @@ function rGame() {
     <div class="tiles">${q.options.map((c, i) => `<button data-tile="${i}" ${g.used.includes(i) ? "disabled" : ""}>${esc(c)}</button>`).join("")}</div>`;
   if (q.kind === "blank") body = `<div class="gq s">${esc(q.prompt).replace("_____", "<b style='color:var(--red)'>_____</b>")}</div>${q.hint ? `<p class="dim" style="font-size:13px">${esc(q.hint)}</p>` : ""}
     <div class="opts">${q.options.map((o) => `<button data-ans="${esc(o)}">${esc(o)}</button>`).join("")}</div>`;
-  return head + `<div class="card"><div class="stage-n">${sn}</div><div class="dim" style="font-size:14px">${sd}${g.tries > 1 ? " · <b class='warn'>다시 해 봐요!</b>" : ""}</div>${body}</div>`;
+  box.innerHTML = `<div class="qtitle">🪱 미끼 얻기 문제 ${first ? `${Math.min(n + 1, g.qs.length)}/${g.qs.length}` : `· ${FS.pass}바퀴째`}${g.combo >= 2 ? ` <span style="color:var(--red)">🔥${g.combo}연속</span>` : ""}</div>
+    <div class="stage-n">${sn}</div><div class="dim" style="font-size:14px">${sd}${g.tries > 1 ? " · <b class='warn'>다시 해 봐요!</b>" : ""}</div>${body}`;
+  bindAns(box);
 }
 function gameRight() {
-  const q = G.qs.find((x) => !G.done[x.id]); if (!q) return;
-  const x = { ok: G.tries === 1, tries: G.tries, ms: Date.now() - G.t0, at: ++gSeq };
-  const pts = RSLEngine.points(x, G.combo);
-  G.combo = x.ok ? G.combo + 1 : 0;
-  G.done[q.id] = x; saveG(); sendAns(q.id, x);
-  G.fb = { pts, combo: G.combo, first: x.ok }; render();
-  setTimeout(() => { if (G) { G.fb = null; render(); } }, 750);
+  const q = G.qs.find((x) => x.id === G.cur); if (!q || G.fb) return;
+  const first = G.tries === 1;
+  if (!G.done[q.id]) { const x = { ok: first, tries: G.tries, ms: Date.now() - G.t0, at: ++gSeq }; G.done[q.id] = x; sendAns(q.id, x); }
+  else { FS.rep[q.id] = 1; }
+  G.combo = first ? G.combo + 1 : 0; saveG();
+  const got = FI.bait(first, G.combo);
+  FS.bait += got; saveF();
+  G.fb = { got, combo: G.combo, first };
+  renderQ(); fishHud(); fishCtl();
+  setTimeout(() => { if (G) { G.fb = null; renderQ(); } }, 700);
 }
 function gameWrong(el) { G.tries++; G.combo = 0; el.classList.remove("no"); void el.offsetWidth; el.classList.add("no"); try { navigator.vibrate && navigator.vibrate(60); } catch (e) {} const d = document.querySelector(".stage-n + .dim"); if (d && !/다시/.test(d.innerHTML)) d.innerHTML += " · <b class='warn'>다시 해 봐요!</b>"; }
+function pondDraw(msg) {
+  const el = $("#pond"); if (!el) return;
+  const pd = FI.ponds[FS.pond], c = FS.last;
+  el.style.cssText = `--w1:${pd.water[0]};--w2:${pd.water[1]};--s1:${pd.sky[0]};--s2:${pd.sky[1]}`;
+  el.className = "pond " + FS.mode;
+  const line = FS.mode === "wait" || FS.mode === "bite" ? "M70 36 Q170 60 270 132" : "M70 36 Q80 90 84 120";
+  el.innerHTML = `<div class="pn">${esc(pd.name)} <small>${esc(pd.ko)} · ${esc(FI.rods[FS.rod].ko)}</small></div>
+    <svg viewBox="0 0 400 230" preserveAspectRatio="xMidYMid slice"><path d="M0 230 L70 36" stroke="#7a4a24" stroke-width="7" stroke-linecap="round"/><path d="${line}" stroke="rgba(255,255,255,.85)" stroke-width="1.6" fill="none"/>
+      <ellipse class="rip" cx="270" cy="140" rx="26" ry="7" fill="none" stroke="rgba(255,255,255,.8)" stroke-width="2"/>
+      <g class="bob"><circle cx="270" cy="134" r="9" fill="#fff"/><path d="M261 134 a9 9 0 0 1 18 0 z" fill="#ff3b30"/><line x1="270" y1="125" x2="270" y2="117" stroke="#333" stroke-width="2"/></g></svg>
+    <div class="bang">!</div>
+    ${c ? `<div class="catchCard t${c.tier}"><span class="tierTag t${c.tier}">${esc(FI.tiers[c.tier].ko)}</span><div class="fe">${c.e}</div><div class="fn">${esc(c.n)}</div><div class="fk">${esc(c.k)}</div><div class="fc">+${c.v} 🪙</div>
+      <div class="fw">물고 온 단어 <b>${esc(c.w.word)}</b> ${esc(c.w.ko)} <button class="mini" data-fsay="1">🔊</button></div></div>` : ""}
+    ${msg ? `<div class="msg">${esc(msg)}</div>` : ""}`;
+  const fs = el.querySelector("[data-fsay]"); if (fs) fs.onclick = (e) => { e.stopPropagation(); playWord(c.w); };
+}
+function fishCtl() {
+  const el = $("#pondCtl"); if (!el) return;
+  let b;
+  if (FS.over) b = `<button class="fbtn" disabled>⏰ 낚시 끝</button>`;
+  else if (FS.mode === "wait") b = `<button class="fbtn" id="fAct">기다려요… 찌가 쏙 들어가면 눌러요</button>`;
+  else if (FS.mode === "bite") b = `<button class="fbtn hit" id="fAct">지금! 낚아채기! 🎣</button>`;
+  else if (FS.bait > 0) b = `<button class="fbtn go" id="fAct">🎣 던지기 <span style="font-weight:500;font-size:16px">(미끼 1개)</span></button>`;
+  else b = `<button class="fbtn" disabled>🪱 미끼가 없어요 · 문제를 맞혀 미끼를 얻어요</button>`;
+  const rod = FI.rods[FS.rod + 1], pd = FI.ponds[FS.pond + 1];
+  el.innerHTML = b + `<div class="shop">
+    ${rod ? `<button data-buy="rod" ${FS.coins < rod.cost || FS.over ? "disabled" : ""}>🎣 ${esc(rod.ko)} <b>${rod.cost}🪙</b><small>희귀한 물고기가 더 잘 물어요</small></button>` : `<button disabled>🎣 최고 낚싯대예요<small>${esc(FI.rods[FS.rod].ko)}</small></button>`}
+    ${pd ? `<button data-buy="pond" ${FS.coins < pd.cost || FS.over ? "disabled" : ""}>🧭 ${esc(pd.ko)}로 <b>${pd.cost}🪙</b><small>물고기 값 ×${pd.mult}</small></button>` : `<button disabled>🧭 마지막 낚시터예요<small>${esc(FI.ponds[FS.pond].ko)}</small></button>`}</div>`;
+  const a = $("#fAct"); if (a) a.onclick = fishTap;
+  el.querySelectorAll("[data-buy]").forEach((x) => x.onclick = () => buy(x.dataset.buy));
+}
+function fishTap() {
+  if (FS.over) return;
+  if (FS.mode === "idle" || FS.mode === "caught") {
+    if (FS.bait <= 0) { toast("미끼가 없어요. 문제를 맞혀 미끼를 얻어요 🪱"); return; }
+    FS.bait--; FS.mode = "wait"; FS.last = null; saveF(); sfx("cast");
+    const rod = FI.rods[FS.rod], wait = rod.wait[0] + Math.random() * (rod.wait[1] - rod.wait[0]);
+    clearTimeout(fTimer);
+    fTimer = setTimeout(() => {
+      if (FS.mode !== "wait") return;
+      FS.mode = "bite"; sfx("bite"); try { navigator.vibrate && navigator.vibrate(90); } catch (e) {}
+      pondDraw(); fishCtl();
+      fTimer = setTimeout(() => { if (FS.mode !== "bite") return; FS.mode = "idle"; sfx("miss"); pondDraw("놓쳤어요… 물고기가 도망갔어요 💨"); fishCtl(); }, rod.window);
+    }, wait);
+    pondDraw(); fishCtl(); fishHud(); return;
+  }
+  if (FS.mode === "wait") { toast("아직이에요! 찌가 쏙 들어가면 눌러요"); return; }
+  if (FS.mode === "bite") { clearTimeout(fTimer); catchFish(); }
+}
+function catchFish() {
+  const o = FI.rods[FS.rod].odds, sum = o.reduce((a, b) => a + b, 0); let r = Math.random() * sum, tier = 0;
+  for (let i = 0; i < o.length; i++) { r -= o[i]; if (r < 0) { tier = i; break; } }
+  const pd = FI.ponds[FS.pond], [n, k, e] = pd.fish[tier], v = Math.round(FI.tiers[tier].value * pd.mult);
+  /* 물고기가 오늘의 단어를 하나 물고 와요. 내가 틀렸던 단어가 더 자주 나와요 */
+  const W = V.topic.words, wrong = G ? G.qs.filter((q) => G.done[q.id] && G.done[q.id].tries > 1).map((q) => q.w) : [];
+  const wi = wrong.length && Math.random() < 0.5 ? wrong[Math.floor(Math.random() * wrong.length)] : Math.floor(Math.random() * W.length);
+  FS.coins += v; FS.earned += v; FS.caught++; FS.best = Math.max(FS.best, tier);
+  FS.mode = "caught"; FS.last = { tier, n, k, e, v, w: W[wi] }; saveF();
+  sfx(tier >= 3 ? "rare" : "catch");
+  sendFish(tier >= 3 ? { tier, pond: FS.pond } : null);
+  pondDraw(); fishCtl(); fishHud();
+}
+function buy(what) {
+  const it = what === "rod" ? FI.rods[FS.rod + 1] : FI.ponds[FS.pond + 1];
+  if (!it || FS.coins < it.cost || FS.over) return;
+  FS.coins -= it.cost; if (what === "rod") FS.rod++; else { FS.pond++; FS.last = null; FS.mode = FS.mode === "caught" ? "idle" : FS.mode; }
+  saveF(); sendFish(); sfx("catch");
+  toast(what === "rod" ? `${it.ko}를 샀어요! 희귀한 물고기가 더 잘 물어요` : `${it.ko}에 도착! 물고기 값이 ×${it.mult}`);
+  pondDraw(); fishCtl(); fishHud();
+}
+function fishMount() {
+  fishState(); game();
+  if (FS.mode !== "idle" && FS.mode !== "caught") FS.mode = "idle";
+  const l = fishLeft(); FS.over = l != null && l <= 0;
+  $("#pond").onclick = (e) => { if (!e.target.closest("button")) fishTap(); };
+  fishHud(); pondDraw(FS.earned ? "" : "🎣 던지기를 눌러 낚시를 시작해요!"); fishCtl(); renderQ();
+  /* 새로 열었거나 끊겼다 다시 들어온 경우, 내 코인을 선생님 화면에 다시 알려요 */
+  if (FS.earned > ((V.game || {}).earned || 0)) sendFish();
+}
+function rGame() {
+  return `<div id="fishRoot"><div class="fhud" id="fhud"></div>
+    <div class="fgrid"><div class="card pondCard"><div id="pond" class="pond"></div><div id="pondCtl"></div></div><div class="card" id="qbox"></div></div></div>`;
+}
 function rReview() {
-  const W = V.topic.words, gm = V.game || {}, top = gm.top || [], mine = (gm.mine || []).filter((i) => !top.includes(i));
-  return `<div class="card" style="text-align:center"><div class="dim">내 점수</div><div class="rank">${(gm.score || 0).toLocaleString()}점</div>
-      ${gm.rank ? `<div>우리 반 ${gm.of}명 중 <b>${gm.rank}등</b> · 한 번에 맞힌 문제 ${gm.ok}/${gm.n}</div>` : ""}</div>
+  const W = V.topic.words, gm = V.game || {}, top = gm.top || [], mine = (gm.mine || []).filter((i) => !top.includes(i)), tm = gm.team || {};
+  return `<div class="card" style="text-align:center"><div class="dim">내가 모은 코인</div><div class="rank">🪙 ${(gm.earned || 0).toLocaleString()}</div>
+      ${gm.rank ? `<div>우리 반 ${gm.of}명 중 <b>${gm.rank}등</b> · 물고기 ${gm.caught || 0}마리 · 한 번에 맞힌 문제 ${gm.ok}/${gm.n}</div>` : ""}
+      ${tm.rank ? `<div style="margin-top:6px;color:${V.team.color};font-weight:800">${esc(V.team.name)} ${tm.rank}등 (1인 평균 🪙 ${tm.avg.toLocaleString()})</div>` : ""}</div>
     <h2 style="margin-top:18px">우리 반이 많이 틀린 단어 ${top.length ? "TOP " + top.length : ""}</h2>
     ${top.length ? top.map((i) => wordCard(W[i], i, 0)).join("") : `<div class="card ok">우리 반 모두 거의 다 맞혔어요! 👏</div>`}
     ${mine.length ? `<h2>내가 틀린 단어도 한 번 더</h2>${mine.map((i) => wordCard(W[i], i, 0)).join("")}` : ""}
@@ -319,7 +504,7 @@ function rWords() {
   const W = V.topic.words;
   if (V.quiz === "open") return rGame();
   if (V.quiz === "results") return rReview();
-  return wordCard(W[V.wordIndex], V.wordIndex, W.length) + `<div class="card dim">선생님 화면과 같이 넘어가요. 다 보면 디벗으로 단어 게임을 해요! (뜻의 문 → 강세 달걀 → 듣고 고르기 → 철자 퍼즐 → 빈칸)</div>`;
+  return wordCard(W[V.wordIndex], V.wordIndex, W.length) + `<div class="card dim">선생님 화면과 같이 넘어가요. 다 보면 디벗으로 🎣 단어 낚시 대회를 해요! 문제를 맞히면 미끼를 얻고, 물고기를 낚아 코인을 모아요.</div>`;
 }
 function epHtml(e, i) {
   return `<div class="ep"><b>EP${i + 1} ${esc(e.title || "")}</b> <span class="dim">by ${esc(e.writer)}</span>
@@ -397,23 +582,27 @@ function rWatch() {
 function bind() {
   document.querySelectorAll("[data-say]").forEach((b) => b.onclick = () => playWord(V.topic.words[+b.dataset.say]));
   document.querySelectorAll("[data-sayex]").forEach((b) => b.onclick = () => playWord(V.topic.words[+b.dataset.sayex], true));
-  document.querySelectorAll("[data-ans]").forEach((b) => b.onclick = () => {
-    const q = G && G.qs.find((x) => x.id === G.cur); if (!q || G.fb) return;
-    if (String(b.dataset.ans) === String(q.answer)) { b.classList.add("yes"); gameRight(); } else { gameWrong(b); b.disabled = true; }
-  });
-  document.querySelectorAll("[data-tile]").forEach((b) => b.onclick = () => {
-    const q = G && G.qs.find((x) => x.id === G.cur); if (!q || G.fb) return;
-    const i = +b.dataset.tile, c = q.options[i];
-    if (c === q.answer[G.spell.length]) {
-      G.spell += c; G.used.push(i); b.disabled = true;
-      const sl = document.querySelectorAll(".slots span")[G.spell.length - 1]; if (sl) sl.textContent = c;
-      if (G.spell === q.answer) gameRight();
-    } else gameWrong(b);
-  });
+  bindAns(document);
   document.querySelectorAll("[data-rx]").forEach((b) => b.onclick = () => { if (V.watching) link.send("react", { team: V.watching.id, emoji: b.dataset.rx }); b.animate([{ transform: "scale(1.35)" }, { transform: "scale(1)" }], 250); });
   document.querySelectorAll("[data-vote]").forEach((b) => b.onclick = () => link.send("vote", { team: +b.dataset.vote }));
   document.querySelectorAll("[data-tv]").forEach((b) => b.onclick = () => link.send("teamVote", { story: b.dataset.tv }));
   if (V.phase === "write" && V.held && !V.write.done) bindWrite();
+}
+function bindAns(root) {
+  root.querySelectorAll("[data-say]").forEach((b) => b.onclick = () => playWord(V.topic.words[+b.dataset.say]));
+  root.querySelectorAll("[data-ans]").forEach((b) => b.onclick = () => {
+    const q = G && G.qs.find((x) => x.id === G.cur); if (!q || G.fb || (FS && FS.over)) return;
+    if (String(b.dataset.ans) === String(q.answer)) { b.classList.add("yes"); gameRight(); } else { gameWrong(b); b.disabled = true; }
+  });
+  root.querySelectorAll("[data-tile]").forEach((b) => b.onclick = () => {
+    const q = G && G.qs.find((x) => x.id === G.cur); if (!q || G.fb || (FS && FS.over)) return;
+    const i = +b.dataset.tile, c = q.options[i];
+    if (c === q.answer[G.spell.length]) {
+      G.spell += c; G.used.push(i); b.disabled = true;
+      const sl = root.querySelectorAll(".slots span")[G.spell.length - 1]; if (sl) sl.textContent = c;
+      if (G.spell === q.answer) gameRight();
+    } else gameWrong(b);
+  });
 }
 function collect() {
   const d = draft(), scenes = Array.from({ length: V.maxScenes }, (_, i) => ({ screen: d["screen" + i] || "", text: d["text" + i] || "", ko: d["ko" + i] || "" })).filter((s) => s.text.trim());

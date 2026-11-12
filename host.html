@@ -144,14 +144,18 @@ async function boot() {
   $("#mode").textContent = DEMO ? "시연 모드" : "수업 모드";
   $("#mode").className = "badge" + (DEMO ? " demo" : "");
   changed();
-  setInterval(() => { if (E.tick()) changed(); updateTimer(); }, 1000);
+  setInterval(() => {
+    if (E.tick()) changed();
+    if (E.S.phase === "words" && E.S.quiz === "open" && E.S.quizEndsAt && Date.now() >= E.S.quizEndsAt) act({ action: "quiz", state: "results" });
+    updateTimer();
+  }, 1000);
   if (DEMO) demoBar();
   addEventListener("pagehide", () => link.saveState(E.S, true));
   document.addEventListener("visibilitychange", () => { if (document.hidden) link.saveState(E.S, true); });
 }
 function onAction(pid, type, body) {
   const res = E.playerAction(pid, type, body);
-  changed();
+  changed(false, !!(res && res.slow));
   return res;
 }
 function act(b) {
@@ -161,16 +165,18 @@ function act(b) {
   if (b.action === "reset") E.hostAction({ action: "topic", topic: recommend(E.S.topicId).id });
   changed(E.S.phase !== before || b.action === "reset" || b.action === "quiz");
 }
-let pubTimer = null, renderPending = false;
-function changed(saveNow) {
+let pubTimer = null, pubSlow = false, renderPending = false;
+function changed(saveNow, slow) {
   link.saveState(E.S, saveNow === true);
-  if (!pubTimer) pubTimer = setTimeout(publish, 40); /* 40ms 안에 생긴 변화를 모아 한 번에 보냄 */
+  /* 40ms 안에 생긴 변화를 모아 한 번에 보냄. 낚시 코인처럼 자주 바뀌는 것은 1.2초에 한 번만 (Firebase 무료 사용량 아끼기) */
+  if (pubTimer && pubSlow && !slow) { clearTimeout(pubTimer); pubTimer = null; }
+  if (!pubTimer) { pubSlow = !!slow; pubTimer = setTimeout(publish, slow ? 1200 : 40); }
   if (!renderPending) { renderPending = true; requestAnimationFrame(() => { renderPending = false; render(); }); }
 }
 function publish() {
   pubTimer = null;
   const views = {};
-  const off = link.offset || 0, sv = (v) => { if (v.write && v.write.endsAt) v.write.endsAt += off; return v; };
+  const off = link.offset || 0, sv = (v) => { if (v.write && v.write.endsAt) v.write.endsAt += off; if (v.quizEnd) v.quizEnd += off; return v; };
   for (const pid of Object.keys(E.S.players)) views[pid] = sv(E.playerView(pid));
   link.publish(sv(E.playerView(null)), views);
 }
@@ -220,7 +226,9 @@ function recommend(notId) {
   let pool = all.filter((t) => !used[t.id] && t.id !== notId);
   if (!pool.length) pool = all.filter((t) => t.id !== notId).sort((a, b) => (used[a.id] || 0) - (used[b.id] || 0)).slice(0, 10);
   const season = pool.filter((t) => (t.months || []).includes(m)), free = pool.filter((t) => !(t.months || []).length);
-  const cand = season.length && Math.random() < 0.5 ? season : free.length ? free.concat(season) : pool;
+  /* 2026-11 학생 설문: 대중문화(영화·음악·만화·미디어)와 여행 주제를 가장 원했어요 → 먼저 자주 나오게 */
+  const liked = pool.filter((t) => /대중문화|여행|미디어|무대/.test(t.genre || "")), r = Math.random();
+  const cand = liked.length && r < 0.5 ? liked : season.length && r < 0.75 ? season : free.length ? free.concat(season) : pool;
   return cand[Math.floor(Math.random() * cand.length)] || all[0];
 }
 function rTopic() {
@@ -289,7 +297,7 @@ function topicListModal() {
   if ($("#clrUsed")) $("#clrUsed").onclick = (e) => { e.preventDefault(); store.del(USED_K); topicListModal(); };
 }
 
-/* ---------- 2 단어: 자동 카드 → 디벗 단어 게임 → 많이 틀린 단어 복습 ---------- */
+/* ---------- 2 단어: 자동 카드 → 디벗 단어 낚시 → 많이 틀린 단어 복습 ---------- */
 const reEsc = (x) => String(x).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const sylHtml = (w) => String(w.syl || w.word).split("-").map((p) => (/[A-Z]/.test(p) ? `<b class="st">${esc(p.toLowerCase())}</b>` : `<span>${esc(p)}</span>`)).join("<i>·</i>");
 let curAudio = null;
@@ -336,7 +344,7 @@ function rWords() {
   const T = E.topic(), W = T.words, w = W[V.wordIndex], teams = V.teams.filter((t) => t.members.length), nQ = V.questions;
   if (V.quiz === "closed") {
     $("#main").innerHTML = `
-    <div class="guide">"▶ 자동으로 넘기기"를 누르면 단어 → 단어 → 예문 순서로 컴퓨터가 읽어 주고 다음 단어로 넘어가요. 학생 디벗에도 같은 카드가 나와요. 다 보면 오른쪽의 단어 게임을 시작하세요.</div>
+    <div class="guide">"▶ 자동으로 넘기기"를 누르면 단어 → 단어 → 예문 순서로 컴퓨터가 읽어 주고 다음 단어로 넘어가요. 학생 디벗에도 같은 카드가 나와요. 다 보면 오른쪽의 단어 낚시를 시작하세요.</div>
     <div class="row">
       <div class="card" style="flex:1.5;min-width:600px">
         ${bigCard(w, V.wordIndex, W.length)}
@@ -348,11 +356,12 @@ function rWords() {
         <div class="dim" style="margin-top:8px;font-size:15px">← → 키로 넘기기 · 스페이스 = 발음</div>
       </div>
       <div class="card" style="flex:1;min-width:360px">
-        <h2>디벗 단어 게임 (${nQ}문제)</h2>
-        <div class="gsteps">${[["🚪", "뜻의 문", "알맞은 뜻의 문 열기"], ["🥚", "강세 달걀", "세게 읽는 부분 고르기"], ["🎧", "듣고 고르기", "소리 듣고 단어 고르기"], ["🧩", "철자 퍼즐", "글자 순서 맞히기"], ["✏️", "빈칸 채우기", "예문 빈칸 채우기"]].map(([e, a, b], i) => `<div><span>${e}</span><b>${i + 1}. ${a}</b> <span class="dim">${b}</span></div>`).join("")}</div>
-        <p class="dim">틀리면 맞힐 때까지 다시 해요. 한 번에 맞히고, 빠르고, 연속으로 맞히면 점수가 올라가요. 모둠 정답률에 따라 영상 아이템을 받아요.</p>
+        <h2>🎣 디벗 단어 낚시 대회</h2>
+        <div class="gsteps">${[["❓", "단어 문제 맞히기", "맞히면 미끼 🪱 (한 번에 맞히면 2개)"], ["🎣", "낚싯대 던지기", "찌가 쏙 들어가면 눌러서 낚아요"], ["🪙", "코인 모으기", "희귀한 물고기일수록 코인이 많아요"], ["🛒", "업그레이드", "좋은 낚싯대, 새 낚시터를 사요"], ["🏆", "모둠 대결", "모둠 1인 평균 코인으로 순위"]].map(([e, a, b]) => `<div><span>${e}</span><b>${a}</b> <span class="dim">${b}</span></div>`).join("")}</div>
+        <p class="dim">문제는 뜻의 문, 강세 달걀, 듣고 고르기, 철자 퍼즐, 빈칸 채우기 ${nQ}개가 돌아가며 나와요. 틀려도 잃는 건 없어요. 한 번에 맞힌 비율(모둠 정답률)로 영상 아이템을 받아요.</p>
         ${V.items.map((it) => `<div class="item">${esc(it.name)} · 정답률 ${Math.round(it.min * 100)}% 이상</div>`).join("")}
-        <button class="primary" id="qOpen" style="font-size:22px;padding:16px 22px;margin-top:14px;width:100%">단어 게임 시작 ▶</button>
+        <div style="display:flex;gap:10px;align-items:center;margin-top:14px;font-size:18px">낚시 시간 <select id="qMin" style="font-size:18px">${[5, 7, 10].map((m) => `<option value="${m}" ${m === 7 ? "selected" : ""}>${m}분</option>`).join("")}</select></div>
+        <button class="primary" id="qOpen" style="font-size:22px;padding:16px 22px;margin-top:10px;width:100%">단어 낚시 시작 ▶</button>
       </div>
     </div>`;
     autoBtn();
@@ -362,26 +371,31 @@ function rWords() {
     $("#say").onclick = () => say(w.word);
     $("#sayEx").onclick = () => say(w.word, true);
     document.querySelectorAll("[data-wi]").forEach((b) => b.onclick = () => { stopAuto(); act({ action: "word", i: +b.dataset.wi }); });
-    $("#qOpen").onclick = () => { stopAuto(); act({ action: "quiz", state: "open" }); };
+    $("#qOpen").onclick = () => { stopAuto(); act({ action: "quiz", state: "open", min: +$("#qMin").value || 7 }); };
     return;
   }
-  const ps = Object.values(E.S.players), fin = ps.filter((p) => Object.keys(p.answers || {}).length >= nQ).length;
-  const ranked = teams.slice().sort((a, b) => b.quiz.avg - a.quiz.avg), maxAvg = Math.max(1, ...ranked.map((t) => t.quiz.avg));
-  const top5 = ps.map((p) => ({ name: p.name, team: p.team, sc: RSLEngine.score(Object.values(p.answers || {})) })).filter((x) => x.sc.n).sort((a, b) => b.sc.score - a.sc.score).slice(0, 5);
+  const ps = Object.values(E.S.players), FI = RSLEngine.FISH;
+  const ranked = teams.slice().sort((a, b) => b.fish.avg - a.fish.avg || b.fish.earned - a.fish.earned), maxAvg = Math.max(1, ...ranked.map((t) => t.fish.avg));
+  const top5 = ps.map((p) => ({ name: p.name, team: p.team, f: p.fish || {} })).filter((x) => x.f.earned).sort((a, b) => b.f.earned - a.f.earned).slice(0, 5);
+  const fishName = (e) => { const pd = FI.ponds[e.pond] || FI.ponds[0], f = pd.fish[e.tier] || pd.fish[0]; return `${f[2]} ${f[0]}`; };
   const board = `<div class="card" style="flex:1.3;min-width:560px">
-      <h2>${V.quiz === "open" ? "모둠 순위 (실시간)" : "모둠 결과 · 영상 아이템"}</h2>
+      <h2>${V.quiz === "open" ? "🎣 모둠 순위 (실시간)" : "🏆 낚시 대회 최종 순위 · 영상 아이템"}</h2>
       ${ranked.map((t, i) => `<div style="margin:12px 0;--c:${t.color}">
-        <div style="display:flex;justify-content:space-between;align-items:baseline;font-size:20px"><b style="color:${t.color}">${i + 1}. ${esc(t.name)}</b><span><b style="font-variant-numeric:tabular-nums">${t.quiz.avg.toLocaleString()}</b>점 <span class="dim" style="font-size:15px">(1인 평균) · 정답률 ${t.quiz.acc}%</span></span></div>
-        <div class="bar" style="height:18px"><i style="width:${Math.round((100 * t.quiz.avg) / maxAvg)}%"></i></div>
-        <div style="margin-top:4px">${V.items.map((it) => `<span class="item ${t.quiz.items.includes(it.id) ? "got" : ""}" style="font-size:14px">${esc(it.name)} ${Math.round(it.min * 100)}%</span>`).join("")}</div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;font-size:22px"><b style="color:${t.color}">${["🥇", "🥈", "🥉"][i] || i + 1 + "."} ${esc(t.name)}</b><span>🪙 <b style="font-variant-numeric:tabular-nums">${t.fish.avg.toLocaleString()}</b> <span class="dim" style="font-size:15px">(1인 평균) · 모둠 합계 ${t.fish.earned.toLocaleString()} · 물고기 ${t.fish.caught}마리</span></span></div>
+        <div class="bar" style="height:18px"><i style="width:${Math.round((100 * t.fish.avg) / maxAvg)}%"></i></div>
+        <div style="margin-top:4px">${V.items.map((it) => `<span class="item ${t.quiz.items.includes(it.id) ? "got" : ""}" style="font-size:14px">${esc(it.name)} ${Math.round(it.min * 100)}%</span>`).join("")} <span class="dim" style="font-size:14px">정답률 ${t.quiz.acc}%</span></div>
       </div>`).join("") || '<div class="dim">아직 입장한 모둠이 없어요</div>'}</div>`;
+  const feed = (V.feed || []).slice(-4).reverse();
   const side = `<div class="card" style="flex:1;min-width:340px">
-      <div style="font-size:22px">다 푼 학생 <b>${fin}</b> / ${ps.length}</div><div class="bar" style="margin:8px 0 16px"><i style="width:${ps.length ? Math.round((100 * fin) / ps.length) : 0}%"></i></div>
-      <h2 style="font-size:22px">개인 TOP 5</h2>${top5.map((x, i) => `<div style="font-size:19px;margin:6px 0">${["🥇", "🥈", "🥉", "4.", "5."][i]} <b>${esc(x.name)}</b> <span class="dim">${x.sc.score.toLocaleString()}점 · 최고 ${x.sc.best}연속</span></div>`).join("") || '<div class="dim">아직 푼 학생이 없어요</div>'}
-      ${V.quiz === "open" ? `<button class="primary" id="qRes" style="font-size:20px;margin-top:18px;width:100%">게임 끝내기 → 많이 틀린 단어 복습</button>` : `<button id="qAgain" style="margin-top:18px">게임 다시 열기</button>`}</div>`;
+      ${V.quiz === "open" && E.S.quizEndsAt ? `<div style="display:flex;align-items:center;gap:12px"><span style="font-size:20px">남은 시간</span><span id="fishTimer" class="timer" style="font-size:44px;font-weight:800;font-variant-numeric:tabular-nums"></span><button id="qMore">+1분</button></div>` : ""}
+      ${feed.length ? `<div style="margin:10px 0 14px">${feed.map((e) => `<div style="font-size:18px;padding:6px 10px;margin:4px 0;background:${e.tier >= 4 ? "#FFF3C4" : "var(--tint)"}">🎉 <b>${esc(e.name)}</b> <span class="dim">(${esc((V.teams[e.team] || {}).name || "")})</span> → <b>${fishName(e)}</b> ${e.tier >= 4 ? "<b style='color:var(--red)'>전설!</b>" : ""}</div>`).join("")}</div>` : ""}
+      <h2 style="font-size:22px">낚시왕 TOP 5</h2>${top5.map((x, i) => `<div style="font-size:19px;margin:6px 0">${["🥇", "🥈", "🥉", "4.", "5."][i]} <b>${esc(x.name)}</b> <span class="dim">🪙 ${x.f.earned.toLocaleString()} · ${x.f.caught}마리</span></div>`).join("") || '<div class="dim">아직 물고기를 낚은 학생이 없어요</div>'}
+      ${V.quiz === "open" ? `<button class="primary" id="qRes" style="font-size:20px;margin-top:18px;width:100%">낚시 끝내기 → 많이 틀린 단어 복습</button>` : `<button id="qAgain" style="margin-top:18px">낚시 3분 더 하기</button>`}</div>`;
   if (V.quiz === "open") {
-    $("#main").innerHTML = `<div class="guide">학생들이 디벗으로 단어 게임을 해요 (약 3~4분). 거의 다 풀면 "게임 끝내기"를 누르세요.</div><div class="row">${board}${side}</div>`;
+    $("#main").innerHTML = `<div class="guide">학생들이 디벗으로 문제를 풀어 미끼를 얻고, 물고기를 낚아 코인을 모아요. 시간이 끝나면 자동으로 복습 화면으로 넘어가요.</div><div class="row">${board}${side}</div>`;
     $("#qRes").onclick = () => act({ action: "quiz", state: "results" });
+    if ($("#qMore")) $("#qMore").onclick = () => act({ action: "quizTime", sec: 60 });
+    updateTimer();
     return;
   }
   const top = V.missed.slice(0, 3);
@@ -394,12 +408,14 @@ function rWords() {
     <div style="margin-top:16px"><button class="primary" id="goWrite" style="font-size:22px;padding:14px 22px">3 릴레이 소설로 →</button></div>`;
   document.querySelectorAll("[data-sw]").forEach((b) => b.onclick = () => say(W[+b.dataset.sw].word));
   document.querySelectorAll("[data-se]").forEach((b) => b.onclick = () => say(W[+b.dataset.se].word, true));
-  if ($("#qAgain")) $("#qAgain").onclick = () => act({ action: "quiz", state: "open" });
+  if ($("#qAgain")) $("#qAgain").onclick = () => act({ action: "quiz", state: "open", min: 3 });
   $("#goWrite").onclick = () => act({ action: "phase", phase: "write" });
 }
 
 function fmt(sec) { sec = Math.max(0, sec | 0); return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`; }
 function updateTimer() {
+  const fq = $("#fishTimer");
+  if (fq && E.S.quizEndsAt) { const l = Math.round((E.S.quizEndsAt - Date.now()) / 1000); fq.textContent = fmt(l); fq.classList.toggle("low", l <= 30); }
   const el = $("#timer"); if (!el || !E) return;
   const w = E.S.write;
   if (w.closingAt) { el.textContent = "저장 중…"; el.classList.add("low"); return; }
@@ -578,7 +594,7 @@ function rAwards() {
       <div class="award">👏 인기상 (친구들 반응): <b>${esc(aud.name)}</b></div>
       <h2 style="margin-top:22px">오늘의 수업 기록 <span class="dim" style="font-size:16px">학급 스티커 판단에 참고하세요</span></h2>
       <div class="report">
-        <div>참여 학생<b>${R.players}명</b></div><div>단어 게임 참여 · 한 번에 맞힌 비율<b>${R.quizzed}명 · ${R.quizAcc}%</b></div>
+        <div>참여 학생<b>${R.players}명</b></div><div>단어 낚시 참여 · 한 번에 맞힌 비율<b>${R.quizzed}명 · ${R.quizAcc}%</b></div>
         <div>함께 쓴 이야기<b>${R.stories}편</b></div><div>쓴 화 · 문장<b>${R.episodes}화 · ${R.sentences}문장</b></div>
         <div>미션 단어 사용<b>${R.missionUsed} / ${R.missionTotal}</b></div><div>보낸 반응<b>${R.reactions}개</b></div>
       </div>
@@ -643,7 +659,7 @@ async function topicModal() {
 function demoBar() {
   const bar = $("#demoBar"); bar.hidden = false;
   const bots = ["Tiger", "Cookie", "Rocket", "Mango", "Pixel", "Bubble", "Nova", "Panda", "Comet", "Kiwi", "Lemon", "Otter"];
-  bar.innerHTML = `<button id="dJoin">가상 학생 8명 입장</button><button id="dQuiz">단어 게임 자동 풀기</button><button id="dWrite">이번 라운드 자동 쓰기</button><button id="dVote">대표작·투표 자동</button>`;
+  bar.innerHTML = `<button id="dJoin">가상 학생 8명 입장</button><button id="dQuiz">단어 낚시 자동 하기</button><button id="dWrite">이번 라운드 자동 쓰기</button><button id="dVote">대표작·투표 자동</button>`;
   $("#dJoin").onclick = () => { bots.slice(0, 8).forEach((n, i) => E.playerAction("bot" + i, "join", { name: n, team: i % Math.min(4, E.S.teams.length) })); changed(); };
   $("#dQuiz").onclick = () => {
     if (E.S.phase !== "words") E.hostAction({ action: "phase", phase: "words" });
@@ -652,6 +668,8 @@ function demoBar() {
     for (const p of Object.values(E.S.players)) if (p.id.startsWith("bot")) {
       const skill = 0.55 + (p.team % 3) * 0.17;
       for (const q of qs) if (!p.answers[q.id]) E.playerAction(p.id, "answer", { qid: q.id, tries: Math.random() < skill ? 1 : 2 + Math.floor(Math.random() * 2), ms: 1500 + Math.random() * 7000 });
+      const f = p.fish || {}, more = Math.round(40 + Math.random() * 160 * skill), rare = Math.random() < 0.25;
+      E.playerAction(p.id, "fish", { earned: (f.earned || 0) + more, caught: (f.caught || 0) + Math.round(more / 9), best: rare ? 3 : 2, rod: 1, pond: 0, coins: more, rare: rare ? { tier: Math.random() < 0.2 ? 4 : 3, pond: 0 } : null });
     }
     changed();
   };

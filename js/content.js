@@ -1,4 +1,4 @@
-/* Relay Story Live · 수업 내용 (주제 30개, 단어, 글쓰기 힌트, 반전 카드, 금지어)
+/* Relay Story Live · 수업 내용 (주제 36개, 단어, 글쓰기 힌트, 반전 카드, 금지어)
    단어는 모두 2022 개정 영어과 교육과정 [별책14] 기본 어휘 목록의 ** 표시(중학교 권장) 단어입니다.
    선생님은 아무것도 만들 필요가 없어요. 교사 화면이 아직 안 한 주제를 계절에 맞춰 자동으로 골라 줍니다.
 
@@ -344,7 +344,7 @@ window.RSL_CONTENT = (function () {
         W("cheer", "응원하다, 환호하다", "동사", "🙌", "CHEER", "Everyone cheered for our team.", "모두가 우리 팀을 응원했다.", "치어 → 치어리더 = 응원하는 사람")],
       extra: X("sports day=체육대회|relay=이어달리기|ball=공|goal=골|team=팀|win=이기다|lose=지다|medal=메달") }),
 
-    T({ id: "tourist", title: "Helping a Lost Tourist", ko: "길 잃은 관광객 돕기", genre: "소통",
+    T({ id: "tourist", title: "Helping a Lost Tourist", ko: "길 잃은 관광객 돕기", genre: "여행·소통",
       seed: "After school, you meet a tourist named Emma. She is lost, and she only speaks English.",
       seedKo: "방과 후 엠마라는 관광객을 만났어요. 길을 잃었는데 영어만 할 줄 알아요.",
       characters: withChars({ Emma: { gender: "f", look: "a tourist girl with a red backpack", color: "#ff9b9b" } }),
@@ -409,6 +409,85 @@ window.RSL_CONTENT = (function () {
         W("tide", "조수(밀물과 썰물)", "명사", "🌊", "TIDE", "The tide came in quickly.", "밀물이 빠르게 밀려왔다.", "타이드 → 시간(time)처럼 매일 오가는 밀물과 썰물"),
         W("shore", "해안, 물가", "명사", "🏖️", "SHORE", "We swam back to the shore.", "우리는 헤엄쳐서 해안으로 돌아왔다.", "쇼어 → seashore = 바다가 끝나는 해안")],
       extra: X("sea=바다|fish=물고기|turtle=거북|swim=수영하다|crown=왕관|queen=여왕|bubble=거품|deep=깊은") }),
+
+    /* ---- 2026-11 학생 설문 반영: 대중문화·여행 주제 ---- */
+    T({ id: "airport", title: "The Suitcase Mix-up", ko: "공항에서 바뀐 가방", genre: "여행",
+      seed: "At the airport, Mina picks up the wrong suitcase. Inside, there is a strange map and a note.",
+      seedKo: "공항에서 미나가 다른 사람 가방을 들고 왔어요. 안에는 이상한 지도와 쪽지가 들어 있어요.",
+      screens: ["Mina and Jun wait at the airport.", "A plane takes off from the airport.", "Mina opens the strange bag in her room.", "Mina and Jun walk on the street in a foreign town."],
+      words: [
+        W("airport", "공항", "명사", "🛫", "AIR-port", "We arrived at the airport early.", "우리는 공항에 일찍 도착했다.", "에어포트 → 에어(air, 하늘) + 포트(port, 항구) = 하늘의 항구"),
+        W("flight", "비행, 항공편", "명사", "✈️", "FLIGHT", "Our flight leaves at nine.", "우리 비행기는 9시에 떠난다.", "플라이트 → fly(날다)에서 나온 말 = 비행"),
+        W("gate", "탑승구, 문", "명사", "🚪", "GATE", "Please go to gate seven now.", "지금 7번 탑승구로 가 주세요.", "게이트 → 공항 '게이트' = 비행기 타는 문"),
+        W("delay", "지연시키다; 지연", "동사·명사", "⏰", "de-LAY", "The flight was delayed for two hours.", "비행기가 두 시간 늦어졌다.", "딜레이 → 게임 '딜레이' = 늦어짐"),
+        W("announce", "알리다, 방송하다", "동사", "📢", "an-NOUNCE", "A voice announced a gate change.", "안내 방송이 탑승구 변경을 알렸다.", "어나운스 → 아나운서(announcer) = 알리는 사람"),
+        W("label", "꼬리표, 이름표", "명사", "🏷️", "LA-bel", "The label on the bag had a strange name.", "가방 꼬리표에 이상한 이름이 적혀 있었다.", "라벨 → 옷에 붙은 라벨 = 이름표")],
+      extra: X("passport=여권|suitcase=여행 가방|ticket=표|plane=비행기|pilot=조종사|travel=여행하다|lost=잃어버린|seat=좌석") }),
+
+    T({ id: "market", title: "The Magic Night Market", ko: "마법 야시장", genre: "여행·음식",
+      seed: "On a trip abroad, your class visits a night market. Every snack you eat gives you a strange power!",
+      seedKo: "해외 여행 중에 우리 반이 야시장에 갔어요. 그런데 간식을 먹을 때마다 이상한 능력이 생겨요!",
+      screens: ["Mina and Jun walk on the street at night.", "A man stands at the counter of a food shop.", "Jun eats a snack in the park.", "Mina flies over the town at night."],
+      words: [
+        W("local", "그 지역의, 현지의", "형용사", "📍", "LO-cal", "We tried a local snack.", "우리는 현지 간식을 먹어 봤다.", "로컬 → 로컬 푸드 = 그 지역에서 난 음식"),
+        W("snack", "간식", "명사", "🍡", "SNACK", "This snack is very popular here.", "이 간식은 여기서 아주 인기가 많다.", "스낵 → 스낵 코너 = 간식 파는 곳"),
+        W("menu", "메뉴, 차림표", "명사", "📜", "MEN-u", "The menu was in English and Thai.", "메뉴판은 영어와 태국어로 쓰여 있었다.", "메뉴 → 그대로! 강세는 앞 MEN"),
+        W("order", "주문하다; 주문", "동사·명사", "🛎️", "OR-der", "Jun ordered two bowls of noodles.", "준은 국수 두 그릇을 주문했다.", "오더 → '주문 오더 들어갑니다!'"),
+        W("sour", "신, 시큼한", "형용사", "🍋", "SOUR", "The fruit was very sour.", "그 과일은 아주 시었다.", "사워 → 사워 캔디 = 시큼한 사탕"),
+        W("sample", "시식, 견본", "명사", "🥢", "SAM-ple", "The man gave us a free sample.", "아저씨가 공짜로 맛보기를 줬다.", "샘플 → 화장품 샘플 = 맛보기")],
+      extra: X("market=시장|noodle=국수|spicy=매운|delicious=맛있는|taste=맛보다|price=가격|night=밤|power=힘") }),
+
+    T({ id: "movie", title: "Inside the Movie", ko: "영화 속으로", genre: "대중문화·영화",
+      seed: "At the cinema, Mina and Jun get pulled into the movie. They must finish the story to get out!",
+      seedKo: "영화관에서 미나와 준이 영화 속으로 빨려 들어가요. 이야기를 끝내야 밖으로 나올 수 있어요!",
+      screens: ["Mina and Jun sit in the cinema with popcorn.", "Mina and Jun fall into the movie screen.", "A hero runs on the street at night.", "Mina and Jun come back to their seats in the cinema."],
+      words: [
+        W("cinema", "영화관", "명사", "🎬", "CIN-e-ma", "We watched a movie at the cinema.", "우리는 영화관에서 영화를 봤다.", "시네마 → 'OO 시네마' 간판 = 영화관"),
+        W("scene", "장면", "명사", "🎞️", "SCENE", "This is my favorite scene.", "이게 내가 제일 좋아하는 장면이야.", "씬 → 명장면 = '명씬'"),
+        W("character", "등장인물, 캐릭터", "명사", "🦸", "CHAR-ac-ter", "Jun became a character in the movie.", "준은 영화 속 등장인물이 되었다.", "캐릭터 → 게임 캐릭터 = 등장인물"),
+        W("role", "역할, 배역", "명사", "🎭", "ROLE", "Mina got the role of the hero.", "미나는 주인공 역할을 맡았다.", "롤 → 롤플레잉(role-playing) = 역할 놀이"),
+        W("comedy", "코미디, 희극", "명사", "😂", "COM-e-dy", "It was a comedy, so everyone laughed.", "코미디라서 모두 웃었다.", "코미디 → 개그 코미디 = 웃기는 이야기"),
+        W("title", "제목", "명사", "🔤", "TI-tle", "The title of the movie was Run.", "영화 제목은 '달려'였다.", "타이틀 → 타이틀곡 = 앨범의 대표 제목 곡")],
+      extra: X("movie=영화|actor=배우|hero=주인공, 영웅|popcorn=팝콘|camera=카메라|ending=결말|exit=출구|screen=화면") }),
+
+    T({ id: "kpop", title: "K-pop Concert Rescue", ko: "케이팝 콘서트 구출 작전", genre: "대중문화·음악",
+      seed: "Your favorite K-pop group comes to your town. But one hour before the show, the leader goes missing!",
+      seedKo: "제일 좋아하는 케이팝 그룹이 우리 동네에 와요. 그런데 공연 한 시간 전에 리더가 사라졌어요!",
+      screens: ["Many fans wait in front of the concert stage.", "The singers practice a dance on the stage.", "Mina and Jun run down the stairs.", "The crowd cheers at the concert."],
+      words: [
+        W("award", "상", "명사", "🏆", "a-WARD", "The group won a big award.", "그 그룹은 큰 상을 받았다.", "어워드 → 'OO 어워즈' 시상식 = 상"),
+        W("release", "(곡을) 발표하다", "동사", "💿", "re-LEASE", "They released a new song today.", "그들은 오늘 새 노래를 발표했다.", "릴리스 → 신곡 '릴리즈' = 세상에 내놓다"),
+        W("fashion", "패션, 유행", "명사", "👗", "FASH-ion", "Mina loves K-pop fashion.", "미나는 케이팝 패션을 정말 좋아한다.", "패션 → 패션쇼, 그대로!"),
+        W("fantastic", "환상적인, 멋진", "형용사", "✨", "fan-TAS-tic", "The show was fantastic!", "공연은 환상적이었어!", "판타스틱 → 판타지(fantasy)처럼 멋진"),
+        W("entertain", "즐겁게 하다", "동사", "🎤", "en-ter-TAIN", "The singers entertained the crowd.", "가수들이 관중을 즐겁게 했다.", "엔터테인 → 엔터테인먼트 회사 = 즐거움을 주는 회사"),
+        W("shout", "외치다", "동사", "📣", "SHOUT", "The fans shouted the leader's name.", "팬들이 리더의 이름을 외쳤다.", "샤우트 → 노래방 '샤우팅' = 크게 외치기")],
+      extra: X("K-pop=케이팝|idol=아이돌|fan=팬|dance=춤추다|singer=가수|leader=리더|voice=목소리|ticket=표") }),
+
+    T({ id: "webtoon", title: "My Webtoon Came to Life", ko: "웹툰 캐릭터가 튀어나왔다", genre: "대중문화·만화",
+      seed: "Jun draws a webtoon on his tablet. One night, his tiny hero jumps out of the screen!",
+      seedKo: "준이 태블릿으로 웹툰을 그려요. 어느 날 밤, 웹툰 속 작은 주인공이 화면 밖으로 튀어나와요!",
+      screens: ["Jun draws a webtoon in his bedroom.", "A tiny hero stands on the desk in the bedroom.", "The tiny hero runs on the desk in the classroom.", "Mina and Jun look for the hero in the park."],
+      words: [
+        W("create", "만들다, 창작하다", "동사", "🎨", "cre-ATE", "Jun created a new character.", "준은 새 캐릭터를 만들었다.", "크리에이트 → 크리에이터 = 만드는 사람"),
+        W("series", "시리즈, 연재물", "명사", "📚", "SE-ries", "His webtoon series has ten parts.", "그의 웹툰 시리즈는 10화까지 있다.", "시리즈 → 영화 시리즈 = 이어지는 이야기"),
+        W("click", "클릭하다, 누르다", "동사", "🖱️", "CLICK", "Mina clicked the next button.", "미나는 다음 버튼을 눌렀다.", "클릭 → 마우스 딸깍 = 누르기"),
+        W("frame", "칸, 틀", "명사", "🖼️", "FRAME", "The hero jumped out of the last frame.", "주인공이 마지막 칸에서 뛰쳐나왔다.", "프레임 → 사진 액자 프레임 = 틀"),
+        W("copy", "따라 하다, 복사하다", "동사", "📄", "COP-y", "The hero copied everything Jun did.", "주인공은 준이 하는 걸 다 따라 했다.", "카피 → 복사기 '카피' = 똑같이 만들기"),
+        W("tiny", "아주 작은", "형용사", "🐜", "TI-ny", "A tiny hero stood on the desk.", "아주 작은 주인공이 책상 위에 서 있었다.", "타이니 → '타이니 하우스' = 아주 작은 집")],
+      extra: X("webtoon=웹툰|draw=그리다|tablet=태블릿|hero=주인공, 영웅|cartoon=만화|artist=작가, 화가|pen=펜|screen=화면") }),
+
+    T({ id: "hotel", title: "The Thirteenth Floor", ko: "호텔 13층의 비밀", genre: "여행·미스터리",
+      seed: "On a family trip abroad, you stay at an old hotel. At midnight, the lift stops on a floor that is not on the map.",
+      seedKo: "가족 해외 여행 중에 오래된 호텔에 묵어요. 한밤중에 엘리베이터가 안내도에 없는 층에서 멈춰요.",
+      screens: ["Mina and Jun stand at the hotel entrance.", "Mina looks at the sea from the hotel rooftop.", "The lift opens on a dark hallway.", "Mina and Jun run up the stairs."],
+      words: [
+        W("hotel", "호텔", "명사", "🏨", "ho-TEL", "Our hotel is next to the sea.", "우리 호텔은 바다 옆에 있다.", "호텔 → 그대로! 다만 강세는 뒤 TEL"),
+        W("reserve", "예약하다", "동사", "📅", "re-SERVE", "Mom reserved a room for three nights.", "엄마는 3박으로 방을 예약했다.", "리저브 → 식당 'Reserved' 팻말 = 예약석"),
+        W("guest", "손님, 투숙객", "명사", "🛎️", "GUEST", "A strange guest stood in the hallway.", "이상한 손님이 복도에 서 있었다.", "게스트 → 게스트하우스 = 손님 집"),
+        W("view", "경치, 전망", "명사", "🌄", "VIEW", "The view from our window was amazing.", "창문 밖 경치가 멋졌다.", "뷰 → 오션 뷰 = 바다 전망"),
+        W("schedule", "일정", "명사", "🗓️", "SCHED-ule", "Our schedule was full of fun trips.", "우리 일정은 재미있는 여행으로 가득했다.", "스케줄 → 연예인 스케줄 = 일정"),
+        W("lift", "엘리베이터; 들어 올리다", "명사·동사", "🛗", "LIFT", "The lift stopped on the thirteenth floor.", "엘리베이터가 13층에서 멈췄다.", "리프트 → 스키장 리프트 = 위로 올려 주는 것")],
+      extra: X("trip=여행|room=방|key=열쇠|elevator=엘리베이터|floor=층|ghost=유령|map=지도|midnight=한밤중") }),
   ];
 
   /* ---------- 글쓰기 힌트 ---------- */
