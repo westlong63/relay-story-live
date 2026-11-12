@@ -69,9 +69,9 @@
       }
       return map;
     },
-    speak(text, spec, isCancelled) {
+    speak(text, spec, isCancelled, fast) {
       const est = 900 + text.length * 80;
-      if (!spec || !spec.voice || !("speechSynthesis" in global)) return sleep(1400 + text.length * 55);
+      if (!spec || !spec.voice || !("speechSynthesis" in global)) return sleep((1400 + text.length * 55) * (fast ? 0.7 : 1));
       return new Promise((res) => {
         let done = false;
         const fin = () => { if (!done) { done = true; clearTimeout(t); clearInterval(iv); res(); } };
@@ -124,24 +124,28 @@
     if (cur.length) lines.push(cur);
     return lines;
   }
-  function drawSubtitle(g, speaker, text, words, color) {
-    g.font = `700 38px ${FONT}`;
+  function drawSubtitle(g, speaker, text, words, color, ko) {
+    const ef = ko ? 34 : 38;
+    g.font = `700 ${ef}px ${FONT}`;
     const pats = (words || []).map((w) => new RegExp("^" + escRe(w) + "\\w*$", "i"));
     const tokens = text.split(/\s+/).filter(Boolean).map((t) => { const m = t.match(/^(.*?)([^\w']*)$/); return { t, core: m[1], tail: m[2], hit: pats.some((p) => p.test(m[1].replace(/^[^\w]+/, ""))) }; });
-    const lines = wrap(g, tokens, 1040), lh = 52, boxH = 30 + lh * lines.length, y0 = CH - 34 - boxH;
+    const lines = wrap(g, tokens, 1040), lh = ko ? 47 : 52;
+    let kl = [];
+    if (ko) { g.font = `600 29px ${FONT}`; kl = wrap(g, ko.split(/\s+/).filter(Boolean).map((t) => ({ t })), 1040).slice(0, 2); }
+    const kh = kl.length ? 14 + 40 * kl.length : 0, boxH = 30 + lh * lines.length + kh, y0 = CH - 34 - boxH;
     g.fillStyle = "rgba(14,12,30,0.80)"; rr(g, 90, y0, CW - 180, boxH, 22); g.fill();
     if (speaker && speaker !== "Narrator") {
       g.font = `800 28px ${FONT}`;
       const tw = g.measureText(speaker).width;
       g.fillStyle = color || "#ffffff"; rr(g, 120, y0 - 26, tw + 36, 42, 16); g.fill();
       g.fillStyle = "#141224"; g.fillText(speaker, 138, y0 + 4);
-      g.font = `700 38px ${FONT}`;
+      g.font = `700 ${ef}px ${FONT}`;
     }
     const sp = g.measureText(" ").width;
     lines.forEach((ln, i) => {
       const full = ln.map((t) => t.t).join(" ");
       let x = (CW - g.measureText(full).width) / 2;
-      const y = y0 + 15 + 38 + i * lh;
+      const y = y0 + 15 + ef + i * lh;
       for (const t of ln) {
         if (t.hit && t.core) {
           const pre = t.core.match(/^[^\w]*/)[0], core = t.core.slice(pre.length);
@@ -153,6 +157,12 @@
         x += g.measureText(t.t).width + sp;
       }
     });
+    if (kl.length) {
+      g.font = `600 29px ${FONT}`; g.fillStyle = "#cfe0ff";
+      const yk = y0 + 15 + lh * lines.length + 8;
+      g.fillRect(CW / 2 - 40, yk - 6, 80, 2);
+      kl.forEach((ln, i) => { const t = ln.map((x) => x.t).join(" "); g.fillText(t, (CW - g.measureText(t).width) / 2, yk + 32 + i * 40); });
+    }
   }
   function drawCard(g, bg, rows, t) {
     g.drawImage(bg, 0, 0, CW, CH);
@@ -224,7 +234,7 @@
   class Theater {
     constructor(canvas, opts) {
       this.c = canvas; this.c.width = CW; this.c.height = CH; this.g = canvas.getContext("2d");
-      this.opts = opts || {}; this.playing = false; this.voiceOn = true; this.musicOn = true; this.token = 0;
+      this.opts = opts || {}; this.playing = false; this.voiceOn = true; this.musicOn = true; this.koOn = true; this.fast = false; this.token = 0;
       this.state = null; this.drawLoop = this.drawLoop.bind(this);
     }
     poster(prep) {
@@ -252,20 +262,22 @@
         this.state = { shot: s, t0: performance.now(), line: null };
         if (this.opts.onShot) this.opts.onShot(k, prep.shots.length);
         if (s.kind === "scene") {
-          await sleep(500);
-          for (const [sp, text, spoken] of s.lines) {
+          const f = this.fast ? 0.45 : 1;
+          await sleep(500 * f);
+          for (const [sp, text, ko] of s.lines) {
             if (!alive() || this.skip) break;
             await this.waitPause(alive);
             const ch = prep.characters[sp] || {};
-            this.state.line = { sp, text, color: ch.color || (sp !== "Narrator" ? this.nameColor(sp) : null) };
-            const spec = this.voiceOn ? (this.cast[sp] || this.cast.Narrator) : null;
-            await Voice.speak(spoken || text, spec, () => !alive() || this.skip);
-            await sleep(260);
+            this.state.line = { sp, text, ko: this.koOn ? ko || "" : "", color: ch.color || (sp !== "Narrator" ? this.nameColor(sp) : null) };
+            let spec = this.voiceOn ? (this.cast[sp] || this.cast.Narrator) : null;
+            if (spec && this.fast) spec = Object.assign({}, spec, { rate: (spec.rate || 0.92) * 1.18 });
+            await Voice.speak(text, spec, () => !alive() || this.skip, this.fast);
+            await sleep(260 * f);
           }
-          if (alive() && !this.skip) await sleep(700);
+          if (alive() && !this.skip) await sleep(700 * f);
         } else {
           if (s.say && this.voiceOn && this.cast.Narrator) Voice.speak(s.say, this.cast.Narrator, () => !alive() || this.skip);
-          const end = performance.now() + s.dur;
+          const end = performance.now() + s.dur * (this.fast ? 0.6 : 1);
           while (alive() && !this.skip && performance.now() < end) { await sleep(100); if (this.paused) { const p0 = performance.now(); await this.waitPause(alive); s.dur += performance.now() - p0; } }
         }
       }
@@ -288,7 +300,7 @@
         const sw = CW / z, sh = CH / z, sx = (CW - sw) * px, sy = (CH - sh) * py;
         g.imageSmoothingEnabled = true;
         g.drawImage(s.img, (sx / CW) * s.img.width, (sy / CH) * s.img.height, (sw / CW) * s.img.width, (sh / CH) * s.img.height, 0, 0, CW, CH);
-        if (st.line) drawSubtitle(g, st.line.sp, st.line.text, s.words, st.line.color);
+        if (st.line) drawSubtitle(g, st.line.sp, st.line.text, s.words, st.line.color, st.line.ko);
       } else if (s.kind === "card") drawCard(g, s.bg, s.rows, t);
       else if (s.kind === "choice") {
         const showPick = t > 1700;

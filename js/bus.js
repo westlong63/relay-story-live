@@ -106,7 +106,8 @@
         snap.ref.remove();
       });
     }
-    publish(pub, views) { this.queue = { pub, views }; if (!this.timer) this.timer = setTimeout(() => this.flush(), 250); }
+    /* 교사 화면이 이미 바뀐 것들을 모아서 부르므로 기다리지 않고 바로 보냅니다 */
+    publish(pub, views) { this.queue = { pub, views }; if (!this.timer) { this.timer = true; Promise.resolve().then(() => this.flush()); } }
     flush() {
       this.timer = null; if (!this.queue) return;
       const { pub, views } = this.queue, up = {}; this.queue = null;
@@ -115,7 +116,13 @@
       for (const pid of Object.keys(this.sent)) if (pid !== "pub" && !(pid in views)) { up["views/" + pid] = null; delete this.sent[pid]; }
       if (Object.keys(up).length) this.ref.update(up).catch((e) => console.warn(explain(e)));
     }
-    saveState(S) { clearTimeout(this.st); this.st = setTimeout(() => this.ref.child("state").set(JSON.stringify(S)).catch(() => {}), 1200); }
+    /* 진행 상황 백업: 바뀔 때마다가 아니라 3초에 한 번만 (단계가 바뀌면 바로) */
+    saveState(S, now) {
+      this.stS = S;
+      if (now) { clearTimeout(this.st); this.st = null; return this.writeState(); }
+      if (!this.st) this.st = setTimeout(() => { this.st = null; this.writeState(); }, 3000);
+    }
+    writeState() { const j = JSON.stringify(this.stS); if (j === this.stLast) return; this.stLast = j; this.ref.child("state").set(j).catch(() => {}); }
     async loadState() { try { return JSON.parse((await this.ref.child("state").get()).val() || "null"); } catch (e) { return null; } }
     publishFilms(films) { return this.ref.child("films").set(JSON.stringify(films)).catch(() => {}); }
     async destroy() { this.ref.child("inbox").off(); for (const k of ["inbox", "replies", "views", "pub", "films", "state"]) await this.ref.child(k).remove().catch(() => {}); await this.ref.child("meta").remove().catch(() => {}); }

@@ -36,16 +36,69 @@
   .sticky { position:sticky; top:0; z-index:3; background:var(--bg); padding:10px 0 6px; border-bottom:1px solid var(--line); }
   .mini { width:auto !important; display:inline-block; padding:8px 12px !important; font-size:14px !important; margin-top:4px !important; }
   .codeIn { font-size:32px; text-align:center; letter-spacing:10px; text-transform:uppercase; font-weight:700; }
+  /* 단어 카드 */
+  .wemo { font-size:52px; line-height:1.1; margin-top:6px; }
+  .syl { font-size:22px; margin:4px 0 6px; color:var(--ink-2); }
+  .syl b.st { color:var(--red); font-size:26px; } .syl i { color:var(--line-2); font-style:normal; margin:0 3px; }
+  .wko { color:var(--blue); font-weight:800; font-size:22px; }
+  .hook { background:#FFF7E0; border-left:4px solid #E0A400; padding:10px 12px; margin:10px 0; font-size:15px; line-height:1.5; }
+  .wex { font-size:18px; line-height:1.5; margin:10px 0 2px; } .wex mark { background:linear-gradient(transparent 58%, #FFD6D3 58%); color:inherit; }
+  .two { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  /* 단어 게임 */
+  .ghead { display:flex; justify-content:space-between; align-items:center; font-weight:700; padding:10px 0 4px; }
+  .ghead .sc { color:var(--navy); font-variant-numeric:tabular-nums; } .ghead .cb { color:var(--red); }
+  .stage-n { font-size:13px; font-weight:800; letter-spacing:.04em; color:var(--red); }
+  .gq { font-size:38px; font-weight:800; margin:8px 0 14px; letter-spacing:-0.02em; text-align:center; }
+  .gq.s { font-size:21px; font-weight:600; line-height:1.5; letter-spacing:0; text-align:left; }
+  .doors { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .doors button { margin:0 !important; min-height:110px; background:#F7F1E8; border:2px solid #B98B56; border-radius:40px 40px 4px 4px; font-size:19px; font-weight:700; position:relative; }
+  .doors button::before { content:attr(data-l); position:absolute; top:10px; left:0; right:0; font-size:12px; color:#9a7448; }
+  .doors button::after { content:""; position:absolute; right:16px; top:56%; width:8px; height:8px; border-radius:50%; background:#B98B56; }
+  .eggs { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+  .eggs button { width:auto !important; min-width:92px; height:118px; border-radius:50% 50% 46% 46% / 60% 60% 40% 40%; background:#FFF9EE; border:2px solid #E0C79C; font-size:24px; font-weight:800; margin:0 !important; }
+  .opts button { margin-top:8px; }
+  button.no { background:var(--bad-bg) !important; border-color:var(--bad) !important; color:var(--bad) !important; animation:shake .3s; }
+  button.yes { background:var(--ok-bg) !important; border-color:var(--ok) !important; color:var(--ok) !important; }
+  @keyframes shake { 0%,100% { transform:translateX(0); } 25% { transform:translateX(-6px); } 75% { transform:translateX(6px); } }
+  .slots { display:flex; gap:6px; justify-content:center; margin:6px 0 16px; flex-wrap:wrap; }
+  .slots span { width:38px; height:46px; border-bottom:3px solid var(--navy); font-size:28px; font-weight:800; text-align:center; line-height:46px; color:var(--navy); }
+  .tiles { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
+  .tiles button { width:52px !important; height:56px; padding:0 !important; font-size:26px !important; font-weight:800; margin:0 !important; background:#fff; border:2px solid var(--line-2); }
+  .tiles button:disabled { opacity:.2; }
+  .fb { text-align:center; padding:26px 10px; } .fb .big { color:var(--ok); }
+  .rank { font-size:44px; font-weight:800; color:var(--navy); }
+  /* 쓰기 도우미 */
+  .flow { background:#fff; border:1px solid var(--line); border-top:3px solid var(--blue); padding:12px 14px; margin:12px 0; font-size:15px; }
+  .flow b { color:var(--navy); } .flow li { margin:3px 0; }
+  .gram { margin-top:6px; font-size:14px; }
+  .gram .gi { background:#FFF7E0; border-left:3px solid #E0A400; padding:7px 10px; margin-top:5px; line-height:1.5; }
+  .gram .gi code { background:#fff; padding:0 4px; font-family:inherit; font-weight:700; color:var(--bad); }
+  .gram .gi button { width:auto; display:inline-block; margin:4px 6px 0 0; padding:5px 10px; font-size:14px; }
+  .hintBtn { position:fixed; right:14px; bottom:18px; z-index:20; width:auto !important; padding:12px 16px; font-size:16px; font-weight:800; background:var(--navy); color:#fff; border:0; box-shadow:0 6px 20px rgba(0,0,0,.25); }
+  #sheet { position:fixed; left:0; right:0; bottom:0; z-index:30; background:#fff; border-top:3px solid var(--navy); box-shadow:0 -8px 30px rgba(0,0,0,.2); max-height:58vh; display:flex; flex-direction:column; }
+  #sheet[hidden] { display:none; }
+  #sheet .tabs { display:flex; border-bottom:1px solid var(--line); }
+  #sheet .tabs button { flex:1; border:0; border-radius:0; padding:12px 4px; font-size:15px; background:#fff; margin:0; }
+  #sheet .tabs button.on { font-weight:800; color:var(--navy); box-shadow:inset 0 -3px 0 var(--blue); }
+  #sheet .body { overflow:auto; padding:10px 14px 16px; max-width:640px; width:100%; margin:0 auto; box-sizing:border-box; }
+  #sheet .grp { font-size:13px; font-weight:800; color:var(--red); margin:12px 0 4px; }
+  #sheet .ins { display:block; width:100%; text-align:left; margin:5px 0; padding:9px 12px; font-size:16px; background:var(--bar); border:1px solid var(--line); }
+  #sheet .ins small { display:block; color:var(--dim); font-size:13px; margin-top:2px; }
+  #sheet .ins.w { display:inline-block; width:auto; margin:4px 6px 0 0; }
+  #sheet input { width:100%; font-size:17px; padding:10px; }
+  #sheet .close { position:absolute; right:8px; top:-46px; width:auto; padding:8px 12px; background:#fff; }
 </style>
 </head>
 <body>
 <main id="main">연결 중…</main>
+<div id="sheet" hidden></div>
 <div class="credit" id="credit"></div>
 <script src="js/config.js"></script>
-<script>if (window.RSL_CONFIG.firebase && !new URLSearchParams(location.search).has("demo")) document.write('<script src="vendor/firebase-app-compat.js"><\/script><script src="vendor/firebase-auth-compat.js"><\/script><script src="vendor/firebase-database-compat.js"><\/script>');</script>
+<script>if (window.RSL_CONFIG.firebase && !new URLSearchParams(location.search).has("demo")) document.write('<link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="' + (window.RSL_CONFIG.firebase.databaseURL || "").replace(/[^\w:/.-]/g, "") + '"><script src="vendor/firebase-app-compat.js"><\/script><script src="vendor/firebase-auth-compat.js"><\/script><script src="vendor/firebase-database-compat.js"><\/script>');</script>
 <script src="js/content.js"></script>
 <script src="js/engine.js"></script>
 <script src="js/bus.js"></script>
+<script src="js/grammar.js"></script>
 <script>
 "use strict";
 const $ = (s) => document.querySelector(s);
@@ -83,8 +136,19 @@ async function autoJoin(name, team) { if (V && !V.me) await link.send("join", { 
 
 /* ---------- 화면 갱신 ---------- */
 function typing() { const a = document.activeElement; return a && ((a.tagName === "INPUT" && a.type !== "checkbox") || a.tagName === "TEXTAREA"); }
+/* 주제 번호만 받고, 단어·예문은 이 디벗에 있는 내용에서 꺼내 써요 (보내는 양이 줄어 빨라요) */
+function topicOf(t) {
+  t = t || {};
+  if (t.words) return t;
+  const l = window.RSL_CONTENT.topics.find((x) => x.id === t.id);
+  return l ? Object.assign({}, l, { characters: Object.keys(l.characters).filter((n) => n !== "Narrator") }) : null;
+}
+const banned = () => window.RSL_CONTENT.banned.concat((V && V.bannedX) || []);
 function onView(v) {
   if (!v) return;
+  const T = topicOf(v.topic);
+  if (!T) { $("#main").innerHTML = `<div class="card"><h2>화면을 새로고침해 주세요</h2><p class="dim">수업 내용이 새로 바뀌었어요.</p><button onclick="location.reload()">새로고침</button></div>`; return; }
+  v.topic = T;
   V = v;
   endsAt = v.write && v.write.endsAt ? v.write.endsAt - (link.offset || 0) : 0;
   const held = v.held || {};
@@ -111,13 +175,14 @@ function render() {
   const head = `<div class="top"><span>${esc(V.me.name)} · <b style="color:${t.color}">${esc(t.name)}</b></span><span>${esc(V.topic.title)}</span></div>`;
   $("#main").innerHTML = head + ({ topic: rTopic, words: rWords, write: rWrite, video: rVideo, watch: rWatch }[V.phase])();
   bind();
+  if (!(V.phase === "write" && V.held && !V.write.done)) hintSheet(false); else if (!$("#sheet").hidden) hintSheet(true);
 }
 
 function rJoin() {
   const d = JSON.parse(store.get(JK) || "{}");
   $("#main").innerHTML = `
     <h1 class="brk">Relay Story Live</h1>
-    <div class="card"><div class="dim">TODAY'S TOPIC</div><h2>${esc(V.topic.title)}</h2><div class="dim">${esc(V.topic.seed)}</div></div>
+    <div class="card"><div class="dim">오늘의 주제</div><h2>${esc(V.topic.title)}</h2>${V.topic.ko ? `<div style="font-weight:700;color:var(--blue)">${esc(V.topic.ko)}</div>` : ""}<div class="dim" style="margin-top:6px">${esc(V.topic.seed)}</div></div>
     <div class="card"><label>닉네임 (실명 말고 별명!)</label><input id="nm" maxlength="12" placeholder="예: Moonlight" value="${esc(d.name || "")}">
     <label>모둠 고르기</label>
     ${V.teams.map((t) => `<button class="teamBtn ${d.team === t.id ? "sel" : ""}" data-team="${t.id}" style="--c:${t.color}">${esc(t.name)} <span class="dim">${t.count}명</span></button>`).join("")}
@@ -133,38 +198,115 @@ function rJoin() {
     if (!name) return ($("#msg").textContent = "닉네임을 써 주세요");
     if (j.team == null) return ($("#msg").textContent = "모둠을 골라 주세요");
     if (!$("#pledge").checked) return ($("#msg").textContent = "작가 서약에 체크해 주세요");
-    $("#join").disabled = true;
+    $("#join").disabled = true; $("#join").textContent = "입장하는 중…";
     const r = await link.send("join", { name, team: j.team });
-    if (!r.ok) { $("#join").disabled = false; $("#msg").textContent = r.msg || "다시 시도해 주세요"; }
+    if (!r.ok) { $("#join").disabled = false; $("#join").textContent = "입장하기"; $("#msg").textContent = r.msg || "다시 시도해 주세요"; }
+    else if (!V.me) $("#join").textContent = "입장했어요! 화면을 불러오는 중…";
   };
 }
 function rTopic() {
-  return `<div class="card"><div class="dim">TODAY'S TOPIC</div><h1>${esc(V.topic.title)}</h1><p>${esc(V.topic.seed)}</p>
-    <div>등장인물: ${V.topic.characters.map((c) => `<span class="chip">${esc(c)}</span>`).join("")} + 새 인물도 OK</div></div>
+  const T = V.topic;
+  return `<div class="card"><div class="dim">오늘의 주제</div><h1>${esc(T.title)}</h1>${T.ko ? `<div style="font-weight:800;color:var(--blue);font-size:19px">${esc(T.ko)}</div>` : ""}
+    <p>${esc(T.seed)}</p>${T.seedKo ? `<p class="dim">${esc(T.seedKo)}</p>` : ""}
+    <div>등장인물: ${T.characters.map((c) => `<span class="chip">${esc(c)}</span>`).join("")} + 새 인물도 OK</div></div>
     <div class="card"><h2>우리 모둠</h2>${V.team.members.map((m) => `<span class="chip">${esc(m)}</span>`).join("")}
-    <p class="dim">곧 단어를 배우고, 모둠 친구들과 이야기를 돌려 쓸 거예요. 선생님 화면을 봐 주세요!</p></div>`;
+    <p class="dim">곧 오늘의 단어 6개를 배우고, 단어 게임을 한 뒤, 모둠 친구들과 이야기를 돌려 써요. 선생님 화면을 봐 주세요!</p></div>`;
+}
+
+/* ---------- 단어 시간: 카드 → 게임 → 복습 ---------- */
+const reEsc = (x) => String(x).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const sylHtml = (w) => String(w.syl || w.word).split("-").map((p) => (/[A-Z]/.test(p) ? `<b class="st">${esc(p.toLowerCase())}</b>` : `<span>${esc(p)}</span>`)).join("<i>·</i>");
+const hiEx = (w) => esc(w.ex).replace(new RegExp("\\b(" + reEsc(w.word) + "\\w*)", "i"), "<mark>$1</mark>");
+function playWord(w, ex) {
+  let spoke = false;
+  const fb = () => { if (spoke) return; spoke = true; try { const u = new SpeechSynthesisUtterance(ex ? w.ex : w.word); u.lang = "en-US"; u.rate = 0.85; speechSynthesis.speak(u); } catch (e) {} };
+  const a = new Audio(`assets/audio/${encodeURIComponent(w.word)}${ex ? "_ex" : ""}.mp3`); a.onerror = fb; a.play().catch(fb);
+}
+function wordCard(w, i, n) {
+  return `<div class="card"><div class="dim">${n ? `단어 ${i + 1}/${n} · ` : ""}${esc(w.pos || "")}</div>
+    ${w.emoji ? `<div class="wemo">${esc(w.emoji)}</div>` : ""}<div class="big">${esc(w.word)}</div>
+    ${w.syl && w.syl.includes("-") ? `<div class="syl">${sylHtml(w)} <span class="dim" style="font-size:13px">빨간 부분을 세게</span></div>` : ""}
+    <div class="wko">${esc(w.ko)}</div>${w.hook ? `<div class="hook">💡 ${esc(w.hook)}</div>` : ""}
+    <p class="wex">${hiEx(w)}</p>${w.exKo ? `<p class="dim" style="margin-top:2px">${esc(w.exKo)}</p>` : ""}
+    <div class="two"><button data-say="${i}">🔊 단어</button><button data-sayex="${i}">🔊 예문</button></div></div>`;
+}
+function teamPart() {
+  const q = V.team.quiz;
+  return `<div class="card"><h2>${esc(V.team.name)} 정답률 ${q.acc}%</h2><div class="bar"><i style="width:${q.acc}%"></i></div>
+    <div style="margin-top:8px">${RSLEngine.ITEMS.map((it) => `<span class="chip ${q.items.includes(it.id) ? "on" : ""}">${esc(it.name)} ${Math.round(it.min * 100)}%</span>`).join("")}</div>
+    <p class="dim" style="font-size:14px">한 번에 맞힌 비율이 모둠 정답률이에요. 높을수록 우리 영상에 배경음악, 캐릭터별 목소리, 보너스 장면이 생겨요.</p></div>`;
+}
+const STAGE = { door: ["1단계 · 뜻의 문", "알맞은 뜻이 적힌 문을 열어요"], egg: ["2단계 · 강세 달걀", "세게 읽는 부분의 달걀을 톡!"], listen: ["3단계 · 듣고 고르기", "소리를 듣고 알맞은 단어를 골라요"],
+  spell: ["4단계 · 철자 퍼즐", "글자를 순서대로 눌러 단어를 완성해요"], blank: ["5단계 · 빈칸 채우기", "빈칸에 들어갈 단어를 골라요"] };
+let G = null, gSeq = 0;
+const GK = () => `rsl-game-${room}-${V.me.id}-${V.topic.id}`;
+function game() {
+  const key = V.topic.id + "|" + V.me.id;
+  if (!G || G.key !== key) {
+    let loc = {}; try { loc = JSON.parse(store.get(GK()) || "{}"); } catch (e) {}
+    G = { key, qs: RSLEngine.game(V.topic), done: loc.done || {}, cur: null, tries: 1, t0: 0, spell: "", used: [], fb: null, combo: loc.combo || 0 };
+    gSeq = Math.max(0, ...Object.values(G.done).map((x) => x.at || 0));
+  }
+  const srv = new Set(String((V.game || {}).done || "").split(",").filter(Boolean));
+  for (const id of srv) if (!G.done[id]) G.done[id] = { srv: true };
+  for (const [id, x] of Object.entries(G.done)) if (x.ack && !srv.has(id) && Date.now() - x.ack > 4000) delete G.done[id]; /* 선생님이 게임을 새로 열었을 때 */
+  for (const [id, x] of Object.entries(G.done)) if (!x.srv && !x.ack && !x.sending) sendAns(id, x);
+  return G;
+}
+const saveG = () => store.set(GK(), JSON.stringify({ done: G.done, combo: G.combo }));
+function sendAns(qid, x) {
+  x.sending = true;
+  link.send("answer", { qid, tries: x.tries, ms: x.ms }).then((r) => { x.sending = false; if (r.ok) { x.ack = Date.now(); saveG(); } else setTimeout(() => G && G.done[qid] === x && !x.ack && sendAns(qid, x), 2500); });
+}
+function myScore() { const loc = RSLEngine.score(Object.values(G.done).filter((x) => !x.srv)).score; return Math.max(loc, (V.game || {}).score || 0); }
+function rGame() {
+  const g = game(), q = g.qs.find((x) => !g.done[x.id]), n = Object.keys(g.done).filter((id) => g.qs.some((x) => x.id === id)).length;
+  const head = `<div class="ghead"><span>단어 게임 ${Math.min(n + 1, g.qs.length)}/${g.qs.length}</span><span class="sc">⭐ ${myScore().toLocaleString()}점</span><span class="cb">${g.combo >= 2 ? "🔥" + g.combo + " 연속" : ""}</span></div>
+    <div class="bar"><i style="width:${Math.round((100 * n) / g.qs.length)}%"></i></div>`;
+  if (g.fb) return head + `<div class="card fb"><div class="big">⭕</div><b style="font-size:22px">+${g.fb.pts}점</b>${g.fb.combo >= 2 ? `<div class="cb" style="color:var(--red);font-weight:800;margin-top:4px">🔥 ${g.fb.combo}번 연속 정답!</div>` : g.fb.first ? "" : `<div class="dim">다시 도전해서 맞혔어요!</div>`}</div>`;
+  if (!q) return head + `<div class="card" style="text-align:center"><div class="big">🎉</div><h2>다 풀었어요!</h2><div class="rank">${myScore().toLocaleString()}점</div>
+    <p class="dim">선생님이 게임을 마치면 많이 틀린 단어를 함께 다시 봐요.</p></div>` + teamPart();
+  if (g.cur !== q.id) { g.cur = q.id; g.t0 = Date.now(); g.tries = 1; g.spell = ""; g.used = []; if (q.kind === "listen") setTimeout(() => playWord(V.topic.words[q.w]), 250); }
+  const [sn, sd] = STAGE[q.kind], w = V.topic.words[q.w];
+  let body = "";
+  if (q.kind === "door") body = `<div class="gq">${esc(q.prompt)}</div><div class="doors">${q.options.map((o, i) => `<button data-ans="${esc(o)}" data-l="문 ${"ABCD"[i]}">${esc(o)}</button>`).join("")}</div>`;
+  if (q.kind === "egg") body = `<div class="gq">${esc(q.prompt)}</div><div class="eggs">${q.options.map((o, i) => `<button data-ans="${i}">${esc(o)}</button>`).join("")}</div><button data-say="${q.w}" class="ghost">🔊 다시 듣기</button>`;
+  if (q.kind === "listen") body = `<button data-say="${q.w}" style="font-size:26px;padding:22px">🔊 듣기</button><div class="opts">${q.options.map((o) => `<button data-ans="${esc(o)}">${esc(o)}</button>`).join("")}</div>`;
+  if (q.kind === "spell") body = `<div class="gq">${esc(q.emoji || "")} ${esc(q.prompt)}</div>
+    <div class="slots">${q.answer.split("").map((c, i) => `<span>${esc(g.spell[i] || "")}</span>`).join("")}</div>
+    <div class="tiles">${q.options.map((c, i) => `<button data-tile="${i}" ${g.used.includes(i) ? "disabled" : ""}>${esc(c)}</button>`).join("")}</div>`;
+  if (q.kind === "blank") body = `<div class="gq s">${esc(q.prompt).replace("_____", "<b style='color:var(--red)'>_____</b>")}</div>${q.hint ? `<p class="dim">${esc(q.hint)}</p>` : ""}
+    <div class="opts">${q.options.map((o) => `<button data-ans="${esc(o)}">${esc(o)}</button>`).join("")}</div>`;
+  return head + `<div class="card"><div class="stage-n">${sn}</div><div class="dim" style="font-size:14px">${sd}${g.tries > 1 ? " · <b class='warn'>다시 해 봐요!</b>" : ""}</div>${body}</div>`;
+}
+function gameRight() {
+  const q = G.qs.find((x) => !G.done[x.id]); if (!q) return;
+  const x = { ok: G.tries === 1, tries: G.tries, ms: Date.now() - G.t0, at: ++gSeq };
+  const pts = RSLEngine.points(x, G.combo);
+  G.combo = x.ok ? G.combo + 1 : 0;
+  G.done[q.id] = x; saveG(); sendAns(q.id, x);
+  G.fb = { pts, combo: G.combo, first: x.ok }; render();
+  setTimeout(() => { if (G) { G.fb = null; render(); } }, 750);
+}
+function gameWrong(el) { G.tries++; G.combo = 0; el.classList.remove("no"); void el.offsetWidth; el.classList.add("no"); try { navigator.vibrate && navigator.vibrate(60); } catch (e) {} const d = document.querySelector(".stage-n + .dim"); if (d && !/다시/.test(d.innerHTML)) d.innerHTML += " · <b class='warn'>다시 해 봐요!</b>"; }
+function rReview() {
+  const W = V.topic.words, gm = V.game || {}, top = gm.top || [], mine = (gm.mine || []).filter((i) => !top.includes(i));
+  return `<div class="card" style="text-align:center"><div class="dim">내 점수</div><div class="rank">${(gm.score || 0).toLocaleString()}점</div>
+      ${gm.rank ? `<div>우리 반 ${gm.of}명 중 <b>${gm.rank}등</b> · 한 번에 맞힌 문제 ${gm.ok}/${gm.n}</div>` : ""}</div>
+    <h2 style="margin-top:18px">우리 반이 많이 틀린 단어 ${top.length ? "TOP " + top.length : ""}</h2>
+    ${top.length ? top.map((i) => wordCard(W[i], i, 0)).join("") : `<div class="card ok">우리 반 모두 거의 다 맞혔어요! 👏</div>`}
+    ${mine.length ? `<h2>내가 틀린 단어도 한 번 더</h2>${mine.map((i) => wordCard(W[i], i, 0)).join("")}` : ""}
+    <div class="card dim">이 단어들이 곧 이야기 쓰기의 미션 단어로 나와요. 미션 단어를 넣으면 영상에서 금색으로 빛나요!</div>` + teamPart();
 }
 function rWords() {
-  const w = V.topic.words[V.wordIndex];
-  const card = `<div class="card"><div class="dim">WORD ${V.wordIndex + 1}/${V.topic.words.length}</div><div class="big">${esc(w.word)}</div>
-    <div style="color:var(--gold);font-weight:800">${esc(w.ko)}</div><p>${esc(w.ex)}</p><button id="say">🔊 듣기</button></div>`;
-  const teamPart = `<div class="card"><h2>${esc(V.team.name)} 정답률 ${V.team.quiz.acc}%</h2><div class="bar"><i style="width:${V.team.quiz.acc}%"></i></div>
-    <div style="margin-top:8px">${V.items.map((it) => `<span class="chip ${V.team.quiz.items.includes(it.id) ? "on" : ""}">${ITEM_ICON[it.id]} ${esc(it.name)} ${Math.round(it.min * 100)}%</span>`).join("")}</div>
-    <p class="dim" style="font-size:14px">모둠 정답률이 높을수록 우리 영상에 배경음악, 캐릭터별 목소리, 보너스 장면이 생겨요.</p></div>`;
-  if (V.quiz === "closed") return card + `<div class="card dim">곧 단어 퀴즈가 시작돼요. 모둠 정답률이 높으면 영상 아이템을 받아요! </div>`;
-  const qs = V.questions || [], next = qs.find((q) => q.picked == null);
-  const right = qs.filter((q) => q.ok).length, done = qs.filter((q) => q.picked != null).length;
-  if (flash) return `<div class="card" style="text-align:center"><div class="big">${flash.ok ? "⭕" : "❌"}</div>${flash.ok ? "정답!" : "정답: <b>" + esc(flash.answer) + "</b>"}</div>` + teamPart;
-  if (V.quiz === "open" && next) {
-    return `<div class="card"><div class="dim">QUIZ ${done + 1}/${qs.length} · ${next.kind === "meaning" ? "뜻 고르기" : "빈칸 채우기"}</div>
-      <h2 style="font-size:${next.kind === "meaning" ? 34 : 21}px">${esc(next.prompt)}</h2>
-      ${next.options.map((o) => `<button class="opt" data-opt="${esc(o)}" data-q="${next.id}">${esc(o)}</button>`).join("")}</div>` + teamPart;
-  }
-  return `<div class="card"><h2>내 점수 ${right} / ${qs.length}</h2>${qs.map((q) => `<div class="${q.ok ? "ok" : "warn"}">${q.ok ? "⭕" : "❌"} ${esc(q.prompt)} → ${esc(q.answer || "")}</div>`).join("")}</div>` + teamPart;
+  const W = V.topic.words;
+  if (V.quiz === "open") return rGame();
+  if (V.quiz === "results") return rReview();
+  return wordCard(W[V.wordIndex], V.wordIndex, W.length) + `<div class="card dim">선생님 화면과 같이 넘어가요. 다 보면 디벗으로 단어 게임을 해요! (뜻의 문 → 강세 달걀 → 듣고 고르기 → 철자 퍼즐 → 빈칸)</div>`;
 }
 function epHtml(e, i) {
   return `<div class="ep"><b>EP${i + 1} ${esc(e.title || "")}</b> <span class="dim">by ${esc(e.writer)}</span>
-    ${e.scenes.map((s) => `${s.screen ? `<p class="dim">${esc(s.screen)}</p>` : ""}<p>${esc(s.text).replace(/\n/g, "<br>")}</p>`).join("")}
+    ${e.scenes.map((s) => `${s.screen ? `<p class="dim">${esc(s.screen)}</p>` : ""}<p>${esc(s.text).replace(/\n/g, "<br>")}</p>${s.ko ? `<p class="dim" style="font-size:15px">${esc(s.ko).replace(/\n/g, "<br>")}</p>` : ""}`).join("")}
     ${e.next ? `<p class="dim">❓ ${esc(e.next.question)} (A) ${esc(e.next.a)} / (B) ${esc(e.next.b)}</p>` : ""}</div>`;
 }
 const dk = () => `rsl-draft-${room}-${V.me.id}-${V.write.round}`;
@@ -181,16 +323,24 @@ function rWrite() {
     <div class="card"><h2>장면 ${i + 1}${i >= 2 ? " 보너스" : ""}${i > 0 ? ' <span class="dim" style="font-size:14px">(선택)</span>' : ""}</h2>
       <label>화면 묘사 · 영어 한 줄 (이게 그림이 돼요: 누가, 어디서)</label>
       <input data-f="screen${i}" value="${esc(d["screen" + i] || "")}" placeholder="Mina and Jun stand on the dark rooftop.">
+      <div class="gram" data-g="screen${i}"></div>
       <label>이야기 · 대사는 <b>Mina: Hello!</b> 처럼 '이름:'으로 시작</label>
       <textarea data-f="text${i}" placeholder="Suddenly, the door opened.&#10;Jun: What is that?">${esc(d["text" + i] || "")}</textarea>
+      <div class="gram" data-g="text${i}"></div>
+      <label>우리말 자막 (선택) · 영어 한 줄에 우리말 한 줄씩 쓰면 영상에 같이 나와요</label>
+      <textarea data-f="ko${i}" style="min-height:70px" placeholder="갑자기 문이 열렸다.&#10;준: 저게 뭐야?">${esc(d["ko" + i] || "")}</textarea>
     </div>`).join("");
+  const F = window.RSL_CONTENT.hints.flow, fl = k === 0 ? F.first : w.round + 1 >= w.rounds ? F.last : F.middle;
+  const flow = `<div class="flow"><b>${esc(fl.title)}</b><ul style="margin:6px 0 0;padding-left:20px">${fl.tips.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>
+    <div class="dim" style="font-size:13px;margin-top:6px">막히면 오른쪽 아래 <b>💡 힌트</b>를 눌러요. 단어와 표현을 눌러서 바로 넣을 수 있어요.</div></div>`;
   return `
-    <div class="sticky"><div style="display:flex;justify-content:space-between;align-items:center"><div><b>ROUND ${w.round + 1}/${w.rounds}</b> · ${h.mineStarted ? "내가 시작한 이야기" : `${esc(h.starter)}의 이야기 ${k + 1}화`}</div><div class="tleft" id="tleft"></div></div>
-      <div>미션: <span id="mission">${h.mission.map((m) => `<span class="chip" data-w="${esc(m)}">${esc(m)}</span>`).join("")}</span></div></div>
+    <div class="sticky"><div style="display:flex;justify-content:space-between;align-items:center"><div><b>라운드 ${w.round + 1}/${w.rounds}</b> · ${h.mineStarted ? "내가 시작한 이야기" : `${esc(h.starter)}의 이야기 ${k + 1}화`}</div><div class="tleft" id="tleft"></div></div>
+      <div>미션: <span id="mission">${h.mission.map((m) => { const mw = V.topic.words.find((x) => x.word === m); return `<span class="chip" data-w="${esc(m)}">${esc(m)}${mw ? ` <small>${esc(mw.ko.split(",")[0])}</small>` : ""}</span>`; }).join("")}</span></div></div>
     ${h.submitted ? `<div class="card" style="border:2px solid var(--ok)"><b class="ok">✓ 제출했어요!</b> <span class="dim">시간이 남았으면 고쳐서 다시 제출해도 돼요.</span><div style="margin-top:6px">${prog}</div></div>` : ""}
     ${k ? `<div class="card"><h2>지금까지의 이야기 (${k}화)</h2>${h.episodes.length > 1 ? `<details><summary class="dim">앞부분 보기</summary>${h.episodes.slice(0, -1).map(epHtml).join("")}</details>` : ""}${epHtml(last, k - 1)}</div>` :
       `<div class="card"><h2>내 이야기의 1화를 시작해요</h2><p class="dim">${esc(V.topic.seed)}</p><p class="dim">이 이야기는 다음 라운드에 옆 친구가 이어 써요.</p></div>`}
-    ${h.twist ? `<div class="twist"><b>Twist 카드</b> (넣으면 더 재밌어요): ${esc(h.twist)}</div>` : ""}
+    ${flow}
+    ${h.twist ? `<div class="twist"><b>Twist 카드</b> (넣으면 더 재밌어요): ${esc(h.twist)}${(window.RSL_CONTENT.twistsKo || {})[h.twist] ? `<div class="dim" style="font-size:14px">${esc(window.RSL_CONTENT.twistsKo[h.twist])}</div>` : ""}</div>` : ""}
     ${h.choice ? `<div class="twist">❓ 앞사람이 남긴 갈림길: <b>${esc(h.choice.question)}</b>
         <button data-pick="0" class="${d.pick === 0 ? "sel" : ""}">A) ${esc(h.choice.a)}</button><button data-pick="1" class="${d.pick === 1 ? "sel" : ""}">B) ${esc(h.choice.b)}</button></div>` : ""}
     <div class="card"><label>이번 화 제목 (선택)</label><input data-f="title" value="${esc(d.title || "")}" placeholder="${k ? "The Secret Door" : "A Strange Night"}"></div>
@@ -201,6 +351,7 @@ function rWrite() {
       <input data-f="nb" value="${esc(d.nb || "")}" placeholder="B) Call for help"></div>` : `<div class="card dim">마지막 라운드예요. 이야기를 멋지게 끝내 주세요!</div>`}
     <div id="check" class="card"></div>
     ${DEMO ? `<button id="sample" class="ghost">(시연용) 예시로 채우기</button>` : ""}
+    <button class="hintBtn" id="hintBtn">💡 힌트</button>
     <button class="primary" id="submit">${h.submitted ? "고친 내용 다시 제출 ✓" : "다 썼어요! 제출 ✓"}</button>
     <div id="msg" class="warn"></div>
     ${h.submitted ? "" : `<div class="card"><div class="dim">우리 모둠 진행</div>${prog}</div>`}`;
@@ -227,12 +378,20 @@ function rWatch() {
 
 /* ---------- 버튼 ---------- */
 function bind() {
-  if ($("#say")) $("#say").onclick = () => { const w = V.topic.words[V.wordIndex]; let spoke = false; const fb = () => { if (spoke) return; spoke = true; try { const u = new SpeechSynthesisUtterance(w.word); u.lang = "en-US"; u.rate = 0.85; speechSynthesis.speak(u); } catch (e) {} }; const a = new Audio(`assets/audio/${encodeURIComponent(w.word)}.mp3`); a.onerror = fb; a.play().catch(fb); };
-  document.querySelectorAll("[data-opt]").forEach((b) => b.onclick = async () => {
-    if (busy) return; busy = true;
-    const j = await link.send("answer", { qid: b.dataset.q, choice: b.dataset.opt });
-    busy = false;
-    if (j.ok) { flash = { ok: j.correct, answer: j.answer }; render(); setTimeout(() => { flash = null; render(); }, 1100); }
+  document.querySelectorAll("[data-say]").forEach((b) => b.onclick = () => playWord(V.topic.words[+b.dataset.say]));
+  document.querySelectorAll("[data-sayex]").forEach((b) => b.onclick = () => playWord(V.topic.words[+b.dataset.sayex], true));
+  document.querySelectorAll("[data-ans]").forEach((b) => b.onclick = () => {
+    const q = G && G.qs.find((x) => x.id === G.cur); if (!q || G.fb) return;
+    if (String(b.dataset.ans) === String(q.answer)) { b.classList.add("yes"); gameRight(); } else { gameWrong(b); b.disabled = true; }
+  });
+  document.querySelectorAll("[data-tile]").forEach((b) => b.onclick = () => {
+    const q = G && G.qs.find((x) => x.id === G.cur); if (!q || G.fb) return;
+    const i = +b.dataset.tile, c = q.options[i];
+    if (c === q.answer[G.spell.length]) {
+      G.spell += c; G.used.push(i); b.disabled = true;
+      const sl = document.querySelectorAll(".slots span")[G.spell.length - 1]; if (sl) sl.textContent = c;
+      if (G.spell === q.answer) gameRight();
+    } else gameWrong(b);
   });
   document.querySelectorAll("[data-rx]").forEach((b) => b.onclick = () => { if (V.watching) link.send("react", { team: V.watching.id, emoji: b.dataset.rx }); b.animate([{ transform: "scale(1.35)" }, { transform: "scale(1)" }], 250); });
   document.querySelectorAll("[data-vote]").forEach((b) => b.onclick = () => link.send("vote", { team: +b.dataset.vote }));
@@ -240,14 +399,18 @@ function bind() {
   if (V.phase === "write" && V.held && !V.write.done) bindWrite();
 }
 function collect() {
-  const d = draft(), scenes = Array.from({ length: V.maxScenes }, (_, i) => ({ screen: d["screen" + i] || "", text: d["text" + i] || "" })).filter((s) => s.text.trim());
+  const d = draft(), scenes = Array.from({ length: V.maxScenes }, (_, i) => ({ screen: d["screen" + i] || "", text: d["text" + i] || "", ko: d["ko" + i] || "" })).filter((s) => s.text.trim());
   return { title: d.title || "", scenes, pick: d.pick, round: V.write.round,
     next: d.nq && d.na && d.nb ? { question: d.nq, a: String(d.na).replace(/^A\)\s*/i, ""), b: String(d.nb).replace(/^B\)\s*/i, "") } : null };
 }
 function bindWrite() {
   const fields = document.querySelectorAll("[data-f]");
-  const save = () => { const d = draft(); fields.forEach((f) => (d[f.dataset.f] = f.value)); d.dirty = true; store.set(dk(), JSON.stringify(d)); check(); };
+  const save = () => { const d = draft(); fields.forEach((f) => (d[f.dataset.f] = f.value)); d.dirty = true; store.set(dk(), JSON.stringify(d)); check(); gramAll(); };
   fields.forEach((f) => (f.oninput = save));
+  trackFields();
+  $("#hintBtn").onclick = () => hintSheet($("#sheet").hidden);
+  RSLGrammar.load().then(gramAll);
+  gramAll(true);
   document.querySelectorAll("[data-pick]").forEach((b) => b.onclick = () => {
     const d = draft(); d.pick = +b.dataset.pick; d.dirty = true; store.set(dk(), JSON.stringify(d));
     document.querySelectorAll("[data-pick]").forEach((x) => x.classList.toggle("sel", x === b));
@@ -255,7 +418,7 @@ function bindWrite() {
   if ($("#sample")) $("#sample").onclick = () => {
     const T = { words: V.topic.words, seed: V.topic.seed, screens: V.topic.screens || [], characters: Object.fromEntries(["Narrator", ...V.topic.characters].map((c) => [c, {}])) };
     const s = RSLEngine.sample(T, V.write.round, V.me.name.length, !!V.held.choice);
-    const d = { title: s.title, screen0: s.scenes[0].screen, text0: s.scenes[0].text, pick: s.pick == null ? undefined : s.pick, dirty: true };
+    const d = { title: s.title, screen0: s.scenes[0].screen, text0: s.scenes[0].text, ko0: s.scenes[0].ko || "", pick: s.pick == null ? undefined : s.pick, dirty: true };
     if (s.next && V.write.round + 1 < V.write.rounds) Object.assign(d, { nq: s.next.question, na: s.next.a, nb: s.next.b });
     store.set(dk(), JSON.stringify(d)); render();
   };
@@ -264,10 +427,10 @@ function bindWrite() {
     const c = collect();
     if (!c.scenes.length) return ($("#msg").textContent = "장면 1의 이야기를 써 주세요");
     if (V.held.choice && c.pick == null) return ($("#msg").textContent = "앞사람이 남긴 갈림길에서 A/B를 골라 주세요");
-    $("#submit").disabled = true;
+    $("#submit").disabled = true; const label = $("#submit").textContent; $("#submit").textContent = "보내는 중…";
     const j = await link.send("submit", c);
-    if (j.ok) { const d = draft(); d.dirty = false; store.set(dk(), JSON.stringify(d)); $("#msg").textContent = ""; }
-    else { $("#submit").disabled = false; $("#msg").textContent = j.msg || "다시 시도해 주세요"; }
+    if (j.ok) { const d = draft(); d.dirty = false; store.set(dk(), JSON.stringify(d)); $("#msg").textContent = ""; if ($("#submit")) $("#submit").textContent = "✓ 제출했어요"; }
+    else { $("#submit").disabled = false; $("#submit").textContent = label; $("#msg").textContent = j.msg || "다시 시도해 주세요"; }
   };
 }
 /* 라운드 시간이 끝나면 쓰던 내용을 자동으로 제출 */
@@ -285,13 +448,109 @@ async function autoSave() {
 function check() {
   const d = draft(), el = $("#check"); if (!el) return;
   const story = Object.entries(d).filter(([k]) => k.startsWith("text")).map(([, v]) => v).join(" ");
-  const all = Object.entries(d).filter(([k]) => /^(text|screen|title|n[qab])/.test(k)).map(([, v]) => v).join("\n");
+  const all = Object.entries(d).filter(([k]) => /^(text|screen|title|ko|n[qab])/.test(k)).map(([, v]) => v).join("\n");
   document.querySelectorAll("#mission [data-w]").forEach((c) => c.classList.toggle("on", wordRe(c.dataset.w).test(story)));
   const low = all.toLowerCase();
-  const bad = (V.banned || []).filter((w) => (/^[\x00-\x7f]+$/.test(w) ? wordRe(w.toLowerCase()).test(low) : all.includes(w)));
+  const bad = banned().filter((w) => (/^[\x00-\x7f]+$/.test(w) ? wordRe(w.toLowerCase()).test(low) : all.includes(w)));
   const used = V.held.mission.filter((w) => wordRe(w).test(story)).length;
   el.innerHTML = `<div>미션 단어 ${used}/${V.held.mission.length} ${used === V.held.mission.length ? "영상에서 금색으로 빛나요!" : ""}</div>` +
     (bad.length ? `<div class="warn">반 친구들과 함께 볼 영상이에요. 이 말은 바꿔 주세요: ${esc(bad.join(", "))}</div>` : `<div class="ok">✔ 함께 보기 좋은 내용이에요</div>`);
+}
+
+/* ---------- 쓰기 도우미: 힌트 창 (누르면 마지막으로 쓰던 칸에 들어가요) ---------- */
+let lastF = null, lastSel = null, hintTab = "words", hintQ = "";
+function trackFields() {
+  document.querySelectorAll("[data-f]").forEach((f) => {
+    const keep = () => { lastF = f.dataset.f; try { lastSel = [f.selectionStart, f.selectionEnd]; } catch (e) { lastSel = null; } };
+    ["focus", "keyup", "click", "input", "blur", "select"].forEach((ev) => f.addEventListener(ev, keep));
+  });
+}
+function toast(t) {
+  let el = $("#toast"); if (!el) { el = document.createElement("div"); el.id = "toast"; el.style.cssText = "position:fixed;left:50%;transform:translateX(-50%);top:14px;z-index:40;background:var(--navy);color:#fff;padding:9px 14px;font-size:15px;max-width:90vw"; document.body.appendChild(el); }
+  el.textContent = t; el.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => (el.hidden = true), 1600);
+}
+function insertText(t) {
+  const name = lastF && document.querySelector(`[data-f="${lastF}"]`) ? lastF : "text0";
+  const f = document.querySelector(`[data-f="${name}"]`); if (!f) return;
+  const v = f.value, [a, b] = lastSel && lastF === name && lastSel[0] != null ? lastSel : [v.length, v.length];
+  const pre = v.slice(0, a), post = v.slice(b);
+  const multi = f.tagName === "TEXTAREA" && /[.!?:]\s*$/.test(t) && /[.!?]\s*$/.test(pre) && t.length > 18;
+  const sepL = !pre ? "" : multi ? "\n" : /\s$/.test(pre) ? "" : " ", sepR = post && !/^[\s.,!?]/.test(post) ? " " : "";
+  f.value = pre + sepL + t + sepR + post;
+  const at = (pre + sepL).length, blank = t.indexOf("___");
+  lastF = name; lastSel = blank >= 0 ? [at + blank, at + blank + 3] : [at + t.length, at + t.length];
+  f.dispatchEvent(new Event("input"));
+  if (blank >= 0) { hintSheet(false); f.focus(); f.setSelectionRange(lastSel[0], lastSel[1]); toast("___ 자리에 직접 써 넣어요"); }
+  else toast("넣었어요: " + t.slice(0, 30));
+}
+function findWords(q) {
+  q = q.trim().toLowerCase(); if (!q) return [];
+  const H = window.RSL_CONTENT.hints, T = V.topic, pool = [];
+  T.words.forEach((w) => pool.push([w.word, w.ko])); (T.extra || []).forEach((x) => pool.push(x));
+  pool.push(...H.feelings, ...H.places, ...H.dict);
+  window.RSL_CONTENT.topics.forEach((t) => { t.words.forEach((w) => pool.push([w.word, w.ko])); (t.extra || []).forEach((x) => pool.push(x)); });
+  const seen = new Set(), out = [];
+  for (const [e, k] of pool) { const key = e.toLowerCase(); if (seen.has(key) || !(key.startsWith(q) || k.includes(q))) continue; seen.add(key); out.push([e, k]); }
+  return out.slice(0, 40);
+}
+function hintSheet(open) {
+  const sh = $("#sheet");
+  if (!open || !(V && V.phase === "write" && V.held && !V.write.done)) { sh.hidden = true; return; }
+  sh.hidden = false;
+  const H = window.RSL_CONTENT.hints, T = V.topic, mis = V.held.mission;
+  const ins = (en, ko, cls) => `<button class="ins ${cls || ""}" data-ins="${esc(en)}">${esc(en)}${ko ? `<small>${esc(ko)}</small>` : ""}</button>`;
+  const tabs = [["words", "미션 단어"], ["phr", "표현"], ["find", "단어 찾기"], ["scr", "화면 묘사"]];
+  let body = "";
+  if (hintTab === "words") {
+    const mw = T.words.filter((w) => mis.includes(w.word)), ow = T.words.filter((w) => !mis.includes(w.word));
+    body = `<div class="grp">이번 라운드 미션 단어 · 누르면 쓰던 칸에 들어가요</div>${mw.map((w) => ins(w.word, `${w.emoji || ""} ${w.ko}`, "w")).join("")}
+      <div class="grp">예문을 넣고 조금 바꿔 써 봐요</div>${mw.map((w) => ins(w.ex, w.exKo)).join("")}
+      <div class="grp">오늘의 다른 단어</div>${ow.map((w) => ins(w.word, w.ko, "w")).join("")}
+      ${T.extra ? `<div class="grp">이 주제에 어울리는 단어</div>${T.extra.map(([e, k]) => ins(e, k, "w")).join("")}` : ""}
+      <div class="grp">등장인물 대사 시작</div>${T.characters.map((c) => ins(c + ":", "", "w")).join("")}`;
+  }
+  if (hintTab === "phr") body = H.phrases.map((g) => `<div class="grp">${esc(g.group)}</div>${g.items.map(([e, k]) => ins(e.trim(), k)).join("")}`).join("") +
+    `<div class="grp">기분을 나타내는 말</div>${H.feelings.map(([e, k]) => ins(e, k, "w")).join("")}`;
+  if (hintTab === "find") body = `<input id="hq" placeholder="우리말이나 영어로 찾기 (예: 문, 무서운, 달리다)" value="${esc(hintQ)}" autocomplete="off"><div id="hres"></div>`;
+  if (hintTab === "scr") body = `<div class="grp">화면 묘사 칸을 먼저 누른 뒤 골라요 · ___ 자리는 직접 채워요</div>${H.screenFrames.map(([e, k]) => ins(e.trim(), k)).join("")}
+    <div class="grp">이 주제의 장면 예시</div>${(T.screens || []).map((x) => ins(x)).join("")}
+    <div class="grp">장소 (이 말을 쓰면 그림 배경이 바뀌어요)</div>${H.places.map(([e, k]) => ins(e, k, "w")).join("")}`;
+  sh.innerHTML = `<button class="close" id="shClose">닫기 ✕</button><div class="tabs">${tabs.map(([k, l]) => `<button data-tab="${k}" class="${hintTab === k ? "on" : ""}">${l}</button>`).join("")}</div><div class="body">${body}</div>`;
+  const bindIns = (root) => root.querySelectorAll("[data-ins]").forEach((b) => { b.onmousedown = (e) => e.preventDefault(); b.onclick = () => insertText(b.dataset.ins); });
+  bindIns(sh);
+  sh.querySelectorAll("[data-tab]").forEach((b) => b.onclick = () => { hintTab = b.dataset.tab; hintSheet(true); });
+  $("#shClose").onclick = () => hintSheet(false);
+  const hq = $("#hq");
+  if (hq) {
+    const show = () => { hintQ = hq.value; const r = findWords(hq.value); $("#hres").innerHTML = hq.value.trim() ? (r.length ? r.map(([e, k]) => ins(e, k, "w")).join("") : `<p class="dim">못 찾았어요. 더 짧게 써 보세요.</p>`) : `<p class="dim">찾고 싶은 말을 우리말로 써 보세요. 영어 단어를 누르면 쓰던 칸에 들어가요.</p>`; bindIns($("#hres")); };
+    hq.oninput = show; show();
+  }
+}
+
+/* ---------- 영어 문장 도우미 ---------- */
+let gramT = null; const gramSkip = new Set();
+function knownWords() {
+  if (knownWords.k === V.topic.id) return knownWords.s;
+  const s = new Set(), add = (w) => String(w).toLowerCase().split(/[^a-z]+/).forEach((x) => x && s.add(x));
+  for (const t of window.RSL_CONTENT.topics) { t.words.forEach((w) => add(w.word)); (t.extra || []).forEach(([e]) => add(e)); }
+  window.RSL_CONTENT.hints.dict.forEach(([e]) => add(e)); V.topic.words.forEach((w) => add(w.word)); V.topic.characters.forEach(add);
+  knownWords.s = s; knownWords.k = V.topic.id; return s;
+}
+function gramAll(now) { clearTimeout(gramT); const run = () => document.querySelectorAll("[data-g]").forEach(gramOne); if (now === true) run(); else gramT = setTimeout(run, 600); }
+function gramOne(box) {
+  const f = document.querySelector(`[data-f="${box.dataset.g}"]`); if (!f) return;
+  const v = f.value;
+  const ctx = (x) => { let a = x.s, b = x.e; while (a > 0 && !/\s/.test(v[a - 1])) a--; while (b < v.length && !/\s/.test(v[b])) b++; return [a, b]; };
+  const iss = (v.trim() ? RSLGrammar.check(v, { known: knownWords() }) : []).filter((x) => { const [a, b] = ctx(x); return !gramSkip.has(v.slice(a, b) + "|" + x.msg); }).slice(0, 4);
+  box.innerHTML = iss.length ? `<div class="dim">✏️ 영어 도우미 · 고쳐 보면 좋은 곳 ${iss.length}개 <span style="font-size:12px">(안 고쳐도 제출돼요)</span></div>` + iss.map((x, n) => {
+    const [a, b] = ctx(x), word = v.slice(a, b);
+    return `<div class="gi"><code>${esc(word)}</code> ${esc(x.msg)}<br>${x.fixes.map((fx, j) => `<button data-fix="${n}" data-j="${j}">→ ${esc(v.slice(a, x.s) + fx + v.slice(x.e, b))}</button>`).join("")}<button data-skip="${n}" class="ghost">괜찮아요</button></div>`;
+  }).join("") : "";
+  box.querySelectorAll("[data-fix]").forEach((bt) => { bt.onmousedown = (e) => e.preventDefault(); bt.onclick = () => {
+    const x = iss[+bt.dataset.fix]; if (f.value !== v) return gramOne(box);
+    f.value = RSLGrammar.apply(v, x, x.fixes[+bt.dataset.j]); f.dispatchEvent(new Event("input")); gramOne(box);
+  }; });
+  box.querySelectorAll("[data-skip]").forEach((bt) => bt.onclick = () => { const x = iss[+bt.dataset.skip], [a, b] = ctx(x); gramSkip.add(v.slice(a, b) + "|" + x.msg); gramOne(box); });
 }
 boot();
 </script>

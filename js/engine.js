@@ -57,26 +57,25 @@
       }
       return issues;
     }
-    /* ---------- 퀴즈 ---------- */
-    questions() {
-      const W = this.topic().words, rnd = seeded(W.length * 7 + W[0].word.length), qs = [];
-      W.forEach((w, i) => {
-        const others = shuffle(W.filter((x) => x !== w), rnd).slice(0, 3).map((x) => x.ko);
-        qs.push({ id: "m" + i, kind: "meaning", prompt: w.word, options: shuffle([w.ko, ...others], rnd), answer: w.ko });
-      });
-      W.forEach((w, i) => {
-        if (i % 2 === 0) return;
-        const blank = w.ex.replace(wordRe(w.word), "_____");
-        const others = shuffle(W.filter((x) => x !== w), rnd).slice(0, 3).map((x) => x.word);
-        qs.push({ id: "b" + i, kind: "blank", prompt: blank, options: shuffle([w.word, ...others], rnd), answer: w.word });
-      });
-      return qs;
-    }
+    /* ---------- 단어 게임 (문제는 학생 디벗에서 같은 규칙으로 만들어져 바로 풀려요) ---------- */
+    questions() { return Engine.game(this.topic()); }
     teamQuiz(teamId) {
-      let correct = 0, answered = 0;
-      for (const p of this.members(teamId)) for (const a of Object.values(p.answers || {})) { answered++; if (a.ok) correct++; }
+      let correct = 0, answered = 0, score = 0, n = 0;
+      for (const p of this.members(teamId)) {
+        const as = Object.values(p.answers || {});
+        if (as.length) { n++; score += Engine.score(as).score; }
+        for (const a of as) { answered++; if (a.ok) correct++; }
+      }
       const acc = answered ? correct / answered : 0;
-      return { correct, answered, acc, items: answered ? ITEMS.filter((it) => acc >= it.min).map((it) => it.id) : [] };
+      return { correct, answered, acc, avg: n ? Math.round(score / n) : 0, players: n, items: answered ? ITEMS.filter((it) => acc >= it.min).map((it) => it.id) : [] };
+    }
+    /* 많이 틀린 단어 (모든 학생의 틀린 횟수 합) */
+    missed() {
+      const W = this.topic().words, qs = this.questions(), cnt = W.map(() => 0);
+      for (const p of Object.values(this.S.players)) for (const [qid, a] of Object.entries(p.answers || {})) {
+        const q = qs.find((x) => x.id === qid); if (q && a.tries > 1) cnt[q.w] += a.tries - 1;
+      }
+      return cnt.map((c, i) => ({ i, c })).filter((x) => x.c > 0).sort((a, b) => b.c - a.c);
     }
     /* ---------- 돌려 쓰기 ---------- */
     missionWords(k) { const W = this.topic().words.map((w) => w.word); return [0, 1, 2].map((j) => W[(k * 3 + j) % W.length]); }
@@ -141,17 +140,27 @@
       return list.slice().sort((a, b) => votes(b) - votes(a) || b.episodes.length - a.episodes.length || used(b) - used(a))[0];
     }
     screenList() { return this.activeTeams().map((t) => ({ team: t, story: this.representative(t.id) })).filter((x) => x.story); }
-    parseScene(text, chars, voicePool) {
-      const lines = [];
-      for (const raw of String(text).split(/\n+/)) {
-        const line = raw.trim(); if (!line) continue;
+    /* 장면 글 → 대사 줄 [말하는 사람, 영어, 우리말 자막]. 우리말은 영어 한 줄에 한 줄씩 짝지어요 */
+    parseScene(text, chars, ko) {
+      const lines = [], raws = String(text).split(/\n+/).map((x) => x.trim()).filter(Boolean);
+      raws.forEach((line, r) => {
         const m = line.match(/^([A-Z][A-Za-z' -]{0,18}?)\s*:\s*(.+)$/);
         if (m && !["From", "To", "PS", "P.S"].includes(m[1])) {
           const name = m[1].trim();
           if (!chars[name]) chars[name] = { voice: "extra" + (Object.keys(chars).length % 6), color: null };
-          lines.push([name, m[2].replace(/^["“]|["”]$/g, "").trim()]);
-        } else for (const s of line.split(/(?<=[.!?])\s+(?=[A-Z"“])/)) if (s.trim()) lines.push(["Narrator", s.trim()]);
-      }
+          lines.push([name, m[2].replace(/^["“]|["”]$/g, "").trim(), "", r]);
+        } else for (const s of line.split(/(?<=[.!?])\s+(?=[A-Z"“])/)) if (s.trim()) lines.push(["Narrator", s.trim(), "", r]);
+      });
+      const kos = String(ko || "").split(/\n+/).map((x) => x.trim().replace(/^[^:：\s]{1,12}\s*[:：]\s*/, "").replace(/^["“]|["”]$/g, "")).filter(Boolean);
+      if (kos.length === raws.length) raws.forEach((_, r) => {
+        const sub = lines.filter((l) => l[3] === r), parts = kos[r].split(/(?<=[.!?])\s+/).filter(Boolean);
+        sub.forEach((l, j) => (l[2] = parts.length === sub.length ? parts[j] : kos[r]));
+      });
+      else if (kos.length === lines.length) lines.forEach((l, j) => (l[2] = kos[j]));
+      else if (kos.join(" ").split(/(?<=[.!?])\s+/).filter(Boolean).length === lines.length) { const ks = kos.join(" ").split(/(?<=[.!?])\s+/).filter(Boolean); lines.forEach((l, j) => (l[2] = ks[j])); }
+      else if (kos.length) lines.forEach((l, j) => (l[2] = kos[Math.min(kos.length - 1, Math.floor((j * kos.length) / lines.length))]));
+      const auto = this.autoKo || {};
+      for (const l of lines) { if (!l[2] && auto[l[1]]) l[2] = auto[l[1]]; l.length = 3; }
       return lines;
     }
     buildFilm(story) {
@@ -160,13 +169,13 @@
       const q = this.teamQuiz(story.team);
       const eps = story.episodes.slice().sort((a, b) => a.k - b.k);
       return {
-        id: story.id, topic: T.title, seed: T.seed, team: team.name, teamColor: team.color, starter: story.starterName,
+        id: story.id, topic: T.title, topicKo: T.ko || "", seed: T.seed, team: team.name, teamColor: team.color, starter: story.starterName,
         title: (eps[0] && eps[0].title) || `${story.starterName}'s Story`, bonus: q.items, characters: chars,
         writers: [...new Set(eps.map((e) => e.writer))],
         episodes: eps.map((ep, i) => {
           const next = eps[i + 1];
           const out = { title: ep.title || `Episode ${i + 1}`, writer: ep.writer, mission: ep.mission, used: ep.used, twist: ep.twist,
-            scenes: ep.scenes.map((sc, j) => ({ id: `${story.id}e${i + 1}s${j + 1}`, screen: sc.screen, lines: this.parseScene(sc.text, chars) })).filter((sc) => sc.lines.length) };
+            scenes: ep.scenes.map((sc, j) => ({ id: `${story.id}e${i + 1}s${j + 1}`, screen: sc.screen, lines: this.parseScene(sc.text, chars, sc.ko) })).filter((sc) => sc.lines.length) };
           if (ep.next && ep.next.question && ep.next.a && ep.next.b && next) out.choice = { question: ep.next.question, options: [ep.next.a, ep.next.b], picked: next.pick === 1 ? 1 : 0 };
           return out;
         }).filter((e) => e.scenes.length),
@@ -197,7 +206,7 @@
           if (b.phase === "write" && !S.write.started) this.startWriting();
           if (b.phase === "watch" && S.watchIndex < 0) S.watchIndex = 0;
           break;
-        case "topic": if (this.C.topics.some((t) => t.id === b.topic)) { S.topicId = b.topic; S.wordIndex = 0; } break;
+        case "topic": if (this.C.topics.some((t) => t.id === b.topic) && b.topic !== S.topicId) { S.topicId = b.topic; S.wordIndex = 0; S.quiz = "closed"; for (const p of Object.values(S.players)) p.answers = {}; } break;
         case "teams": {
           const n = Math.max(2, Math.min(8, parseInt(b.n, 10) || 6));
           S.teamCount = n; S.teams = makeTeams(n);
@@ -206,7 +215,7 @@
         }
         case "rounds": S.write.rounds = Math.max(2, Math.min(6, parseInt(b.n, 10) || 4)); break;
         case "roundSec": S.write.roundSec = Math.max(60, Math.min(600, parseInt(b.n, 10) || 180)); break;
-        case "word": S.wordIndex = Math.max(0, Math.min(this.topic().words.length - 1, S.wordIndex + (b.d || 0))); break;
+        case "word": S.wordIndex = Math.max(0, Math.min(this.topic().words.length - 1, b.i != null ? +b.i : S.wordIndex + (b.d || 0))); break;
         case "quiz": S.quiz = ["open", "results"].includes(b.state) ? b.state : "closed"; break;
         case "addTime": if (S.write.endsAt) { S.write.endsAt += (b.sec || 60) * 1000; S.write.closingAt = null; } break;
         case "nextRound": if (S.write.started && !S.write.done) { S.write.closingAt = Date.now(); } break;
@@ -247,10 +256,14 @@
       if (type === "answer") {
         if (S.quiz !== "open") return { ok: false, msg: "퀴즈가 닫혀 있어요" };
         const q = this.questions().find((x) => x.id === b.qid);
-        if (!q || pl.answers[q.id]) return { ok: false };
-        pl.answers[q.id] = { choice: String(b.choice), ok: String(b.choice) === q.answer };
+        if (!q) return { ok: false };
+        if (pl.answers[q.id]) return { ok: true, dup: true };
+        /* 디벗에서 바로 채점하고 결과(몇 번 만에 맞혔는지, 걸린 시간)만 보내요 */
+        const tries = Math.max(1, Math.min(9, parseInt(b.tries, 10) || 1)), ms = Math.max(0, Math.min(120000, parseInt(b.ms, 10) || 0));
+        this.S.ansSeq = (this.S.ansSeq || 0) + 1;
+        pl.answers[q.id] = { ok: tries === 1, tries, ms, at: this.S.ansSeq };
         this.bump();
-        return { ok: true, correct: pl.answers[q.id].ok, answer: q.answer };
+        return { ok: true };
       }
       if (type === "submit") {
         const w = S.write;
@@ -260,11 +273,11 @@
         const story = this.heldStory(pid);
         if (!story) return { ok: false, msg: "이번 이야기에는 참여하지 않아요" };
         const team = pl.team, max = this.teamQuiz(team).items.includes("bonus_scene") ? 3 : 2;
-        const scenes = (b.scenes || []).slice(0, max).map((s) => ({ screen: clean(s.screen, 160), text: clean(s.text, 600) })).filter((s) => s.text);
+        const scenes = (b.scenes || []).slice(0, max).map((s) => ({ screen: clean(s.screen, 160), text: clean(s.text, 600), ko: clean(s.ko, 400) })).filter((s) => s.text);
         if (!scenes.length) return { ok: false, msg: "장면 1의 이야기를 써 주세요" };
         const title = clean(b.title, 50);
         const next = b.next && b.next.question && b.next.a && b.next.b ? { question: clean(b.next.question, 80), a: clean(b.next.a, 40), b: clean(b.next.b, 40) } : null;
-        const all = [title, ...scenes.map((s) => s.screen + "\n" + s.text), next ? `${next.question} ${next.a} ${next.b}` : ""].join("\n");
+        const all = [title, ...scenes.map((s) => s.screen + "\n" + s.text + "\n" + s.ko), next ? `${next.question} ${next.a} ${next.b}` : ""].join("\n");
         const issues = this.safety(all);
         if (issues.length) return { ok: false, msg: "모두 함께 볼 영상이에요. 이 부분을 바꿔 주세요: " + issues.join(", "), issues };
         const mission = this.missionWords(round), text = scenes.map((s) => s.text).join(" ");
@@ -297,10 +310,11 @@
       return { ok: false };
     }
     /* ---------- 화면에 보낼 정보 ---------- */
-    publicTopic() { const T = this.topic(); return { id: T.id, title: T.title, seed: T.seed, words: T.words, screens: T.screens || [], characters: Object.keys(T.characters).filter((n) => n !== "Narrator") }; }
-    common() {
-      const w = this.S.write;
-      return { room: this.S.room, phase: this.S.phase, topic: this.publicTopic(), wordIndex: this.S.wordIndex, quiz: this.S.quiz, items: ITEMS,
+    publicTopic() { const T = this.topic(); return { id: T.id, title: T.title, ko: T.ko || "", seed: T.seed, seedKo: T.seedKo || "", words: T.words, screens: T.screens || [], characters: Object.keys(T.characters).filter((n) => n !== "Narrator"), custom: !!T.custom }; }
+    /* 학생 화면에는 주제 번호만 보내요 (단어·예문은 디벗이 이미 갖고 있음). 선생님이 직접 만든 주제만 통째로 보내요 */
+    common(full) {
+      const w = this.S.write, T = this.topic();
+      return { room: this.S.room, phase: this.S.phase, topic: full || T.custom ? this.publicTopic() : { id: T.id, title: T.title }, wordIndex: this.S.wordIndex, quiz: this.S.quiz,
         write: { started: w.started, round: w.round, rounds: w.rounds, roundSec: w.roundSec, done: w.done, closing: !!w.closingAt,
           endsAt: w.endsAt || null },
         filmsMade: this.S.filmsMade };
@@ -314,14 +328,15 @@
     }
     hostView() {
       const S = this.S, r = S.write.round;
-      return Object.assign(this.common(), {
-        role: "host", topics: this.C.topics.map((t) => ({ id: t.id, title: t.title, custom: !!t.custom })), teamCount: S.teamCount, questions: this.questions().length,
+      return Object.assign(this.common(true), {
+        role: "host", items: ITEMS, topics: this.C.topics.map((t) => ({ id: t.id, title: t.title, ko: t.ko || "", genre: t.genre || "", months: t.months || [], custom: !!t.custom })), teamCount: S.teamCount, questions: this.questions().length,
+        missed: S.phase === "words" ? this.missed() : [],
         players: Object.values(S.players).map((p) => ({ id: p.id, name: p.name, team: p.team })),
         roundStatus: this.roundStatus(), report: this.classReport(),
         teams: S.teams.map((t) => {
           const q = this.teamQuiz(t.id), ro = S.roster[t.id] || [];
           const stories = this.teamStories(t.id);
-          return { id: t.id, name: t.name, color: t.color, members: this.members(t.id).map((p) => p.name), quiz: { acc: Math.round(q.acc * 100), answered: q.answered, items: q.items },
+          return { id: t.id, name: t.name, color: t.color, members: this.members(t.id).map((p) => p.name), quiz: { acc: Math.round(q.acc * 100), answered: q.answered, items: q.items, avg: q.avg, players: q.players },
             writers: ro.map((pid) => { const s = this.heldStory(pid); return { name: (S.players[pid] || {}).name || "(나감)", done: !!(s && s.episodes.some((e) => e.k === r)) }; }),
             stories: stories.map((s) => this.storyBrief(s, true)), rep: (this.representative(t.id) || {}).id || null,
             votes: Object.values(S.votes).filter((v) => v === t.id).length, reactions: S.reactions[t.id] || {},
@@ -339,10 +354,18 @@
       const out = Object.assign(base, {
         role: "player", me: { id: p.id, name: p.name, team: p.team }, teams: teamsLite,
         team: { id: t.id, name: t.name, color: t.color, members: this.members(t.id).map((m) => m.name), quiz: { acc: Math.round(q.acc * 100), items: q.items } },
-        banned: this.banned(), maxScenes: q.items.includes("bonus_scene") ? 3 : 2,
+        maxScenes: q.items.includes("bonus_scene") ? 3 : 2,
       });
+      if (this.extraBanned.length) out.bannedX = this.extraBanned;
       if (S.phase === "words") {
-        out.questions = this.questions().map((x) => { const a = (p.answers || {})[x.id]; return { id: x.id, kind: x.kind, prompt: x.prompt, options: x.options, picked: a ? a.choice : null, ok: a ? a.ok : null, answer: a ? x.answer : null }; });
+        const as = p.answers || {}, sc = Engine.score(Object.values(as));
+        out.game = { done: Object.keys(as).join(","), score: sc.score, ok: sc.ok, n: sc.n, best: sc.best };
+        if (S.quiz === "results") {
+          out.game.top = this.missed().slice(0, 3).map((x) => x.i);
+          out.game.mine = this.questions().filter((x) => as[x.id] && as[x.id].tries > 1).map((x) => x.w).filter((w, i, a) => a.indexOf(w) === i);
+          const all = Object.values(S.players).map((x) => Engine.score(Object.values(x.answers || {})).score).sort((a, b) => b - a);
+          out.game.rank = all.indexOf(sc.score) + 1; out.game.of = all.length;
+        }
       }
       if (S.phase === "write" && S.write.started) {
         const s = this.heldStory(pid);
@@ -379,15 +402,43 @@
     const chars = Object.keys(T.characters).filter((n) => n !== "Narrator");
     const a = chars[j % chars.length], b = chars[(j + 1) % chars.length];
     const say = ["Wow, look at that!", "I can't believe it!", "Let's go together.", "This is so cool!", "Are you ready?"];
+    const sayKo = ["우와, 저것 좀 봐!", "믿을 수가 없어!", "같이 가자.", "이거 진짜 멋지다!", "준비됐어?"];
     const titles = ["The Beginning", "A Big Surprise", "The Secret Plan", "The Last Chance", "A New Friend", "Back Home"];
     const screens = T.screens && T.screens.length ? T.screens : [T.seed];
     return {
       title: titles[(round + j) % titles.length],
-      scenes: [{ screen: screens[(round + j) % screens.length], text: `${mw[0].ex} ${mw[1].ex}\n${a}: ${say[(round + j) % say.length]}\n${b}: ${mw[2].ex}` }],
+      scenes: [{ screen: screens[(round + j) % screens.length], text: `${mw[0].ex} ${mw[1].ex}\n${a}: ${say[(round + j) % say.length]}\n${b}: ${mw[2].ex}`,
+        ko: mw[0].exKo ? `${mw[0].exKo} ${mw[1].exKo}\n${sayKo[(round + j) % say.length]}\n${mw[2].exKo}` : "" }],
       next: round < 5 ? { question: `What should ${a} do next?`, a: "Go and look", b: "Ask a friend for help" } : null,
       pick: needPick ? (j + round) % 2 : null,
     };
   };
-  Engine.ITEMS = ITEMS; Engine.wordRe = wordRe; Engine.freshState = freshState;
+  /* 단어 게임 문제: 뜻의 문 → 강세 달걀 → 듣고 고르기 → 철자 퍼즐 → 빈칸 */
+  Engine.game = function (T) {
+    const W = T.words, rnd = seeded(W.length * 7 + W[0].word.length + W[W.length - 1].word.length), qs = [];
+    const pick3 = (w, f) => shuffle(W.filter((x) => x !== w), rnd).slice(0, 3).map(f);
+    W.forEach((w, i) => qs.push({ id: "d" + i, kind: "door", w: i, prompt: w.word, options: shuffle([w.ko, ...pick3(w, (x) => x.ko)], rnd), answer: w.ko }));
+    W.map((w, i) => ({ w, i, parts: String(w.syl || "").split("-") })).filter((x) => x.parts.length >= 2 && x.parts.some((p) => /[A-Z]/.test(p)) && x.parts.join("").toLowerCase() === x.w.word.toLowerCase())
+      .sort((a, b) => (/[A-Z]/.test(a.parts[0]) ? 1 : 0) - (/[A-Z]/.test(b.parts[0]) ? 1 : 0) || a.i - b.i).slice(0, 4).sort((a, b) => a.i - b.i).forEach(({ w, i, parts }) => qs.push({ id: "e" + i, kind: "egg", w: i, prompt: w.word, options: parts.map((p) => p.toLowerCase()), answer: String(parts.findIndex((p) => /[A-Z]/.test(p))) }));
+    shuffle(W.map((w, i) => i), rnd).slice(0, 2).forEach((i) => { const w = W[i]; qs.push({ id: "l" + i, kind: "listen", w: i, prompt: w.word, options: shuffle([w.word, ...pick3(w, (x) => x.word)], rnd), answer: w.word }); });
+    W.map((w, i) => ({ w, i })).filter((x) => /^[a-z]{3,8}$/.test(x.w.word)).sort((a, b) => a.w.word.length - b.w.word.length).slice(0, 3)
+      .forEach(({ w, i }) => { let tiles = shuffle(w.word.split(""), rnd); if (tiles.join("") === w.word) tiles = tiles.reverse(); qs.push({ id: "s" + i, kind: "spell", w: i, prompt: w.ko, emoji: w.emoji || "", options: tiles, answer: w.word }); });
+    shuffle(W.map((w, i) => i), rnd).filter((i) => wordRe(W[i].word).test(W[i].ex)).slice(0, 3).forEach((i) => {
+      const w = W[i];
+      qs.push({ id: "b" + i, kind: "blank", w: i, prompt: w.ex.replace(wordRe(w.word), "_____"), hint: w.exKo || "", options: shuffle([w.word, ...pick3(w, (x) => x.word)], rnd), answer: w.word });
+    });
+    return qs;
+  };
+  /* 점수: 한 번에 맞히면 500점 + 빠르기 보너스(최대 300) + 연속 정답 보너스, 다시 시도해서 맞히면 100점 */
+  Engine.points = (a, combo) => (a.ok ? 500 + Math.max(0, Math.round(300 * (1 - Math.min(a.ms || 0, 12000) / 12000))) + Math.min(combo, 10) * 50 : 100);
+  Engine.score = function (answers) {
+    let score = 0, combo = 0, best = 0, ok = 0;
+    for (const a of answers.slice().sort((x, y) => (x.at || 0) - (y.at || 0))) {
+      score += Engine.points(a, combo);
+      if (a.ok) { ok++; combo++; best = Math.max(best, combo); } else combo = 0;
+    }
+    return { score, ok, n: answers.length, best };
+  };
+  Engine.ITEMS = ITEMS; Engine.wordRe = wordRe; Engine.freshState = freshState; Engine.clean = clean;
   if (typeof module !== "undefined") module.exports = Engine; else global.RSLEngine = Engine;
 })(typeof window !== "undefined" ? window : globalThis);

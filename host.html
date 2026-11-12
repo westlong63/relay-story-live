@@ -67,12 +67,18 @@
   .guide { background:var(--tint); border-left:4px solid var(--blue); padding:12px 16px; color:var(--ink); font-size:17px; margin:14px 0; line-height:1.6; }
   .credit { position:static; }
   label.inline { display:inline-flex; gap:6px; align-items:center; }
+  .wemo { font-size:110px; line-height:1; }
+  .syl { font-size:34px; color:var(--ink-2); margin:2px 0 4px; } .syl b.st { color:var(--red); font-size:40px; } .syl i { color:var(--line-2); font-style:normal; margin:0 6px; }
+  .hook { background:#FFF7E0; border-left:5px solid #E0A400; padding:12px 16px; margin:14px 0 0; font-size:24px; line-height:1.45; }
+  .exko { font-size:24px; color:var(--dim); margin-top:6px; }
+  .dot { padding:7px 12px; font-size:16px; } .dot.on { background:var(--navy); color:#fff; border-color:var(--navy); }
+  .gsteps div { font-size:18px; padding:8px 0; border-bottom:1px solid var(--line); } .gsteps span:first-child { font-size:24px; margin-right:8px; }
 </style>
 </head>
 <body>
 <header>
   <span class="brand">Relay Story Live</span>
-  <button class="step" data-p="topic"><span class="n">01</span>오늘의 Topic</button>
+  <button class="step" data-p="topic"><span class="n">01</span>오늘의 주제</button>
   <button class="step" data-p="words"><span class="n">02</span>단어</button>
   <button class="step" data-p="write"><span class="n">03</span>릴레이 소설</button>
   <button class="step" data-p="video"><span class="n">04</span>AI 영상</button>
@@ -90,7 +96,7 @@
 <div id="modal"></div>
 
 <script src="js/config.js"></script>
-<script>if (window.RSL_CONFIG.firebase && !new URLSearchParams(location.search).has("demo")) document.write('<script src="vendor/firebase-app-compat.js"><\/script><script src="vendor/firebase-auth-compat.js"><\/script><script src="vendor/firebase-database-compat.js"><\/script>');</script>
+<script>if (window.RSL_CONFIG.firebase && !new URLSearchParams(location.search).has("demo")) document.write('<link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="' + (window.RSL_CONFIG.firebase.databaseURL || "").replace(/[^\w:/.-]/g, "") + '"><script src="vendor/firebase-app-compat.js"><\/script><script src="vendor/firebase-auth-compat.js"><\/script><script src="vendor/firebase-database-compat.js"><\/script>');</script>
 <script src="js/content.js"></script>
 <script src="js/qrcode.js"></script>
 <script src="js/engine.js"></script>
@@ -129,22 +135,31 @@ async function boot() {
   const saved = await link.loadState();
   E = new RSLEngine(content(), saved, { room, realNames: loadList("rsl-real-names"), extraBanned: loadList("rsl-extra-banned"), onEvent });
   E.S.room = room;
+  if (!saved) E.hostAction({ action: "topic", topic: recommend().id }); /* 새 수업이면 주제를 자동으로 골라 둠 */
   $("#mode").textContent = DEMO ? "시연 모드" : "수업 모드";
   $("#mode").className = "badge" + (DEMO ? " demo" : "");
   changed();
   setInterval(() => { if (E.tick()) changed(); updateTimer(); }, 1000);
   if (DEMO) demoBar();
+  addEventListener("pagehide", () => link.saveState(E.S, true));
+  document.addEventListener("visibilitychange", () => { if (document.hidden) link.saveState(E.S, true); });
 }
 function onAction(pid, type, body) {
   const res = E.playerAction(pid, type, body);
   changed();
   return res;
 }
-function act(b) { if (E.hostAction(b)) changed(); }
+function act(b) {
+  const before = E.S.phase;
+  if (b.action === "phase" && b.phase !== "topic") markUsed(E.S.topicId);
+  if (!E.hostAction(b)) return;
+  if (b.action === "reset") E.hostAction({ action: "topic", topic: recommend(E.S.topicId).id });
+  changed(E.S.phase !== before || b.action === "reset" || b.action === "quiz");
+}
 let pubTimer = null, renderPending = false;
-function changed() {
-  link.saveState(E.S);
-  if (!pubTimer) pubTimer = setTimeout(publish, 120);
+function changed(saveNow) {
+  link.saveState(E.S, saveNow === true);
+  if (!pubTimer) pubTimer = setTimeout(publish, 40); /* 40ms 안에 생긴 변화를 모아 한 번에 보냄 */
   if (!renderPending) { renderPending = true; requestAnimationFrame(() => { renderPending = false; render(); }); }
 }
 function publish() {
@@ -169,15 +184,9 @@ document.querySelectorAll(".step").forEach((b) => b.onclick = () => act({ action
 document.addEventListener("keydown", (e) => {
   if (!V || /INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return;
   if (V.phase === "words" && (e.key === "ArrowRight" || e.key === "ArrowLeft")) act({ action: "word", d: e.key === "ArrowRight" ? 1 : -1 });
-  if (V.phase === "words" && e.key === " ") { e.preventDefault(); speakWord(V.topic.words[V.wordIndex].word); }
+  if (V.phase === "words" && (e.key === "ArrowRight" || e.key === "ArrowLeft")) stopAuto();
+  if (V.phase === "words" && e.key === " ") { e.preventDefault(); say(E.topic().words[E.S.wordIndex].word); }
 });
-function speakWord(word, sentence) {
-  const w = V.topic.words.find((x) => x.word === word);
-  let spoke = false;
-  const fallback = () => { if (spoke) return; spoke = true; try { const u = new SpeechSynthesisUtterance(sentence && w ? w.ex : word); u.lang = "en-US"; u.rate = 0.85; speechSynthesis.speak(u); } catch (e) {} };
-  const a = new Audio(`assets/audio/${encodeURIComponent(word)}${sentence ? "_ex" : ""}.mp3`);
-  a.onerror = fallback; a.play().catch(fallback);
-}
 let lastPhase = null;
 function render() {
   if (!E) return;
@@ -197,20 +206,36 @@ function render() {
   ({ topic: rTopic, words: rWords, write: rWrite, video: rVideo, watch: rWatch })[V.phase]();
 }
 
+/* ---------- 주제 자동 추천: 아직 안 한 주제 + 지금 계절에 맞는 주제를 먼저 ---------- */
+const USED_K = "rsl-used-topics";
+function usedTopics() { try { return JSON.parse(store.get(USED_K) || "{}"); } catch (e) { return {}; } }
+function markUsed(id) { const u = usedTopics(); if (!u[id]) { u[id] = Date.now(); store.set(USED_K, JSON.stringify(u)); } }
+function recommend(notId) {
+  const m = new Date().getMonth() + 1, used = usedTopics(), all = window.RSL_CONTENT.topics;
+  let pool = all.filter((t) => !used[t.id] && t.id !== notId);
+  if (!pool.length) pool = all.filter((t) => t.id !== notId).sort((a, b) => (used[a.id] || 0) - (used[b.id] || 0)).slice(0, 10);
+  const season = pool.filter((t) => (t.months || []).includes(m)), free = pool.filter((t) => !(t.months || []).length);
+  const cand = season.length && Math.random() < 0.5 ? season : free.length ? free.concat(season) : pool;
+  return cand[Math.floor(Math.random() * cand.length)] || all[0];
+}
 function rTopic() {
-  const T = V.topic, url = joinUrl();
+  const T = E.topic(), url = joinUrl(), used = usedTopics()[T.id];
   $("#main").innerHTML = `
   <div class="row">
     <div style="flex:1;min-width:520px">
-      <div class="eyebrow">Today's Topic</div>
-      <h1 class="brk">${esc(T.title)}</h1>
-      <div class="seed">${esc(T.seed)}</div>
-      <div style="margin-top:14px;font-size:20px">등장인물: ${T.characters.map((c) => `<span class="chip">${esc(c)}</span>`).join("")} <span class="dim">+ 새 인물 자유</span></div>
-      <div class="guide"><span class="tag blue">안내 멘트</span> "오늘은 이 주제로 모둠 친구들과 영어 이야기를 이어 쓰고, 마지막에 영상으로 다 같이 봐요. 화면의 QR을 찍거나 코드를 넣고 별명으로 들어오세요."</div>
+      <div class="eyebrow">오늘의 주제 <span class="tag blue" style="font-size:15px;vertical-align:middle">${T.custom ? "직접 만든 주제" : "자동 추천"}</span> ${T.genre ? `<span class="tag" style="font-size:15px;vertical-align:middle">${esc(T.genre)}</span>` : ""}</div>
+      <h1 class="brk">${esc(T.ko || T.title)}</h1>
+      ${T.ko ? `<div style="font-size:26px;font-weight:700;color:var(--blue);margin:-4px 0 10px">${esc(T.title)}</div>` : ""}
+      <div class="seed">${esc(T.seedKo || "")}</div>
+      <div class="seed dim" style="font-size:19px;margin-top:4px">${esc(T.seed)}</div>
+      <div style="margin-top:14px;font-size:19px">오늘의 단어 ${T.words.map((w) => `<span class="chip" style="font-size:17px">${esc(w.emoji || "")} ${esc(w.word)} <span class="dim">${esc(w.ko.split(",")[0])}</span></span>`).join("")}</div>
       <div class="settings">
-        주제 <select id="selTopic">${V.topics.map((t) => `<option value="${t.id}" ${t.id === T.id ? "selected" : ""}>${t.custom ? "★ " : ""}${esc(t.title)}</option>`).join("")}</select>
-        <button id="btnNewTopic">＋ 주제 만들기</button>
+        <button class="primary" id="btnRec">🎲 다른 주제 추천</button>
+        <button id="btnList">주제 ${window.RSL_CONTENT.topics.length}개 모두 보기</button>
+        ${used ? `<span class="dim">전에 한 주제예요 (${new Date(used).toLocaleDateString("ko-KR")})</span>` : `<span class="dim">이 컴퓨터에서 아직 안 한 주제예요</span>`}
+        <span style="flex:1"></span><a href="#" id="btnNewTopic" class="dim" style="font-size:15px">직접 만들기 (선택)</a>
       </div>
+      <div class="guide"><span class="tag blue">안내 멘트</span> "오늘은 이 주제로 모둠 친구들과 영어 이야기를 이어 쓰고, 마지막에 영상으로 다 같이 봐요. 화면의 QR을 찍거나 코드를 넣고 별명으로 들어오세요." <span class="dim">선생님은 영어를 읽지 않아도 돼요. 단어 발음과 영상은 컴퓨터가 읽어 줘요.</span></div>
       <div class="settings">
         모둠 수 <select id="selTeams">${[2, 3, 4, 5, 6, 7, 8].map((n) => `<option ${n === V.teamCount ? "selected" : ""}>${n}</option>`).join("")}</select>
         돌려 쓰기 라운드 <select id="selRounds">${[2, 3, 4, 5, 6].map((n) => `<option ${n === V.write.rounds ? "selected" : ""}>${n}</option>`).join("")}</select>
@@ -232,54 +257,140 @@ function rTopic() {
     <div class="team" style="--c:${t.color}"><h3>${esc(t.name)} <span class="dim" style="font-size:15px;font-weight:500">${t.members.length}명</span></h3>
     ${V.players.filter((p) => p.team === t.id).map((p) => `<span class="chip" data-kick="${p.id}" title="눌러서 내보내기">${esc(p.name)}</span>`).join("") || '<span class="dim">아직 없음</span>'}</div>`).join("")}
   </div>`;
-  $("#selTopic").onchange = (e) => { e.target.blur(); act({ action: "topic", topic: e.target.value }); };
+  $("#btnRec").onclick = () => act({ action: "topic", topic: recommend(T.id).id });
+  $("#btnList").onclick = topicListModal;
   $("#selTeams").onchange = (e) => { e.target.blur(); act({ action: "teams", n: e.target.value }); };
   $("#selRounds").onchange = (e) => { e.target.blur(); act({ action: "rounds", n: e.target.value }); };
   $("#selSec").onchange = (e) => { e.target.blur(); act({ action: "roundSec", n: e.target.value }); };
   $("#btnReset").onclick = () => { if (confirm("참가자, 점수, 이야기를 모두 지우고 처음부터 시작할까요?")) act({ action: "reset" }); };
   $("#btnSafety").onclick = safetyModal;
-  $("#btnNewTopic").onclick = topicModal;
+  $("#btnNewTopic").onclick = (e) => { e.preventDefault(); topicModal(); };
   document.querySelectorAll("[data-kick]").forEach((c) => c.onclick = () => { if (confirm(`'${c.textContent}' 학생을 내보낼까요?`)) act({ action: "kick", pid: c.dataset.kick }); });
 }
+function topicListModal() {
+  const used = usedTopics(), m = new Date().getMonth() + 1, cur = E.S.topicId;
+  const list = E.C.topics.slice().sort((a, b) => (!!used[a.id] - !!used[b.id]) || (((b.months || []).includes(m)) - ((a.months || []).includes(m))));
+  $("#modal").innerHTML = `<div class="modal"><div class="card" style="width:min(1180px,100%)">
+    <div style="display:flex;justify-content:space-between;align-items:center"><h2 style="margin:0">주제 고르기</h2><button id="mClose">닫기 ✕</button></div>
+    <p class="dim">아직 안 한 주제와 지금 계절에 맞는 주제가 앞에 있어요. 누르면 바로 바뀌어요. 단어·뜻·예문·발음이 모두 들어 있어요.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px">${list.map((t) => `
+      <button data-tp="${t.id}" style="text-align:left;padding:14px;line-height:1.45;${t.id === cur ? "outline:3px solid var(--blue);" : ""}${used[t.id] ? "opacity:.6;" : ""}">
+        <div style="font-size:13px;color:var(--red);font-weight:700">${esc(t.genre || (t.custom ? "직접 만든 주제" : ""))}${(t.months || []).includes(m) ? " · 지금 계절" : ""}${used[t.id] ? " · ✓ 했음" : ""}</div>
+        <div style="font-size:18px;font-weight:800">${esc(t.ko || t.title)}</div><div class="dim" style="font-size:14px">${esc(t.title)}</div>
+        <div style="font-size:13px;margin-top:4px;color:var(--ink-2)">${t.words.map((w) => esc(w.word)).join(" · ")}</div></button>`).join("")}</div>
+    ${Object.keys(used).length ? `<p style="margin-top:12px"><a href="#" id="clrUsed" class="dim">'했음' 기록 지우기</a></p>` : ""}</div></div>`;
+  $("#mClose").onclick = () => ($("#modal").innerHTML = "");
+  document.querySelectorAll("[data-tp]").forEach((b) => b.onclick = () => { $("#modal").innerHTML = ""; act({ action: "topic", topic: b.dataset.tp }); });
+  if ($("#clrUsed")) $("#clrUsed").onclick = (e) => { e.preventDefault(); store.del(USED_K); topicListModal(); };
+}
 
+/* ---------- 2 단어: 자동 카드 → 디벗 단어 게임 → 많이 틀린 단어 복습 ---------- */
+const reEsc = (x) => String(x).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const sylHtml = (w) => String(w.syl || w.word).split("-").map((p) => (/[A-Z]/.test(p) ? `<b class="st">${esc(p.toLowerCase())}</b>` : `<span>${esc(p)}</span>`)).join("<i>·</i>");
+let curAudio = null;
+function say(word, sentence) {
+  return new Promise((res) => {
+    const w = E.topic().words.find((x) => x.word === word);
+    let done = false; const fin = () => { if (!done) { done = true; clearTimeout(t); res(); } };
+    const t = setTimeout(fin, 7000);
+    const fallback = () => { try { const u = new SpeechSynthesisUtterance(sentence && w ? w.ex : word); u.lang = "en-US"; u.rate = 0.85; u.onend = fin; u.onerror = fin; speechSynthesis.speak(u); } catch (e) { fin(); } };
+    if (curAudio) try { curAudio.pause(); } catch (e) {}
+    const a = (curAudio = new Audio(`assets/audio/${encodeURIComponent(word)}${sentence ? "_ex" : ""}.mp3`));
+    a.onended = fin; a.onerror = fallback; a.play().catch(fallback);
+  });
+}
+function speakWord(word, sentence) { say(word, sentence); }
+const auto = { on: false, tok: 0 };
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+async function autoPlay() {
+  const my = ++auto.tok; auto.on = true; autoBtn();
+  const alive = () => auto.on && my === auto.tok && E.S.phase === "words" && E.S.quiz === "closed";
+  while (alive()) {
+    const W = E.topic().words, i = E.S.wordIndex, w = W[i];
+    await say(w.word); if (!alive()) break; await wait(700);
+    await say(w.word); if (!alive()) break; await wait(900);
+    await say(w.word, true); if (!alive()) break; await wait(3200);
+    if (!alive()) break;
+    if (i + 1 >= W.length) break;
+    act({ action: "word", d: 1 });
+  }
+  if (my === auto.tok) { auto.on = false; autoBtn(); }
+}
+function stopAuto() { auto.tok++; auto.on = false; if (curAudio) try { curAudio.pause(); } catch (e) {} autoBtn(); }
+function autoBtn() { const b = $("#auto"); if (b) { b.textContent = auto.on ? "⏸ 자동 넘기기 멈춤" : "▶ 자동으로 넘기기"; b.classList.toggle("primary", !auto.on); } }
+function bigCard(w, i, n) {
+  const ex = esc(w.ex).replace(new RegExp("\\b(" + reEsc(w.word) + "\\w*)", "i"), "<mark>$1</mark>");
+  return `<div class="dim" style="font-size:19px">${n ? `단어 ${i + 1} / ${n} · ` : ""}2022 기본 어휘(중학교) · ${esc(w.pos || "")}</div>
+    <div style="display:flex;align-items:center;gap:22px"><div class="wemo">${esc(w.emoji || "")}</div><div>
+      <div class="word">${esc(w.word)}</div>${w.syl && w.syl.includes("-") ? `<div class="syl">${sylHtml(w)} <span class="dim" style="font-size:17px">빨간 부분을 세게</span></div>` : ""}</div></div>
+    <div class="ko">${esc(w.ko)}</div>
+    ${w.hook ? `<div class="hook">💡 기억 팁 · ${esc(w.hook)}</div>` : ""}
+    <div class="ex">${ex}</div>${w.exKo ? `<div class="exko">${esc(w.exKo)}</div>` : ""}`;
+}
 function rWords() {
-  const W = V.topic.words, w = W[V.wordIndex];
-  const ex = esc(w.ex).replace(new RegExp("\\b(" + w.word + "\\w*)", "i"), "<mark>$1</mark>");
-  const teams = V.teams.filter((t) => t.members.length);
-  const quizPart = V.quiz === "closed" ? `
-      <button class="primary" id="qOpen" style="font-size:22px;padding:16px 22px">단어 퀴즈 시작 (${V.questions}문제)</button>
-      <div class="dim" style="margin:10px 0">모둠 정답률이 높으면 영상 아이템을 얻어요</div>
-      ${V.items.map((it) => `<div class="item">${ITEM_ICON[it.id]} ${esc(it.name)} · ${Math.round(it.min * 100)}% 이상</div>`).join("")}` : `
-      <h2>${V.quiz === "open" ? "퀴즈 진행 중" : "영상 아이템 결과"}</h2>
-      ${teams.map((t) => `<div style="margin:10px 0;--c:${t.color}">
-        <div style="display:flex;justify-content:space-between"><b style="color:${t.color}">${esc(t.name)}</b><span>${t.quiz.acc}% <span class="dim">(${t.quiz.answered}개 답)</span></span></div>
-        <div class="bar"><i style="width:${t.quiz.acc}%"></i>${V.items.map((it) => `<span class="tick" style="left:${it.min * 100}%"></span>`).join("")}</div>
-        ${V.quiz === "results" ? V.items.map((it) => `<span class="item ${t.quiz.items.includes(it.id) ? "got" : ""}">${ITEM_ICON[it.id]} ${esc(it.name)}</span>`).join("") : ""}
-      </div>`).join("") || '<div class="dim">아직 입장한 모둠이 없어요</div>'}
-      ${V.quiz === "open" ? `<button class="primary" id="qRes">결과 보기 (퀴즈 마감)</button>` : `<button id="qAgain">퀴즈 다시 열기</button> <button class="primary" id="goWrite">3 릴레이 소설로 →</button>`}`;
-  $("#main").innerHTML = `
-  <div class="guide">단어 카드를 넘기며 🔊 버튼으로 발음을 들려주세요. 선생님은 영어를 읽지 않아도 돼요. 다 보면 오른쪽 퀴즈를 시작하세요.</div>
-  <div class="row">
-    <div class="card" style="flex:1.4;min-width:560px">
-      <div class="dim" style="font-size:19px">WORD ${V.wordIndex + 1} / ${W.length} · 2022 기본 어휘(중학교) · ${esc(w.pos)}</div>
-      <div class="word">${esc(w.word)}</div>
-      <div class="ko">${esc(w.ko)}</div>
-      <div class="ex">${ex}</div>
-      <div style="margin-top:24px;display:flex;gap:10px;flex-wrap:wrap">
-        <button id="prev" style="font-size:22px">◀</button><button id="say" style="font-size:20px">🔊 단어</button><button id="sayEx" style="font-size:20px">🔊 예문</button><button id="next" style="font-size:22px">▶</button>
-        <span class="dim" style="align-self:center">← → 키로 넘기기 · 스페이스 = 발음</span>
+  const T = E.topic(), W = T.words, w = W[V.wordIndex], teams = V.teams.filter((t) => t.members.length), nQ = V.questions;
+  if (V.quiz === "closed") {
+    $("#main").innerHTML = `
+    <div class="guide">"▶ 자동으로 넘기기"를 누르면 단어 → 단어 → 예문 순서로 컴퓨터가 읽어 주고 다음 단어로 넘어가요. 학생 디벗에도 같은 카드가 나와요. 다 보면 오른쪽의 단어 게임을 시작하세요.</div>
+    <div class="row">
+      <div class="card" style="flex:1.5;min-width:600px">
+        ${bigCard(w, V.wordIndex, W.length)}
+        <div style="margin-top:22px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+          <button id="auto" style="font-size:20px"></button>
+          <button id="prev" style="font-size:20px">◀</button><button id="say" style="font-size:19px">🔊 단어</button><button id="sayEx" style="font-size:19px">🔊 예문</button><button id="next" style="font-size:20px">▶</button>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">${W.map((x, i) => `<button data-wi="${i}" class="dot ${i === V.wordIndex ? "on" : ""}">${i + 1} ${esc(x.word)}</button>`).join("")}</div>
+        <div class="dim" style="margin-top:8px;font-size:15px">← → 키로 넘기기 · 스페이스 = 발음</div>
       </div>
-    </div>
-    <div class="card" style="flex:1;min-width:380px">${quizPart}</div>
-  </div>`;
-  $("#prev").onclick = () => act({ action: "word", d: -1 });
-  $("#next").onclick = () => act({ action: "word", d: 1 });
-  $("#say").onclick = () => speakWord(w.word);
-  $("#sayEx").onclick = () => speakWord(w.word, true);
-  if ($("#qOpen")) $("#qOpen").onclick = () => act({ action: "quiz", state: "open" });
-  if ($("#qRes")) $("#qRes").onclick = () => act({ action: "quiz", state: "results" });
+      <div class="card" style="flex:1;min-width:360px">
+        <h2>디벗 단어 게임 (${nQ}문제)</h2>
+        <div class="gsteps">${[["🚪", "뜻의 문", "알맞은 뜻의 문 열기"], ["🥚", "강세 달걀", "세게 읽는 부분 고르기"], ["🎧", "듣고 고르기", "소리 듣고 단어 고르기"], ["🧩", "철자 퍼즐", "글자 순서 맞히기"], ["✏️", "빈칸 채우기", "예문 빈칸 채우기"]].map(([e, a, b], i) => `<div><span>${e}</span><b>${i + 1}. ${a}</b> <span class="dim">${b}</span></div>`).join("")}</div>
+        <p class="dim">틀리면 맞힐 때까지 다시 해요. 한 번에 맞히고, 빠르고, 연속으로 맞히면 점수가 올라가요. 모둠 정답률에 따라 영상 아이템을 받아요.</p>
+        ${V.items.map((it) => `<div class="item">${esc(it.name)} · 정답률 ${Math.round(it.min * 100)}% 이상</div>`).join("")}
+        <button class="primary" id="qOpen" style="font-size:22px;padding:16px 22px;margin-top:14px;width:100%">단어 게임 시작 ▶</button>
+      </div>
+    </div>`;
+    autoBtn();
+    $("#auto").onclick = () => (auto.on ? stopAuto() : autoPlay());
+    $("#prev").onclick = () => { stopAuto(); act({ action: "word", d: -1 }); };
+    $("#next").onclick = () => { stopAuto(); act({ action: "word", d: 1 }); };
+    $("#say").onclick = () => say(w.word);
+    $("#sayEx").onclick = () => say(w.word, true);
+    document.querySelectorAll("[data-wi]").forEach((b) => b.onclick = () => { stopAuto(); act({ action: "word", i: +b.dataset.wi }); });
+    $("#qOpen").onclick = () => { stopAuto(); act({ action: "quiz", state: "open" }); };
+    return;
+  }
+  const ps = Object.values(E.S.players), fin = ps.filter((p) => Object.keys(p.answers || {}).length >= nQ).length;
+  const ranked = teams.slice().sort((a, b) => b.quiz.avg - a.quiz.avg), maxAvg = Math.max(1, ...ranked.map((t) => t.quiz.avg));
+  const top5 = ps.map((p) => ({ name: p.name, team: p.team, sc: RSLEngine.score(Object.values(p.answers || {})) })).filter((x) => x.sc.n).sort((a, b) => b.sc.score - a.sc.score).slice(0, 5);
+  const board = `<div class="card" style="flex:1.3;min-width:560px">
+      <h2>${V.quiz === "open" ? "모둠 순위 (실시간)" : "모둠 결과 · 영상 아이템"}</h2>
+      ${ranked.map((t, i) => `<div style="margin:12px 0;--c:${t.color}">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;font-size:20px"><b style="color:${t.color}">${i + 1}. ${esc(t.name)}</b><span><b style="font-variant-numeric:tabular-nums">${t.quiz.avg.toLocaleString()}</b>점 <span class="dim" style="font-size:15px">(1인 평균) · 정답률 ${t.quiz.acc}%</span></span></div>
+        <div class="bar" style="height:18px"><i style="width:${Math.round((100 * t.quiz.avg) / maxAvg)}%"></i></div>
+        <div style="margin-top:4px">${V.items.map((it) => `<span class="item ${t.quiz.items.includes(it.id) ? "got" : ""}" style="font-size:14px">${esc(it.name)} ${Math.round(it.min * 100)}%</span>`).join("")}</div>
+      </div>`).join("") || '<div class="dim">아직 입장한 모둠이 없어요</div>'}</div>`;
+  const side = `<div class="card" style="flex:1;min-width:340px">
+      <div style="font-size:22px">다 푼 학생 <b>${fin}</b> / ${ps.length}</div><div class="bar" style="margin:8px 0 16px"><i style="width:${ps.length ? Math.round((100 * fin) / ps.length) : 0}%"></i></div>
+      <h2 style="font-size:22px">개인 TOP 5</h2>${top5.map((x, i) => `<div style="font-size:19px;margin:6px 0">${["🥇", "🥈", "🥉", "4.", "5."][i]} <b>${esc(x.name)}</b> <span class="dim">${x.sc.score.toLocaleString()}점 · 최고 ${x.sc.best}연속</span></div>`).join("") || '<div class="dim">아직 푼 학생이 없어요</div>'}
+      ${V.quiz === "open" ? `<button class="primary" id="qRes" style="font-size:20px;margin-top:18px;width:100%">게임 끝내기 → 많이 틀린 단어 복습</button>` : `<button id="qAgain" style="margin-top:18px">게임 다시 열기</button>`}</div>`;
+  if (V.quiz === "open") {
+    $("#main").innerHTML = `<div class="guide">학생들이 디벗으로 단어 게임을 해요 (약 3~4분). 거의 다 풀면 "게임 끝내기"를 누르세요.</div><div class="row">${board}${side}</div>`;
+    $("#qRes").onclick = () => act({ action: "quiz", state: "results" });
+    return;
+  }
+  const top = V.missed.slice(0, 3);
+  $("#main").innerHTML = `
+    <div class="guide">우리 반이 많이 틀린 단어를 한 번 더 들어 봐요. 이 단어들이 바로 이야기 쓰기의 미션 단어로 나와요.</div>
+    <h2>많이 틀린 단어 ${top.length ? "TOP " + top.length : ""}</h2>
+    ${top.length ? `<div class="row">${top.map((x, k) => `<div class="card" style="flex:1;min-width:360px">${bigCard(W[x.i], x.i, 0).replace('class="word"', 'class="word" style="font-size:64px"')}
+      <div class="dim" style="margin-top:10px">틀린 횟수 ${x.c}번</div><div style="margin-top:10px;display:flex;gap:8px"><button data-sw="${x.i}">🔊 단어</button><button data-se="${x.i}">🔊 예문</button></div></div>`).join("")}</div>` : `<div class="card ok" style="font-size:22px">모두 거의 다 맞혔어요! 👏</div>`}
+    <div class="row" style="margin-top:16px">${board}${side.replace("</div>", "</div>")}</div>
+    <div style="margin-top:16px"><button class="primary" id="goWrite" style="font-size:22px;padding:14px 22px">3 릴레이 소설로 →</button></div>`;
+  document.querySelectorAll("[data-sw]").forEach((b) => b.onclick = () => say(W[+b.dataset.sw].word));
+  document.querySelectorAll("[data-se]").forEach((b) => b.onclick = () => say(W[+b.dataset.se].word, true));
   if ($("#qAgain")) $("#qAgain").onclick = () => act({ action: "quiz", state: "open" });
-  if ($("#goWrite")) $("#goWrite").onclick = () => act({ action: "phase", phase: "write" });
+  $("#goWrite").onclick = () => act({ action: "phase", phase: "write" });
 }
 
 function fmt(sec) { sec = Math.max(0, sec | 0); return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`; }
@@ -294,7 +405,7 @@ function rWrite() {
   const w = V.write, st = V.roundStatus, teams = V.teams.filter((t) => t.writers.length || t.members.length);
   const head = w.done ? `<h2>돌려 쓰기 끝! 이야기 ${V.report.stories}편 완성</h2><button class="primary" id="goVideo" style="font-size:22px;padding:14px 22px">4 AI 영상 만들기로 →</button>` : `
     <div class="row" style="align-items:center">
-      <div><div class="dim" style="font-size:20px">ROUND ${w.round + 1} / ${w.rounds}</div><div class="timer" id="timer"></div></div>
+      <div><div class="dim" style="font-size:20px">라운드 ${w.round + 1} / ${w.rounds}</div><div class="timer" id="timer"></div></div>
       <div style="flex:1;min-width:300px">
         <div style="font-size:22px">제출 <b>${st.done}</b> / ${st.total}</div>
         <div class="bar" style="margin:8px 0"><i style="width:${st.total ? Math.round((100 * st.done) / st.total) : 0}%"></i></div>
@@ -327,12 +438,25 @@ async function prepFilm(story) {
   if (!prepCache[story.id] || prepCache[story.id].key !== key) prepCache[story.id] = { key, p: RSLTheater.prepare(film, { topicId: E.S.topicId }) };
   return prepCache[story.id].p;
 }
+/* 학생이 우리말 자막을 안 쓴 줄: 크롬에 내장된 번역 기능(인터넷으로 보내지 않음)이 있으면 채워요. 없으면 영어 자막만 나와요 */
+async function fillKo() {
+  try {
+    if (!("Translator" in self)) return;
+    const opt = { sourceLanguage: "en", targetLanguage: "ko" }, av = await Promise.race([Translator.availability(opt), wait(1500).then(() => "timeout")]);
+    if (av !== "available") { if (av === "downloadable") Translator.create(opt).catch(() => {}); return; } /* 처음엔 번역 모델만 내려받고, 다음부터 써요 */
+    const tr = await Translator.create(opt);
+    E.autoKo = E.autoKo || {};
+    for (const s of E.S.stories) for (const ep of s.episodes) for (const sc of ep.scenes)
+      for (const l of E.parseScene(sc.text, {}, sc.ko)) if (!l[2] && !E.autoKo[l[1]]) { try { const k = await Promise.race([tr.translate(l[1]), wait(3000).then(() => "")]); if (k) E.autoKo[l[1]] = k; } catch (e) {} }
+  } catch (e) {}
+}
 let making = null, mkPct = 0;
 async function makeFilms() {
   if (making) return making;
   const stories = E.S.stories.filter((s) => s.episodes.length);
   const prog = { done: 0, total: stories.length };
   making = (async () => {
+    await Promise.race([fillKo(), wait(12000)]);
     for (const s of stories) { await prepFilm(s); prog.done++; const el = $("#mkProg"); mkPct = Math.round((100 * prog.done) / prog.total); if (el) el.style.width = mkPct + "%"; await new Promise((r) => setTimeout(r, 60)); }
     link.publishFilms(E.allFilms());
     act({ action: "makeFilms" });
@@ -348,7 +472,7 @@ function rVideo() {
   ${V.filmsMade ? `<div class="ok" style="font-size:20px">영상 ${V.report.stories}편 완성! 썸네일을 눌러 미리 볼 수 있어요.</div>` : `
     <button class="primary" id="mk" style="font-size:22px;padding:14px 22px">모든 이야기를 영상으로 만들기</button>
     <div class="bar" style="margin:10px 0;max-width:600px"><i id="mkProg" style="width:${mkPct}%"></i></div>
-    <div class="dim">장면 그림 → 자막 → 영어 음성 → 배경음악 순서로 이 화면에서 바로 만들어져요. 기다릴 필요 없어요.</div>`}
+    <div class="dim">장면 그림 → 영어·우리말 자막 → 영어 음성 → 배경음악 순서로 이 화면에서 바로 만들어져요. 학생이 우리말 자막을 안 쓴 줄은 크롬의 번역 기능이 있으면 자동으로 채워요.</div>`}
   <div class="teams">${teams.map((t) => `
     <div class="team" style="--c:${t.color}"><h3>${esc(t.name)} ${t.quiz.items.map((i) => ITEM_ICON[i]).join(" ")}</h3>
       ${t.stories.filter((s) => s.n).map((s) => `<div class="story ${t.rep === s.id ? "rep" : ""}">
@@ -377,13 +501,15 @@ function previewModal(storyId) {
     <div style="display:flex;justify-content:space-between;align-items:center"><h2 style="margin:0">선생님 미리보기</h2><button id="mClose">닫기 ✕</button></div>
     <div class="dim" style="margin:6px 0 10px">학생들과 보기 전에 내용과 그림을 확인하세요. (프로젝터를 잠시 끄고 보셔도 돼요)</div>
     <div class="stage"><canvas id="pv"></canvas></div>
-    <div class="ctrl"><button class="primary" id="pvPlay">▶ 재생</button><button id="pvNext">⏭ 장면 넘기기</button></div>
+    <div class="ctrl"><button class="primary" id="pvPlay">▶ 재생</button><button id="pvNext">⏭ 장면 넘기기</button>
+      <label class="inline"><input type="checkbox" id="pvKo" checked> 우리말 자막</label><label class="inline"><input type="checkbox" id="pvFast"> 빠르게</label></div>
     <div id="pvText" style="margin-top:12px;font-size:15px;line-height:1.6"></div></div></div>`;
   const th = new RSLTheater.Theater($("#pv"));
   prepFilm(s).then((p) => {
     th.poster(p);
-    $("#pvText").innerHTML = p.film.episodes.map((e, i) => `<div style="margin-top:8px"><b style="color:var(--gold)">EP${i + 1} ${esc(e.title)}</b> <span class="dim">by ${esc(e.writer)}</span>${e.scenes.map((sc) => `<div class="dim">${esc(sc.screen)}</div>${sc.lines.map((l) => `<div>${l[0] !== "Narrator" ? `<b>${esc(l[0])}:</b> ` : ""}${esc(l[1])}</div>`).join("")}`).join("")}</div>`).join("");
-    $("#pvPlay").onclick = () => th.play(p);
+    $("#pvText").innerHTML = p.film.episodes.map((e, i) => `<div style="margin-top:8px"><b style="color:var(--gold)">EP${i + 1} ${esc(e.title)}</b> <span class="dim">by ${esc(e.writer)}</span>${e.scenes.map((sc) => `<div class="dim">${esc(sc.screen)}</div>${sc.lines.map((l) => `<div>${l[0] !== "Narrator" ? `<b>${esc(l[0])}:</b> ` : ""}${esc(l[1])}${l[2] ? ` <span class="dim">· ${esc(l[2])}</span>` : ""}</div>`).join("")}`).join("")}</div>`).join("");
+    $("#pvPlay").onclick = () => { th.koOn = $("#pvKo").checked; th.fast = $("#pvFast").checked; th.play(p); };
+    $("#pvKo").onchange = (e) => (th.koOn = e.target.checked); $("#pvFast").onchange = (e) => (th.fast = e.target.checked);
     $("#pvNext").onclick = () => th.next();
   });
   $("#mClose").onclick = () => { th.stop(); $("#modal").innerHTML = ""; };
@@ -403,7 +529,7 @@ function rWatch() {
   if (i >= list.length) { stopTheater(); return rAwards(); }
   const cur = list[i], t = V.teams[cur.team], s = E.S.stories.find((x) => x.id === cur.story);
   const key = cur.story + ":" + i;
-  const counts = `${Object.keys(EMO).map((e) => `<span class="rx">${EMO[e]} ${t.reactions[e] || 0}</span>`).join("")}<span class="dim">Best Story 투표 ${t.votes}</span>`;
+  const counts = `${Object.keys(EMO).map((e) => `<span class="rx">${EMO[e]} ${t.reactions[e] || 0}</span>`).join("")}<span class="dim">베스트 스토리 투표 ${t.votes}</span>`;
   if (key === shownKey && $("#rxCounts")) { $("#rxCounts").innerHTML = counts; return; }
   $("#main").innerHTML = `
     <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><h2 style="margin:0;color:${t.color}">${i + 1} / ${list.length} · ${esc(t.name)}</h2>
@@ -416,17 +542,21 @@ function rWatch() {
   info.innerHTML = `<div class="ctrl"><button class="primary" id="play">▶ 재생</button><button id="pause">⏸ 일시정지</button><button id="skip">⏭ 장면 넘기기</button>
       <label class="inline"><input type="checkbox" id="vOn" ${!theater || theater.voiceOn ? "checked" : ""}> 🔊 음성</label>
       <label class="inline"><input type="checkbox" id="mOn" ${!theater || theater.musicOn ? "checked" : ""}> 음악</label>
+      <label class="inline"><input type="checkbox" id="kOn" ${!theater || theater.koOn ? "checked" : ""}> 우리말 자막</label>
+      <label class="inline"><input type="checkbox" id="fOn" ${theater && theater.fast ? "checked" : ""}> 빠르게</label>
       <button id="fs">전체 화면</button><span style="flex:1"></span>
       <span id="rxCounts">${counts}</span></div>
-    <div class="dim" style="margin-top:6px">학생 디벗: 반응 이모지 보내기 · 다른 모둠 Best Story 투표</div>`;
+    <div class="dim" style="margin-top:6px">학생 디벗: 반응 이모지 보내기 · 다른 모둠 베스트 스토리 투표</div>`;
   if (!theater) theater = new RSLTheater.Theater($("#screen"), {});
   shownKey = key; theater.stop();
   prepFilm(s).then((p) => { if (shownKey === key) theater.poster(p); });
-  $("#play").onclick = async () => { const p = await prepFilm(s); theater.voiceOn = $("#vOn").checked; theater.setMusic($("#mOn").checked); theater.play(p); };
+  $("#play").onclick = async () => { const p = await prepFilm(s); theater.voiceOn = $("#vOn").checked; theater.koOn = $("#kOn").checked; theater.fast = $("#fOn").checked; theater.setMusic($("#mOn").checked); theater.play(p); };
   $("#pause").onclick = () => { theater.pause(!theater.paused); $("#pause").textContent = theater.paused ? "▶ 이어서" : "⏸ 일시정지"; };
   $("#skip").onclick = () => theater.next();
   $("#vOn").onchange = (e) => { theater.voiceOn = e.target.checked; };
   $("#mOn").onchange = (e) => theater.setMusic(e.target.checked);
+  $("#kOn").onchange = (e) => { theater.koOn = e.target.checked; };
+  $("#fOn").onchange = (e) => { theater.fast = e.target.checked; };
   $("#fs").onclick = () => { const st = $("#stage"); (st.requestFullscreen || st.webkitRequestFullscreen).call(st); };
   $("#stage").onclick = (e) => { if (!theater.playing && e.target.tagName === "CANVAS") $("#play").click(); };
 }
@@ -436,14 +566,14 @@ function rAwards() {
   const by = (f) => active.slice().sort((a, b) => f(b) - f(a))[0];
   const best = by((t) => t.votes), words = by((t) => (t.missionTotal ? t.missionUsed / t.missionTotal : 0)), aud = by((t) => Object.values(t.reactions).reduce((a, b) => a + b, 0));
   const R = V.report, gal = galleryUrl();
-  $("#main").innerHTML = `<div class="eyebrow">Today's</div><h1 class="brk">Awards</h1>
+  $("#main").innerHTML = `<div class="eyebrow">오늘의</div><h1 class="brk">시상식</h1>
     <div class="row"><div style="flex:1;min-width:480px">
-      <div class="award">Best Story (친구 투표): <b>${esc(best.name)}</b> <span class="dim">${best.votes}표</span></div>
-      <div class="award">Word Master (미션 단어 사용률): <b>${esc(words.name)}</b> <span class="dim">${words.missionUsed}/${words.missionTotal}</span></div>
-      <div class="award">👏 Audience Favorite (반응): <b>${esc(aud.name)}</b></div>
+      <div class="award">베스트 스토리상 (친구 투표): <b>${esc(best.name)}</b> <span class="dim">${best.votes}표</span></div>
+      <div class="award">단어왕 (미션 단어 사용률): <b>${esc(words.name)}</b> <span class="dim">${words.missionUsed}/${words.missionTotal}</span></div>
+      <div class="award">👏 인기상 (친구들 반응): <b>${esc(aud.name)}</b></div>
       <h2 style="margin-top:22px">오늘의 수업 기록 <span class="dim" style="font-size:16px">학급 스티커 판단에 참고하세요</span></h2>
       <div class="report">
-        <div>참여 학생<b>${R.players}명</b></div><div>퀴즈 참여 · 정답률<b>${R.quizzed}명 · ${R.quizAcc}%</b></div>
+        <div>참여 학생<b>${R.players}명</b></div><div>단어 게임 참여 · 한 번에 맞힌 비율<b>${R.quizzed}명 · ${R.quizAcc}%</b></div>
         <div>함께 쓴 이야기<b>${R.stories}편</b></div><div>쓴 화 · 문장<b>${R.episodes}화 · ${R.sentences}문장</b></div>
         <div>미션 단어 사용<b>${R.missionUsed} / ${R.missionTotal}</b></div><div>보낸 반응<b>${R.reactions}개</b></div>
       </div>
@@ -508,14 +638,15 @@ async function topicModal() {
 function demoBar() {
   const bar = $("#demoBar"); bar.hidden = false;
   const bots = ["Tiger", "Cookie", "Rocket", "Mango", "Pixel", "Bubble", "Nova", "Panda", "Comet", "Kiwi", "Lemon", "Otter"];
-  bar.innerHTML = `<button id="dJoin">가상 학생 8명 입장</button><button id="dQuiz">퀴즈 자동 풀기</button><button id="dWrite">이번 라운드 자동 쓰기</button><button id="dVote">대표작·투표 자동</button>`;
+  bar.innerHTML = `<button id="dJoin">가상 학생 8명 입장</button><button id="dQuiz">단어 게임 자동 풀기</button><button id="dWrite">이번 라운드 자동 쓰기</button><button id="dVote">대표작·투표 자동</button>`;
   $("#dJoin").onclick = () => { bots.slice(0, 8).forEach((n, i) => E.playerAction("bot" + i, "join", { name: n, team: i % Math.min(4, E.S.teams.length) })); changed(); };
   $("#dQuiz").onclick = () => {
+    if (E.S.phase !== "words") E.hostAction({ action: "phase", phase: "words" });
     if (E.S.quiz !== "open") E.hostAction({ action: "quiz", state: "open" });
     const qs = E.questions();
     for (const p of Object.values(E.S.players)) if (p.id.startsWith("bot")) {
       const skill = 0.55 + (p.team % 3) * 0.17;
-      for (const q of qs) if (!p.answers[q.id]) E.playerAction(p.id, "answer", { qid: q.id, choice: Math.random() < skill ? q.answer : q.options.find((o) => o !== q.answer) });
+      for (const q of qs) if (!p.answers[q.id]) E.playerAction(p.id, "answer", { qid: q.id, tries: Math.random() < skill ? 1 : 2 + Math.floor(Math.random() * 2), ms: 1500 + Math.random() * 7000 });
     }
     changed();
   };
