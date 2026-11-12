@@ -58,7 +58,7 @@
   .doors button { margin:0 0 4px !important; min-height:100px; padding:26px 12px 14px; background:linear-gradient(#ffffff,#eef4ff); border:0; border-radius:26px 26px 8px 8px; font-size:19px; font-weight:700; color:#16306e; position:relative;
     box-shadow:inset 0 2px 0 #fff, inset 0 -4px 0 rgba(31,86,200,.12), 0 0 0 2px #9dbbe9, 0 5px 0 2px #7d9ed6 !important; }
   .doors button:active { transform:translateY(3px); box-shadow:inset 0 2px 0 #fff, 0 0 0 2px #9dbbe9, 0 2px 0 2px #7d9ed6 !important; }
-  .doors button::before { content:attr(data-l); position:absolute; top:8px; left:50%; transform:translateX(-50%); font-family:"Galmuri11",var(--font); font-size:12px; color:#fff; background:#2f6fe8; border-radius:4px; padding:1px 7px; }
+  .doors button::before { content:attr(data-l); position:absolute; top:8px; left:50%; transform:translateX(-50%); font-family:var(--font); font-weight:700; font-size:12px; color:#fff; background:#2f6fe8; border-radius:4px; padding:1px 7px; }
   .doors button::after { content:""; position:absolute; right:14px; top:58%; width:8px; height:8px; border-radius:50%; background:#ffd23f; box-shadow:0 0 0 2px #1f3f8f; }
   .eggs { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
   .eggs button { width:auto !important; min-width:92px; height:118px; border-radius:50% 50% 46% 46% / 60% 60% 40% 40%; background:radial-gradient(circle at 38% 30%, #ffffff 0 18%, #f1f6ff 40%, #dce9fd 100%); border:0; color:#16306e; font-size:24px; font-weight:800; margin:0 0 4px !important;
@@ -107,7 +107,12 @@
   .gswitch button.on { color:#fff; background:linear-gradient(#5d9cff, #2f6fe8 55%, #2459cc); text-shadow:0 2px 0 rgba(10,35,110,.5); box-shadow:inset 0 2px 0 rgba(255,255,255,.5), inset 0 -3px 0 rgba(0,0,0,.18), 0 0 0 2px #163f9e, 0 4px 0 2px #0f2c73; }
   .pond { position:relative; height:230px; overflow:hidden; background:linear-gradient(var(--s1, #bfe6ff), var(--s2, #e8f6ff) 34%, var(--w1, #7cc8f0) 34%, var(--w2, #2f7fc0)); cursor:pointer; user-select:none; -webkit-user-select:none; touch-action:manipulation; border:2px solid #1f3f8f; border-radius:6px; }
   .pond canvas.pxpond { position:absolute; inset:0; width:100%; height:100%; image-rendering:crisp-edges; image-rendering:pixelated; }
-  .pond .pn, .pond .msg, .catchCard .fn, .catchCard .fc, .tierTag { font-family:"Galmuri11", var(--font); font-weight:700; letter-spacing:0; }
+  .pond .pn, .catchCard .fc { font-family:"Galmuri11", var(--font); font-weight:700; letter-spacing:0; }
+  .pond .msg, .catchCard .fn, .tierTag { font-family:var(--font); font-weight:800; }
+  /* 게임 화면: 숫자·영어 게임 말만 픽셀 글꼴, 우리말 안내는 Pretendard */
+  .fhud.pxt, .rhud.pxt, .rspell.pxt, .qtitle.pxt, .rbox button.go, .rctl button, .rgoal span { font-family:var(--font); font-weight:800; letter-spacing:-.01em; }
+  .fhud .tm, .fhud b, .rhud .rtm, .rhud .rsc b, .rctl .jump { font-family:var(--px-font); font-weight:700; letter-spacing:0; }
+  .rctl small { font-family:var(--font); }
   .pond .pn { position:absolute; left:6px; top:6px; z-index:2; font-size:15px; background:rgba(255,255,255,.88); padding:3px 8px; color:#1b3a80; border:2px solid #1f3f8f; border-radius:4px; }
   .pond .pn small { color:#4a5568; font-size:11px; }
   /* 물고기 카드가 뜨면 연못 이름은 카드 왼쪽에 짧게 */
@@ -321,7 +326,7 @@ function render() {
 function rJoin() {
   const d = JSON.parse(store.get(JK) || "{}");
   $("#main").innerHTML = `
-    <h1 class="brk">Relay Story Live</h1>
+    <h1 class="brk wordmark">Relay Story Live</h1>
     <div class="card"><div class="dim">오늘의 주제</div><h2>${esc(V.topic.title)}</h2>${V.topic.ko ? `<div style="font-weight:600;color:var(--blue);font-size:14px">${esc(V.topic.ko)}</div>` : ""}<div class="dim" style="margin-top:6px">${esc(V.topic.seed)}</div></div>
     <div class="card"><label>닉네임 (실명 말고 별명!)</label><input id="nm" maxlength="12" placeholder="예: Moonlight" value="${esc(d.name || "")}">
     <label>모둠 고르기</label>

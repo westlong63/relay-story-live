@@ -655,7 +655,9 @@
   const puangURL = (pose) => { const k = "up" + pose; return cache[k] || (cache[k] = scaled(puang(pose), 4)); };
   /* <img> 태그 문자열: 높이(px)만 정하면 비율대로 커져요 */
   const fishImg = (pond, tier, h, cls) => `<img class="pxi ${cls || ""}" src="${fishURL(pond, tier)}" style="height:${h}px;width:${Math.round((h * 26) / 16)}px" alt="">`;
-  const puangImg = (pose, h, cls) => `<img class="pxi ${cls || ""}" src="${puangURL(pose)}" style="height:${h}px;width:${Math.round((h * 32) / 36)}px" alt="푸앙이">`;
+  /* 화면에 넣는 푸앙이 그림: 고해상도 그림(assets/px, 64×64)을 써요 */
+  const HD_POSES = ["run0", "run1", "run2", "run3", "jump", "hurt", "stand", "blink", "wow", "cheer", "fish"];
+  const puangImg = (pose, h, cls) => `<img class="pxi ${cls || ""}" src="${HDB}assets/px/${HD_POSES.includes(pose) ? pose : "stand"}.png" style="height:${h}px;width:${h}px" alt="푸앙이">`;
 
   /* ---------- 움직이는 낚시터: 100줄 높이의 작은 그림을 크게 늘려서 보여 줘요 ---------- */
   const LH = 100, HZ = 34, GY = 65; /* 화면 높이, 수평선, 푸앙이가 서는 땅 */
@@ -929,7 +931,7 @@
     x.drawImage(P[pose] || P.stand, px0, py0);
     /* 낚싯대와 낚싯줄 */
     if (!st.over) {
-      const hx = px0 + 41, hy = py0 + 44;
+      const hx = px0 + 45, hy = py0 + 45;
       const tip = mode === "caught" ? [hx + 14, hy - 56] : mode === "wait" ? [hx + 46, hy - 34] : mode === "bite" ? [hx + 44, hy - 18 + (Math.floor(t / 70) % 2) * 2] : [hx + 24, hy - 52];
       const mx = hx + (tip[0] - hx) * 0.24, my = hy + (tip[1] - hy) * 0.24;
       line(hx - 3, hy + 4, mx, my, "#4a2e14", 3);

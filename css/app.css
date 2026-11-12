@@ -20,9 +20,11 @@ body { margin:0; background:var(--px-sky) linear-gradient(180deg, #2a68dc 0, #5d
 /* 페이지 뒤 픽셀 풍경 (js/pxart.js 가 한 번 그려요) + 글 읽기 편하게 옅은 막 */
 #bgScene { position:fixed; inset:0; width:100vw; height:100vh; z-index:-2; display:block; image-rendering:crisp-edges; image-rendering:pixelated; pointer-events:none; }
 body.scene::before { content:""; position:fixed; inset:0; z-index:-1; pointer-events:none; background:linear-gradient(180deg, rgba(214,231,252,0) 0%, rgba(214,231,252,.28) 40%, rgba(214,231,252,.62) 100%); }
-h1, h2, h3 { font-family:var(--px-font); font-weight:400; letter-spacing:0; color:var(--ink); }
+/* 글꼴 규칙: 읽는 글(제목·버튼·안내)은 모두 Pretendard. 픽셀 글꼴(.pxt, .wordmark)은 로고와 게임 점수처럼 꾸밈이 필요한 곳에만 */
+h1, h2, h3 { font-family:var(--font); font-weight:800; letter-spacing:-.015em; color:var(--ink); }
+.wordmark { font-family:var(--px-font); font-weight:400; letter-spacing:0; }
 /* 버튼: 반짝이는 키캡. 흰 키캡이 기본, 파란 키캡이 주 버튼 */
-button, a.btn { font-family:var(--px-font); font-size:inherit; font-weight:700; letter-spacing:0; cursor:pointer; border:0; border-radius:4px; padding:11px 18px; color:#1d4fc0; background:linear-gradient(#ffffff, #e9f1ff); touch-action:manipulation;
+button, a.btn { font-family:var(--font); font-size:inherit; font-weight:700; letter-spacing:-.01em; cursor:pointer; border:0; border-radius:4px; padding:11px 18px; color:#1d4fc0; background:linear-gradient(#ffffff, #e9f1ff); touch-action:manipulation;
   box-shadow:inset 0 2px 0 #fff, inset 0 -3px 0 rgba(31,86,200,.13), 0 0 0 2px var(--frame-2), 0 4px 0 2px #7d9ed6; transition:transform .06s, filter .12s; }
 button:hover:not(:disabled), a.btn:hover { filter:brightness(1.04); }
 button:active:not(:disabled), a.btn:active { transform:translateY(3px); box-shadow:inset 0 2px 0 #fff, inset 0 -2px 0 rgba(31,86,200,.13), 0 0 0 2px var(--frame-2), 0 1px 0 2px #7d9ed6; }
@@ -56,14 +58,14 @@ b, strong { font-weight:700; }
 .glass { background:var(--glass); color:#fff; }
 
 /* 머리글: 작은 영문 + 제목 + 빨간 각진 괄호 */
-.eyebrow { font-family:var(--px-font); font-weight:400; color:var(--blue); letter-spacing:.04em; line-height:1.1; }
+.eyebrow { font-family:var(--font); font-weight:700; color:var(--blue); letter-spacing:0; line-height:1.1; }
 .brk::after { content:""; display:inline-block; width:.42em; height:.42em; border-top:3px solid var(--red); border-right:3px solid var(--red); margin-left:.12em; vertical-align:.62em; }
 
 /* 칩과 태그 */
 .chip { display:inline-block; background:#f1f6ff; border:0; border-radius:4px; box-shadow:0 0 0 2px var(--frame); padding:4px 11px; margin:3px 7px 3px 2px; font-size:15px; color:var(--ink-2); }
 .chip.on { background:var(--blue); color:#fff; font-weight:700; box-shadow:0 0 0 2px #163f9e; }
 .chip.off { opacity:.55; }
-.tag { display:inline-block; background:var(--red-tag); color:#fff; font-family:var(--px-font); font-size:13px; font-weight:700; padding:3px 9px; border-radius:3px; letter-spacing:0; box-shadow:inset 0 1px 0 rgba(255,255,255,.35); }
+.tag { display:inline-block; background:var(--red-tag); color:#fff; font-family:var(--font); font-size:13px; font-weight:700; padding:3px 9px; border-radius:3px; letter-spacing:0; box-shadow:inset 0 1px 0 rgba(255,255,255,.35); }
 .tag.blue { background:var(--blue); }
 mark, .hl { background:linear-gradient(transparent 58%, var(--pink) 58%); color:inherit; padding:0 2px; }
 
@@ -79,7 +81,7 @@ mark, .hl { background:linear-gradient(transparent 58%, var(--pink) 58%); color:
 .modal > .card { width:min(880px, 100%); max-height:92vh; overflow:auto; }
 .pulse { animation:pulse 1.2s infinite; }
 @keyframes pulse { 50% { opacity:.45; } }
-.badge { font-family:var(--px-font); font-size:13px; padding:3px 10px; border-radius:3px; background:#fff; color:var(--ink-2); box-shadow:0 0 0 2px var(--frame); }
+.badge { font-family:var(--font); font-weight:700; font-size:13px; padding:3px 10px; border-radius:3px; background:#fff; color:var(--ink-2); box-shadow:0 0 0 2px var(--frame); }
 .badge.demo { color:var(--red); font-weight:700; box-shadow:0 0 0 2px #f2b3ae; }
 .thumbs { display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:8px; margin-top:8px; }
 .thumbs canvas { width:100%; aspect-ratio:16/9; image-rendering:pixelated; display:block; border-radius:3px; }
@@ -94,8 +96,7 @@ mark, .hl { background:linear-gradient(transparent 58%, var(--pink) 58%); color:
 /* 픽셀 글꼴: 갈무리 (Galmuri11 보통·굵게, SIL OFL 1.1, fonts/galmuri/LICENSE.txt) */
 @font-face { font-family:"Galmuri11"; src:url("../fonts/galmuri/Galmuri11.woff2") format("woff2"); font-weight:400; font-display:swap; }
 @font-face { font-family:"Galmuri11"; src:url("../fonts/galmuri/Galmuri11-Bold.woff2") format("woff2"); font-weight:600 900; font-display:swap; }
-.pxt, .px button, .px b, .px .pxt { font-family:var(--px-font); font-weight:700; letter-spacing:0; }
-.px h1, .px h2, .px h3 { font-family:var(--px-font); letter-spacing:0; }
+.pxt { font-family:var(--px-font); font-weight:700; letter-spacing:0; }
 img.pxi, canvas.pxi { image-rendering:crisp-edges; image-rendering:pixelated; vertical-align:middle; }
 .pxbar { height:18px; background:#dbe6f5; border-radius:3px; position:relative; overflow:hidden; box-shadow:inset 0 2px 0 rgba(0,0,0,.08); }
 .pxbar i { display:block; height:100%; background:var(--c, var(--blue)); background-image:linear-gradient(rgba(255,255,255,.4), rgba(255,255,255,0) 60%), repeating-linear-gradient(90deg, transparent 0 10px, rgba(255,255,255,.3) 10px 12px); transition:width .4s; }

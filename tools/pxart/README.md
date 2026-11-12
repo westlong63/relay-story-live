@@ -9,7 +9,7 @@
 |---|---|
 | scene.py | 하늘, 해, 구름, 빌딩, 가로수, 펜스, 도로, 덤불 |
 | items.py | 장애물, 동전, 큐브, 글자, 신서중, 벚나무, 출발·도착 문 |
-| puang_hd.py | 푸앙이 64×64 동작 (out/puang_*.png → assets/px 에는 앞의 puang_ 를 빼고 넣어요) |
+| puang2.py | 푸앙이 64×64 동작 11가지 (run0~3, jump, hurt, stand, blink, wow, cheer, fish) |
 | pond.py | 낚시터 3곳 (높이 200, 수평선 68, 땅 130) |
 | compose.py | 미리보기 합성 (확인용) |
 
