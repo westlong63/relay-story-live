@@ -9,29 +9,36 @@
 <link rel="stylesheet" href="css/app.css">
 <style>
   .in { max-width:1200px; margin:0 auto; padding:0 24px; }
-  .gnb { background:#fff; border-bottom:1px solid var(--line); }
+  .gnb { background:#fff; border-bottom:3px solid var(--px-ink); position:relative; z-index:2; }
   .gnb .in { display:flex; align-items:center; gap:28px; height:76px; }
   .brand { display:flex; align-items:baseline; gap:10px; text-decoration:none; color:var(--ink); }
-  .brand b { font-size:22px; font-weight:800; letter-spacing:-0.02em; }
+  .brand b { font-family:var(--px-font); font-size:22px; font-weight:700; letter-spacing:0; }
   .brand span { font-size:14px; color:var(--dim); padding-left:10px; border-left:1px solid var(--line-2); }
   .gnb nav { margin-left:auto; display:flex; gap:28px; }
-  .gnb nav a { color:var(--ink); text-decoration:none; font-size:17px; font-weight:500; padding:26px 0 24px; border-bottom:3px solid transparent; }
+  .gnb nav a { color:var(--ink); text-decoration:none; font-family:var(--px-font); font-size:16px; font-weight:700; padding:26px 0 24px; border-bottom:3px solid transparent; }
   .gnb nav a:hover { border-bottom-color:var(--blue-2); }
 
-  .hero { background:#fff; border-bottom:1px solid var(--line); }
-  .hero .in { padding-top:56px; padding-bottom:120px; }
-  .hero .eyebrow { font-size:clamp(34px, 6vw, 64px); }
-  .hero h1 { font-size:clamp(46px, 8vw, 92px); font-weight:800; margin:0; line-height:1.02; }
-  .lead { font-size:20px; color:var(--ink-2); line-height:1.6; margin:22px 0 28px; max-width:720px; }
-  .cta { display:flex; gap:10px; flex-wrap:wrap; }
-  .cta .btn { font-size:18px; padding:14px 26px; text-decoration:none; display:inline-block; }
-  #hostNote { font-size:14px; margin-top:10px; }
+  /* 첫 화면: 아케이드 타이틀처럼, 푸앙이가 중앙대에서 신서중으로 달려요 */
+  .hero { position:relative; overflow:hidden; border-bottom:3px solid var(--px-ink); background:#5aa2ef; min-height:560px; }
+  .hero canvas { position:absolute; inset:0; width:100%; height:100%; image-rendering:crisp-edges; image-rendering:pixelated; }
+  .hero .in { position:relative; padding-top:44px; padding-bottom:150px; }
+  .hero .eyebrow { display:inline-block; font-size:16px; color:#fff; background:var(--px-ink); padding:4px 10px; }
+  .hero h1 { font-family:var(--px-font); font-size:clamp(44px, 7.4vw, 88px); font-weight:700; margin:14px 0 0; line-height:1.05; color:#fff; letter-spacing:0;
+    text-shadow:4px 4px 0 var(--px-ink), -2px -2px 0 var(--px-ink), 2px -2px 0 var(--px-ink), -2px 2px 0 var(--px-ink), 2px 2px 0 var(--px-ink); }
+  .hero h1 span { color:#ffd84a; }
+  .lead { font-size:19px; color:var(--ink); line-height:1.6; margin:22px 0 24px; max-width:640px; background:#fff; border:3px solid var(--px-ink); padding:14px 18px; box-shadow:4px 4px 0 rgba(20,35,61,.35); }
+  .cta { display:flex; gap:12px; flex-wrap:wrap; }
+  .cta .btn { font-size:19px; padding:14px 26px; text-decoration:none; display:inline-block; }
+  .press { margin-top:18px; font-family:var(--px-font); font-size:18px; color:#fff; text-shadow:2px 2px 0 var(--px-ink); animation:blink 1s steps(2) infinite; }
+  @keyframes blink { 50% { opacity:0; } }
+  #hostNote { font-size:14px; margin-top:10px; background:#fff; display:inline-block; padding:0 6px; }
 
-  .board .in { display:grid; grid-template-columns:minmax(0, 1fr) 360px; gap:0; margin-top:-72px; align-items:start; }
-  .notice { background:#fff; border:1px solid var(--line); display:grid; grid-template-columns:170px minmax(0, 1fr); gap:28px; padding:40px 40px 32px; }
+  .board { position:relative; z-index:1; }
+  .board .in { display:grid; grid-template-columns:minmax(0, 1fr) 360px; gap:0; margin-top:-48px; align-items:start; }
+  .notice { background:#fff; border:3px solid var(--px-ink); box-shadow:6px 6px 0 rgba(20,35,61,.18); display:grid; grid-template-columns:170px minmax(0, 1fr); gap:28px; padding:40px 40px 32px; }
   .notice .side { text-align:right; }
   .notice .side .eyebrow { font-size:34px; }
-  .notice .side .big { font-size:40px; font-weight:800; letter-spacing:-0.02em; line-height:1.05; }
+  .notice .side .big { font-family:var(--px-font); font-size:38px; font-weight:700; letter-spacing:0; line-height:1.05; }
   .notice .side p { margin:18px 0 0; font-size:15px; color:var(--dim); line-height:1.6; }
   .steps { list-style:none; margin:0; padding:0; }
   .steps li { display:grid; grid-template-columns:72px minmax(0, 1fr) auto; gap:16px; align-items:baseline; padding:15px 0; border-bottom:1px solid var(--line); }
@@ -41,27 +48,27 @@
   .steps .sub { font-size:15px; color:var(--dim); line-height:1.5; display:block; margin-top:3px; }
   .steps time { font-size:15px; color:var(--dim); font-variant-numeric:tabular-nums; }
 
-  .navyblk { background:var(--navy); color:#fff; padding:40px 32px 34px; margin-top:36px; }
+  .navyblk { background:var(--navy); color:#fff; padding:40px 32px 34px; margin-top:36px; border:3px solid var(--px-ink); box-shadow:6px 6px 0 rgba(20,35,61,.25); }
   .navyblk .eyebrow { color:rgba(255,255,255,.72); font-size:34px; }
-  .navyblk .big { font-size:40px; font-weight:800; letter-spacing:-0.02em; margin-bottom:22px; }
+  .navyblk .big { font-family:var(--px-font); font-size:38px; font-weight:700; letter-spacing:0; margin-bottom:22px; }
   .navyblk label { display:block; font-size:15px; color:rgba(255,255,255,.85); margin-bottom:8px; }
-  .codeIn { font-size:30px; text-align:center; letter-spacing:10px; text-transform:uppercase; width:100%; font-weight:700; border-color:#fff; }
-  .navyblk button { width:100%; margin-top:10px; font-size:18px; padding:13px; background:#fff; color:var(--navy); border-color:#fff; font-weight:700; }
-  .navyblk button:hover { background:var(--tint); }
+  .codeIn { font-family:var(--px-font); font-size:30px; text-align:center; letter-spacing:10px; text-transform:uppercase; width:100%; font-weight:700; border:3px solid var(--px-ink); }
+  .navyblk button { width:100%; margin-top:12px; font-size:19px; padding:13px; background:#ffd84a; color:var(--px-ink); font-weight:700; }
+  .navyblk button:hover { background:#ffe27a; }
   .navyblk ul { list-style:none; padding:0; margin:22px 0 0; }
   .navyblk li { border-top:1px solid var(--navy-line); padding:13px 2px; font-size:15px; line-height:1.5; }
 
   .strip { margin-top:48px; }
-  .strip .box { background:var(--tint); padding:24px; display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px; }
+  .strip .box { background:#fff; border:3px solid var(--px-ink); padding:24px; display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px; }
   .strip h2 { font-size:22px; margin:0 0 14px; }
-  .safe { background:#fff; border:1px solid var(--tint-line); padding:16px 18px; }
+  .safe { background:var(--tint); border:2px solid var(--px-ink); padding:16px 18px; }
   .safe b { display:block; font-size:17px; margin-bottom:4px; }
   .safe span { font-size:14px; color:var(--dim); line-height:1.55; }
   .credit { margin-top:56px; }
 
   @media (max-width: 900px) {
     .gnb nav { display:none; }
-    .hero .in { padding-top:36px; padding-bottom:40px; }
+    .hero .in { padding-top:32px; padding-bottom:130px; }
     .board .in { grid-template-columns:1fr; margin-top:0; }
     .navyblk { margin-top:0; order:-1; }
     .notice { grid-template-columns:1fr; padding:28px 20px; gap:16px; }
@@ -78,16 +85,17 @@
   <nav aria-label="바로가기"><a href="#flow">수업 흐름</a><a href="#safe">안전 장치</a><a href="demo.html">시연 모드</a></nav>
 </div></header>
 
-<section class="hero"><div class="in">
-  <div class="eyebrow">Relay Story</div>
-  <h1 class="brk">Live</h1>
+<section class="hero"><canvas id="heroCv" aria-hidden="true"></canvas><div class="in">
+  <div class="eyebrow">중앙대 영어교육과 × 신서중 · 영어 수업 게임</div>
+  <h1>RELAY STORY<br><span>LIVE!</span></h1>
   <p class="lead">모둠 친구들과 영어 이야기를 돌려 쓰면, 그 이야기가 바로 영상이 되어 다 같이 보는 수업이에요.
     설치도 로그인도 없고, 영어 선생님이 아니어도 화면 안내대로 진행하면 돼요.</p>
   <div class="cta">
-    <a class="btn primary" id="host" href="host.html">수업 시작하기 (교사)</a>
+    <a class="btn primary" id="host" href="host.html">▶ 수업 시작하기 (교사)</a>
     <a class="btn" href="demo.html">시연 모드 열기</a>
   </div>
   <div id="hostNote" class="warn"></div>
+  <div class="press">PRESS START</div>
 </div></section>
 
 <section class="board"><div class="in">
@@ -99,7 +107,7 @@
     </div>
     <ol class="steps">
       <li><span class="tag">STEP 1</span><span><b>오늘의 주제</b><span class="sub">준비된 주제 36개 중 하나를 자동으로 추천해요. 주제와 시작 상황을 함께 읽어요.</span></span><time>2분</time></li>
-      <li><span class="tag">STEP 2</span><span><b>단어</b><span class="sub">2022 개정 중학교 기본 어휘 6개를 카드로 듣고, 디벗으로 🎣 단어 낚시 대회를 해요. 문제를 맞혀 미끼를 얻고, 물고기를 낚아 모둠 코인을 모은 뒤 많이 틀린 단어를 복습해요.</span></span><time>12분</time></li>
+      <li><span class="tag">STEP 2</span><span><b>단어</b><span class="sub">2022 개정 중학교 기본 어휘 6개를 카드로 듣고, 디벗으로 단어 게임을 해요. 🎣 단어 낚시(신서중 연못 → 중앙대 청룡연못) 또는 🏃 단어 달리기(중앙대 → 신서중 정문) 중에서 골라요. 모둠 점수를 모은 뒤 많이 틀린 단어를 복습해요.</span></span><time>12분</time></li>
       <li><span class="tag">STEP 3</span><span><b>돌려 쓰기</b><span class="sub">모두 동시에 자기 이야기를 시작하고, 라운드마다 옆 친구에게 넘겨 이어 써요.</span></span><time>14분</time></li>
       <li><span class="tag">STEP 4</span><span><b>AI 영상</b><span class="sub">장면 그림, 자막, 영어 음성, 음악이 있는 영상이 바로 만들어져요. 모둠 대표작을 골라요.</span></span><time>4분</time></li>
       <li><span class="tag">STEP 5</span><span><b>함께 보기</b><span class="sub">대표작 상영, 반응 보내기, Best Story 투표와 시상.</span></span><time>10분</time></li>
@@ -131,8 +139,42 @@
 
 <div class="credit" id="credit"></div>
 <script src="js/config.js"></script>
+<script src="js/pixelfish.js"></script>
+<script src="js/wordrun.js"></script>
 <script>
   const C = window.RSL_CONFIG || {};
+  /* 첫 화면 그림: 하늘, 중앙대 건물, 신서중, 길 위를 달리는 푸앙이 */
+  (function () {
+    const cv = document.getElementById("heroCv"); if (!cv || !window.PX) return;
+    const x = cv.getContext("2d"), LH = 120, T = window.WordRun && WordRun.text;
+    const R = (i, j, w, h, c) => { x.fillStyle = c; x.fillRect(Math.round(i), Math.round(j), w, h); };
+    const rnd = (n) => { const v = Math.sin(n * 12.9898 + 78.233) * 43758.5453; return v - Math.floor(v); };
+    let t0 = performance.now(); const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    function draw(t) {
+      if (!cv.isConnected) return;
+      const LW = Math.max(120, Math.min(420, Math.round((LH * cv.clientWidth) / Math.max(1, cv.clientHeight))));
+      if (cv.width !== LW) { cv.width = LW; cv.height = LH; }
+      const s = (t - t0) / 1000, cam = s * 40;
+      ["#3d8be8", "#4a95ec", "#5aa2ef", "#6aaef2", "#7cbaf5", "#90c7f7"].forEach((c, i) => R(0, i * 14, LW, 14, c));
+      [[0.1, 10], [0.5, 22], [0.8, 8]].forEach(([o, cy], n) => { const cx = (((o * LW - s * (3 + n)) % (LW + 40)) + LW + 40) % (LW + 40) - 20; R(cx, cy, 18, 4, "#fff"); R(cx + 4, cy - 3, 10, 3, "#fff"); R(cx + 2, cy + 4, 14, 1, "#dcefff"); });
+      for (let b = 0; b * 20 < LW + 20; b++) {
+        const bx = b * 20, right = bx > LW * 0.62, h = right ? 10 + rnd(b) * 6 : 16 + rnd(b) * 22, top = 92 - h;
+        if (!right) { R(bx, top, 18, h, rnd(b + 3) > 0.5 ? "#2c5fb8" : "#3b6fc4"); for (let j = top + 3; j < 90; j += 4) for (let i = bx + 2; i < bx + 16; i += 4) R(i, j, 2, 2, "#9fd0ff"); if (rnd(b + 7) > 0.6 && T) { R(bx + 2, top - 7, 13, 6, "#fff"); T(x, "CAU", bx + 3, top - 6, "#1c479a"); } }
+        else { R(bx, top, 18, h, "#f3e6c8"); R(bx - 1, top - 2, 20, 2, "#b5523b"); for (let i = bx + 3; i < bx + 15; i += 5) R(i, top + 3, 3, 3, "#7fb2e0"); if (rnd(b + 2) > 0.5) { R(bx + 19, 86, 1, 6, "#7a4a24"); R(bx + 16, 81, 7, 6, "#f6b8cf"); } }
+      }
+      const sx = Math.round(LW * 0.86);
+      if (T) { R(sx - 26, 52, 52, 40, "#f3e6c8"); R(sx - 28, 50, 56, 3, "#b5523b"); R(sx - 6, 38, 12, 14, "#f3e6c8"); R(sx - 7, 36, 14, 3, "#b5523b"); R(sx - 3, 41, 6, 6, "#fff"); R(sx, 42, 1, 3, "#14233d"); R(sx, 44, 2, 1, "#14233d");
+        R(sx - 15, 56, 30, 8, "#1c479a"); T(x, "SINSEO", sx - 12, 58, "#fff"); for (let i = sx - 22; i < sx + 22; i += 6) if (Math.abs(i - sx) > 4) { R(i, 68, 4, 4, "#7fb2e0"); R(i, 78, 4, 4, "#7fb2e0"); } R(sx - 4, 80, 8, 12, "#5a7fa8"); }
+      R(0, 92, LW, 3, "#6cbf5c"); R(0, 95, LW, 2, "#c9ccd3"); R(0, 97, LW, 23, "#5d6470");
+      for (let i = -((cam % 24) + 24); i < LW; i += 24) R(i, 108, 12, 1, "#e8ebf0");
+      const px = Math.round(LW * 0.66 + Math.sin(s * 0.7) * LW * 0.05), pose = Math.floor(t / 120) % 2 ? "run1" : "run2";
+      x.fillStyle = "rgba(0,0,0,.25)"; x.fillRect(px + 8, 112, 18, 2);
+      x.drawImage(PX.puang(pose), px, 80);
+      if (!still) requestAnimationFrame(draw);
+    }
+    requestAnimationFrame(draw);
+    if (still) addEventListener("resize", () => requestAnimationFrame(draw));
+  })();
   document.getElementById("credit").textContent = C.credit || "";
   if (!C.firebase) {
     document.getElementById("host").href = "host.html?demo=1";

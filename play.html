@@ -51,6 +51,7 @@
   .gq { font-size:38px; font-weight:800; margin:8px 0 14px; letter-spacing:-0.02em; text-align:center; }
   .gq.s { font-size:21px; font-weight:600; line-height:1.5; letter-spacing:0; text-align:left; }
   .doors { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .doors button, .eggs button { box-shadow:none; }
   .doors button { margin:0 !important; min-height:110px; background:#F7F1E8; border:2px solid #B98B56; border-radius:40px 40px 4px 4px; font-size:19px; font-weight:700; position:relative; }
   .doors button::before { content:attr(data-l); position:absolute; top:10px; left:0; right:0; font-size:12px; color:#9a7448; }
   .doors button::after { content:""; position:absolute; right:16px; top:56%; width:8px; height:8px; border-radius:50%; background:#B98B56; }
@@ -78,11 +79,12 @@
   #sheet { position:fixed; left:0; right:0; bottom:0; z-index:30; background:#fff; border-top:3px solid var(--navy); box-shadow:0 -8px 30px rgba(0,0,0,.2); max-height:58vh; display:flex; flex-direction:column; }
   #sheet[hidden] { display:none; }
   #sheet .tabs { display:flex; border-bottom:1px solid var(--line); }
-  #sheet .tabs button { flex:1; border:0; border-radius:0; padding:12px 4px; font-size:15px; background:#fff; margin:0; }
+  #sheet .tabs button { flex:1; border:0; border-radius:0; padding:12px 4px; font-size:15px; background:#fff; margin:0; box-shadow:none; }
   #sheet .tabs button.on { font-weight:800; color:var(--navy); box-shadow:inset 0 -3px 0 var(--blue); }
   #sheet .body { overflow:auto; padding:10px 14px 16px; max-width:640px; width:100%; margin:0 auto; box-sizing:border-box; }
   #sheet .grp { font-size:13px; font-weight:800; color:var(--red); margin:12px 0 4px; }
   #sheet .ins { display:block; width:100%; text-align:left; margin:5px 0; padding:9px 12px; font-size:18px; font-weight:600; background:var(--bar); border:1px solid var(--line); }
+  #sheet .ins { font-family:var(--font); letter-spacing:-0.01em; }
   #sheet .ins small { display:block; color:var(--dim); font-size:12px; font-weight:400; margin-top:2px; }
   #sheet .ins.w { display:inline-block; width:auto; margin:4px 6px 0 0; }
   #sheet input { width:100%; font-size:17px; padding:10px; }
@@ -443,14 +445,14 @@ function renderQ() {
   if (g.cur !== q.id) { g.cur = q.id; g.t0 = Date.now(); g.tries = 1; g.spell = ""; g.used = []; if (q.kind === "listen") setTimeout(() => playWord(V.topic.words[q.w]), 250); }
   const [sn, sd] = STAGE[q.kind];
   let body = "";
-  if (q.kind === "door") body = `<div class="gq">${esc(q.prompt)}</div><div class="doors">${q.options.map((o, i) => `<button data-ans="${esc(o)}" data-l="문 ${"ABCD"[i]}">${esc(o)}</button>`).join("")}</div>`;
-  if (q.kind === "egg") body = `<div class="gq">${esc(q.prompt)}</div><div class="eggs">${q.options.map((o, i) => `<button data-ans="${i}">${esc(o)}</button>`).join("")}</div><button data-say="${q.w}" class="ghost">🔊 다시 듣기</button>`;
-  if (q.kind === "listen") body = `<button data-say="${q.w}" style="font-size:26px;padding:22px">🔊 듣기</button><div class="opts">${q.options.map((o) => `<button data-ans="${esc(o)}">${esc(o)}</button>`).join("")}</div>`;
+  if (q.kind === "door") body = `<div class="gq">${esc(q.prompt)}</div><div class="doors learn">${q.options.map((o, i) => `<button data-ans="${esc(o)}" data-l="문 ${"ABCD"[i]}">${esc(o)}</button>`).join("")}</div>`;
+  if (q.kind === "egg") body = `<div class="gq">${esc(q.prompt)}</div><div class="eggs learn">${q.options.map((o, i) => `<button data-ans="${i}">${esc(o)}</button>`).join("")}</div><button data-say="${q.w}" class="ghost">🔊 다시 듣기</button>`;
+  if (q.kind === "listen") body = `<button data-say="${q.w}" style="font-size:26px;padding:22px">🔊 듣기</button><div class="opts learn">${q.options.map((o) => `<button data-ans="${esc(o)}">${esc(o)}</button>`).join("")}</div>`;
   if (q.kind === "spell") body = `<div class="gq">${esc(q.emoji || "")} ${esc(q.prompt)}</div>
     <div class="slots">${q.answer.split("").map((c, i) => `<span>${esc(g.spell[i] || "")}</span>`).join("")}</div>
-    <div class="tiles">${q.options.map((c, i) => `<button data-tile="${i}" ${g.used.includes(i) ? "disabled" : ""}>${esc(c)}</button>`).join("")}</div>`;
+    <div class="tiles learn">${q.options.map((c, i) => `<button data-tile="${i}" ${g.used.includes(i) ? "disabled" : ""}>${esc(c)}</button>`).join("")}</div>`;
   if (q.kind === "blank") body = `<div class="gq s">${esc(q.prompt).replace("_____", "<b style='color:var(--red)'>_____</b>")}</div>${q.hint ? `<p class="dim" style="font-size:13px">${esc(q.hint)}</p>` : ""}
-    <div class="opts">${q.options.map((o) => `<button data-ans="${esc(o)}">${esc(o)}</button>`).join("")}</div>`;
+    <div class="opts learn">${q.options.map((o) => `<button data-ans="${esc(o)}">${esc(o)}</button>`).join("")}</div>`;
   box.innerHTML = `<div class="qtitle pxt">🪱 미끼 얻기 문제 ${first ? `${Math.min(n + 1, g.qs.length)}/${g.qs.length}` : `· ${FS.pass}바퀴째`}${g.combo >= 2 ? ` <span style="color:var(--red)">🔥${g.combo}연속</span>` : ""}</div>
     <div class="stage-n">${sn}</div><div class="dim" style="font-size:14px">${sd}${g.tries > 1 ? " · <b class='warn'>다시 해 봐요!</b>" : ""}</div>${body}`;
   bindAns(box);

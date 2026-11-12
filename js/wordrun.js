@@ -322,5 +322,5 @@
     if (g.PX) x.drawImage(g.PX.puang(pose), PX0, y);
     if (this.shield) { x.strokeStyle = "rgba(120,190,255,.9)"; x.lineWidth = 1; x.strokeRect(PX0 - 1.5, y + 0.5, 37, 35); }
   };
-  g.WordRun = { mount: (root, api) => new WordRun(root, api), LAP };
+  g.WordRun = { mount: (root, api) => new WordRun(root, api), LAP, text, textW };
 })(typeof window !== "undefined" ? window : globalThis);
