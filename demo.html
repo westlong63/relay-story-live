@@ -10,9 +10,13 @@
 <style>
   html, body { height:100%; overflow:hidden; }
   body { display:flex; flex-direction:column; background:#E9EAEC; }
-  .bar { display:flex; gap:12px; align-items:center; padding:10px 16px; background:#fff; border-bottom:1px solid var(--line); font-size:15px; flex-wrap:wrap; }
-  .bar b { font-weight:800; }
-  .bar .tag { margin-right:2px; }
+  /* 주의: app.css의 .bar(진행 막대, 높이 14px)와 겹치지 않게 .topbar를 써요 */
+  .topbar { display:flex; gap:12px; align-items:center; padding:10px 16px; background:#fff; border-bottom:1px solid var(--line); font-size:15px; flex-wrap:wrap; flex:none; }
+  .topbar b { font-weight:800; }
+  .topbar .tag { margin-right:2px; }
+  .topbar .act { display:inline-flex; align-items:center; gap:6px; padding:10px 18px; font-size:16px; font-weight:700; text-decoration:none; border:2px solid var(--navy); background:#fff; color:var(--navy); cursor:pointer; font-family:inherit; }
+  .topbar .act.home { background:var(--navy); color:#fff; }
+  .topbar .act:hover { filter:brightness(1.08); }
   .wrap { flex:1; display:flex; gap:12px; padding:12px; min-height:0; }
   .host { flex:1; min-width:0; position:relative; overflow:hidden; background:#fff; border:1px solid var(--line-2); }
   .phones { display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; gap:12px; width:min(44vw, 640px); }
@@ -23,9 +27,9 @@
 </style>
 </head>
 <body>
-<div class="bar"><span class="tag">DEMO</span><b>시연 모드</b> 이 컴퓨터 안에서만 연결돼요. 왼쪽이 전자칠판(교사) 화면, 오른쪽이 학생 디벗 4대예요.
+<div class="topbar"><a class="act home" href="index.html">← 첫 화면으로</a><span class="tag">DEMO</span><b>시연 모드</b> 이 컴퓨터 안에서만 연결돼요. 왼쪽이 전자칠판(교사) 화면, 오른쪽이 학생 디벗 4대예요.
   <span class="dim">왼쪽 아래 버튼으로 가상 학생을 더 넣을 수 있어요.</span><span style="flex:1"></span>
-  <button id="again">처음부터 다시</button><a href="index.html">첫 화면</a></div>
+  <button class="act" id="again">↻ 처음부터 다시</button></div>
 <div class="wrap">
   <div class="host" id="hostBox"><iframe id="hostF" data-w="1600" data-h="980" allow="fullscreen; autoplay"></iframe></div>
   <div class="phones" id="phones"></div>
@@ -41,7 +45,7 @@
   const ph = document.getElementById("phones");
   kids.forEach(([n, t], i) => {
     const d = document.createElement("div"); d.className = "phone";
-    d.innerHTML = `<span class="lab">학생 ${i + 1} · ${n}</span><iframe data-w="420" data-h="820" src="play.html?demo=1&r=${room}&as=${i + 1}&name=${encodeURIComponent(n)}&team=${t}"></iframe>`;
+    d.innerHTML = `<span class="lab">학생 디벗 ${i + 1} · ${n}</span><iframe data-w="420" data-h="820" src="play.html?demo=1&r=${room}&as=${i + 1}&name=${encodeURIComponent(n)}&team=${t}"></iframe>`;
     ph.appendChild(d);
   });
   function fit() {

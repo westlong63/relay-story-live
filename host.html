@@ -73,6 +73,11 @@
   .exko { font-size:18px; color:var(--dim); margin-top:6px; }
   .dot { padding:7px 12px; font-size:16px; } .dot.on { background:var(--navy); color:#fff; border-color:var(--navy); }
   .gsteps div { font-size:18px; padding:8px 0; border-bottom:1px solid var(--line); } .gsteps span:first-child { font-size:24px; margin-right:8px; }
+  /* 전자칠판(1920×1080 안팎): 뒷자리에서도 보이게 본문을 통째로 키워요 */
+  @media (min-width:1600px) {
+    main { zoom:1.2; }
+    .stage { max-height:calc(74vh / 1.2); }
+  }
 </style>
 </head>
 <body>

@@ -87,6 +87,23 @@
   #sheet .ins.w { display:inline-block; width:auto; margin:4px 6px 0 0; }
   #sheet input { width:100%; font-size:17px; padding:10px; }
   #sheet .close { position:absolute; right:8px; top:-46px; width:auto; padding:8px 12px; background:#fff; }
+  /* 디벗(갤럭시 탭): 세로 800px, 가로 1280px 안팎. 글자와 버튼을 통째로 키워요. */
+  @media (min-width:700px) {
+    main, #sheet, .credit { zoom:1.2; }
+    #sheet { max-height:calc(58vh / 1.2); }
+    .top { font-size:15px; }
+    .stage-n, .hook, .gram { font-size:14px; }
+  }
+  /* 가로로 든 디벗: 가운데 칸을 넓히고, 힌트는 오른쪽 서랍으로 열어 쓰던 글이 가려지지 않게 해요 */
+  @media (min-width:1000px) and (orientation:landscape) {
+    main, #sheet, .credit { zoom:1.25; }
+    main { max-width:800px; }
+    #sheet { left:auto; top:0; bottom:0; width:380px; max-height:none; border-top:0; border-left:3px solid var(--navy); }
+    #sheet .close { position:static; align-self:flex-end; margin:8px 8px 0; }
+    #sheet .body { max-width:none; }
+    body.sheet-open main { margin:0 404px 0 auto; max-width:760px; }
+    body.sheet-open .hintBtn { display:none; }
+  }
 </style>
 </head>
 <body>
@@ -495,8 +512,8 @@ function findWords(q) {
 }
 function hintSheet(open) {
   const sh = $("#sheet");
-  if (!open || !(V && V.phase === "write" && V.held && !V.write.done)) { sh.hidden = true; return; }
-  sh.hidden = false;
+  if (!open || !(V && V.phase === "write" && V.held && !V.write.done)) { sh.hidden = true; document.body.classList.remove("sheet-open"); return; }
+  sh.hidden = false; document.body.classList.add("sheet-open");
   const H = window.RSL_CONTENT.hints, T = V.topic, mis = V.held.mission;
   const ins = (en, ko, cls) => `<button class="ins ${cls || ""}" data-ins="${esc(en)}">${esc(en)}${ko ? `<small>${esc(ko)}</small>` : ""}</button>`;
   const tabs = [["words", "미션 단어"], ["phr", "표현"], ["find", "단어 찾기"], ["scr", "화면 묘사"]];
