@@ -125,6 +125,19 @@
   .shop button { font-size:14px; padding:9px 8px; text-align:left; line-height:1.35; }
   .shop button small { display:block; color:var(--dim); font-size:12px; }
   .qtitle { font-size:14px; font-weight:800; color:var(--navy); margin-bottom:4px; }
+  /* 쉬운 쓰기: 문장 블록 */
+  .modes { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
+  .modes button { margin:0 !important; text-align:left; padding:12px 14px; font-size:16px; font-weight:800; line-height:1.35; }
+  .modes button small { display:block; font-weight:500; font-size:13px; color:var(--dim); }
+  .modes button.on { border-color:var(--blue); background:var(--tint); box-shadow:inset 0 0 0 1px var(--blue); }
+  .bld { background:#F4F8FF; border:2px solid var(--blue); padding:12px; margin:6px 0 10px; }
+  .bld .sent { font-size:20px; font-weight:700; line-height:1.9; }
+  .bld .slot { display:inline-block; min-width:64px; padding:0 8px; margin:0 2px; border-bottom:3px solid var(--line-2); color:var(--dim); font-weight:600; cursor:pointer; text-align:center; }
+  .bld .slot.fill { color:var(--navy); border-color:var(--navy); }
+  .bld .slot.on { background:#FFF3C4; border-color:#E0A400; color:#7a5a00; }
+  .bld .sko { font-size:14px; color:var(--dim); margin-top:2px; }
+  #sheet .ins.mis { border-color:#E0A400; background:#FFF7E0; }
+  #sheet .frm b { color:var(--blue); }
   /* 디벗(갤럭시 탭): 세로 800px, 가로 1280px 안팎. 글자와 버튼을 통째로 키워요. */
   @media (min-width:700px) {
     main, #sheet, .credit { zoom:1.2; }
@@ -534,7 +547,9 @@ function rWrite() {
     </div>`).join("");
   const F = window.RSL_CONTENT.hints.flow, fl = k === 0 ? F.first : w.round + 1 >= w.rounds ? F.last : F.middle;
   const flow = `<div class="flow"><b>${esc(fl.title)}</b><ul style="margin:6px 0 0;padding-left:20px">${fl.tips.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>
-    <div class="dim" style="font-size:13px;margin-top:6px">막히면 오른쪽 아래 <b>💡 힌트</b>를 눌러요. 단어와 표현을 눌러서 바로 넣을 수 있어요.</div></div>`;
+    <div class="modes"><button id="mEasy" class="${easyOn() ? "on" : ""}">🧩 쉬운 모드<small>문장 틀을 고르고 단어만 골라 넣어요. 우리말 자막도 같이 채워져요</small></button>
+      <button id="mFree" class="${easyOn() ? "" : "on"}">✏️ 도전 모드<small>내 문장으로 자유롭게 써요. 막히면 💡 힌트</small></button></div>
+    <div class="dim" style="font-size:13px;margin-top:6px">영어 도우미는 고쳐 보면 좋은 곳만 알려 줘요. 점수와 상관없고, 안 고쳐도 제출돼요.</div></div>`;
   return `
     <div class="sticky"><div style="display:flex;justify-content:space-between;align-items:center"><div><b>라운드 ${w.round + 1}/${w.rounds}</b> · ${h.mineStarted ? "내가 시작한 이야기" : `${esc(h.starter)}의 이야기 ${k + 1}화`}</div><div class="tleft" id="tleft"></div></div>
       <div>미션: <span id="mission">${h.mission.map((m) => { const mw = V.topic.words.find((x) => x.word === m); return `<span class="chip" data-w="${esc(m)}">${esc(m)}${mw ? ` <small>${esc(mw.ko.split(",")[0])}</small>` : ""}</span>`; }).join("")}</span></div></div>
@@ -614,7 +629,9 @@ function bindWrite() {
   const save = () => { const d = draft(); fields.forEach((f) => (d[f.dataset.f] = f.value)); d.dirty = true; store.set(dk(), JSON.stringify(d)); check(); gramAll(); };
   fields.forEach((f) => (f.oninput = save));
   trackFields();
-  $("#hintBtn").onclick = () => hintSheet($("#sheet").hidden);
+  $("#hintBtn").onclick = () => { if ($("#sheet").hidden && easyOn()) hintTab = "blk"; hintSheet($("#sheet").hidden); };
+  $("#mEasy").onclick = () => { store.set("rsl-easy", "1"); $("#mEasy").classList.add("on"); $("#mFree").classList.remove("on"); hintTab = "blk"; hintSheet(true); };
+  $("#mFree").onclick = () => { store.set("rsl-easy", "0"); $("#mFree").classList.add("on"); $("#mEasy").classList.remove("on"); if (hintTab === "blk") hintSheet(false); const f = document.querySelector('[data-f="text0"]'); if (f) f.focus(); };
   RSLGrammar.load().then(gramAll);
   gramAll(true);
   document.querySelectorAll("[data-pick]").forEach((b) => b.onclick = () => {
@@ -705,7 +722,7 @@ function hintSheet(open) {
   sh.hidden = false; document.body.classList.add("sheet-open");
   const H = window.RSL_CONTENT.hints, T = V.topic, mis = V.held.mission;
   const ins = (en, ko, cls) => `<button class="ins ${cls || ""}" data-ins="${esc(en)}">${esc(en)}${ko ? `<small>${esc(ko)}</small>` : ""}</button>`;
-  const tabs = [["words", "미션 단어"], ["phr", "표현"], ["find", "단어 찾기"], ["scr", "화면 묘사"]];
+  const tabs = [["blk", "🧩 블록"], ["words", "미션 단어"], ["phr", "표현"], ["find", "단어 찾기"], ["scr", "화면 묘사"]];
   let body = "";
   if (hintTab === "words") {
     const mw = T.words.filter((w) => mis.includes(w.word)), ow = T.words.filter((w) => !mis.includes(w.word));
@@ -715,6 +732,7 @@ function hintSheet(open) {
       ${T.extra ? `<div class="grp">이 주제에 어울리는 단어</div>${T.extra.map(([e, k]) => ins(e, k, "w")).join("")}` : ""}
       <div class="grp">등장인물 대사 시작</div>${T.characters.map((c) => ins(c + ":", "", "w")).join("")}`;
   }
+  if (hintTab === "blk") body = blocksHtml();
   if (hintTab === "phr") body = H.phrases.map((g) => `<div class="grp">${esc(g.group)}</div>${g.items.map(([e, k]) => ins(e.trim(), k)).join("")}`).join("") +
     `<div class="grp">기분을 나타내는 말</div>${H.feelings.map(([e, k]) => ins(e, k, "w")).join("")}`;
   if (hintTab === "find") body = `<input id="hq" placeholder="우리말이나 영어로 찾기 (예: 문, 무서운, 달리다)" value="${esc(hintQ)}" autocomplete="off"><div id="hres"></div>`;
@@ -726,11 +744,108 @@ function hintSheet(open) {
   bindIns(sh);
   sh.querySelectorAll("[data-tab]").forEach((b) => b.onclick = () => { hintTab = b.dataset.tab; hintSheet(true); });
   $("#shClose").onclick = () => hintSheet(false);
+  if (hintTab === "blk") bindBlocks(sh);
   const hq = $("#hq");
   if (hq) {
     const show = () => { hintQ = hq.value; const r = findWords(hq.value); $("#hres").innerHTML = hq.value.trim() ? (r.length ? r.map(([e, k]) => ins(e, k, "w")).join("") : `<p class="dim">못 찾았어요. 더 짧게 써 보세요.</p>`) : `<p class="dim">찾고 싶은 말을 우리말로 써 보세요. 영어 단어를 누르면 쓰던 칸에 들어가요.</p>`; bindIns($("#hres")); };
     hq.oninput = show; show();
   }
+}
+
+/* ---------- 쉬운 모드: 문장 블록 (틀 고르기 → 칸마다 단어 고르기 → 영어 한 줄 + 우리말 한 줄을 같이 넣어요) ---------- */
+const easyOn = () => store.get("rsl-easy") === "1";
+let BL = { f: -1, vals: {}, cur: null };
+const KO_NAME = { Mina: "미나", Jun: "준", Emma: "엠마", We: "우리" };
+const koFirst = (k) => String(k || "").split(/[;,]/)[0].replace(/\([^)]*\)\s*/g, "").trim();
+const batchim = (w) => { const c = String(w).trim().slice(-1).charCodeAt(0); return c >= 0xac00 && c <= 0xd7a3 ? (c - 0xac00) % 28 : /[lmnr]$/i.test(w) ? 1 : 0; };
+const josa = (w, a, b) => w + (batchim(w) ? a : b);
+const ro = (w) => { const b = batchim(w); return w + (b && b !== 8 ? "으로" : "로"); };
+const stem = (v) => koFirst(v).replace(/다$/, "");
+const FEEL_KO = { happy: "행복했다", sad: "슬펐다", scared: "무서웠다", excited: "신났다", nervous: "긴장했다", angry: "화가 났다", surprised: "깜짝 놀랐다", tired: "피곤했다", hungry: "배가 고팠다", lonely: "외로웠다", proud: "자랑스러웠다", worried: "걱정됐다" };
+const BL_TIME = [["Suddenly", "갑자기"], ["One day", "어느 날"], ["After school", "방과 후에"], ["That night", "그날 밤"], ["The next morning", "다음 날 아침"], ["At that moment", "바로 그때"]];
+const BL_LINE = [["Look at this!", "이것 좀 봐!"], ["What is that?", "저게 뭐야?"], ["Help me!", "도와줘!"], ["Let's go!", "가자!"], ["I can't believe it!", "믿을 수가 없어!"], ["Are you okay?", "괜찮아?"], ["Run!", "뛰어!"], ["Wow, that's amazing!", "와, 정말 멋지다!"], ["Don't worry.", "걱정하지 마."], ["Where are we?", "여기가 어디지?"]];
+const BL_PLACE = [["the classroom", "교실", "in"], ["the hallway", "복도", "in"], ["the library", "도서관", "in"], ["the park", "공원", "in"], ["the street", "거리", "on"], ["the store", "가게", "in"], ["my bedroom", "내 방", "in"], ["the rooftop", "옥상", "on"], ["the stage", "무대", "on"], ["the beach", "해변", "on"], ["the airport", "공항", "at"], ["the cinema", "영화관", "in"], ["the hotel", "호텔", "in"], ["the museum", "박물관", "in"], ["the island", "섬", "on"], ["the market", "시장", "at"]];
+/* 칸 종류: WHO 누가, WHO2 누구와, TIME 언제, N 무엇(명사), V 무엇을 하다(동사), PL 어디, LINE 대사, FEEL 기분 */
+const BL_FRAMES = [
+  { en: "{TIME}, {WHO} saw a {N} {PL}.", ko: (v) => `${v.TIME[1]} ${josa(v.WHO[1], "은", "는")} ${v.PL[1]}에서 ${josa(v.N[1], "을", "를")} 봤다.`, k: "언제, 누가, 어디서 무엇을 봤다" },
+  { en: "There was a {N} {PL}.", ko: (v) => `${v.PL[1]}에 ${josa(v.N[1], "이", "가")} 있었다.`, k: "어디에 무엇이 있었다" },
+  { en: "{WHO}: {LINE}", ko: (v) => `${v.WHO[1]}: ${v.LINE[1]}`, k: "대사 (영상에서 그 인물 목소리로)" },
+  { en: "{WHO} found a {N}!", ko: (v) => `${josa(v.WHO[1], "은", "는")} ${josa(v.N[1], "을", "를")} 발견했다!`, k: "누가 무엇을 발견했다" },
+  { en: "{WHO} wanted to {V}.", ko: (v) => `${josa(v.WHO[1], "은", "는")} ${stem(v.V[1])}고 싶었다.`, k: "누가 무엇을 하고 싶었다" },
+  { en: "{WHO}: Let's {V} together!", ko: (v) => `${v.WHO[1]}: 같이 ${stem(v.V[1])}자!`, k: "같이 ~하자! (대사)" },
+  { en: "{WHO} felt {FEEL}.", ko: (v) => `${josa(v.WHO[1], "은", "는")} ${FEEL_KO[v.FEEL[0]] || v.FEEL[1]}.`, k: "누가 어떤 기분이었다" },
+  { en: "{WHO} and {WHO2} ran to {PLT}.", ko: (v) => `${josa(v.WHO[1], "과", "와")} ${josa(v.WHO2[1], "은", "는")} ${ro(v.PLT[1])} 달려갔다.`, k: "누구와 누구가 어디로 달려갔다" },
+  { en: "{TIME}, the {N} started to move!", ko: (v) => `${v.TIME[1]} ${josa(v.N[1], "이", "가")} 움직이기 시작했다!`, k: "언제, 무엇이 움직이기 시작했다" },
+  { en: "{WHO} looked at the {N}.", ko: (v) => `${josa(v.WHO[1], "은", "는")} ${josa(v.N[1], "을", "를")} 바라봤다.`, k: "누가 무엇을 바라봤다" },
+];
+const SLOT_KO = { WHO: "누가?", WHO2: "누구와?", TIME: "언제?", N: "무엇?", V: "무엇을 하다?", PL: "어디서?", PLT: "어디로?", LINE: "무슨 말?", FEEL: "어떤 기분?" };
+function blOptions(slot) {
+  const T = V.topic, mis = (V.held && V.held.mission) || [], H = window.RSL_CONTENT.hints;
+  const names = Array.isArray(T.characters) ? T.characters : Object.keys(T.characters || {});
+  const who = names.filter((n) => n !== "Narrator").map((n) => [n, KO_NAME[n] || n]).concat([["We", "우리"]]);
+  const isN = (w) => /명사/.test(w.pos || ""), isV = (w) => /동사/.test(w.pos || "");
+  const words = T.words.slice().sort((a, b) => (mis.includes(b.word) ? 1 : 0) - (mis.includes(a.word) ? 1 : 0));
+  const ex = (T.extra || []).filter(([e]) => /^[a-z]+$/i.test(e));
+  const exN = ex.filter(([, k]) => !/(다|한|운|은|인|른|난)$/.test(koFirst(k))), exV = ex.filter(([, k]) => /다$/.test(koFirst(k)));
+  const mk = (w) => [w.word, koFirst(w.ko), mis.includes(w.word)];
+  const scr = (T.screens || []).join(" ").toLowerCase();
+  const pl = BL_PLACE.slice().sort((a, b) => (scr.includes(b[0].split(" ").pop()) ? 1 : 0) - (scr.includes(a[0].split(" ").pop()) ? 1 : 0));
+  switch (slot) {
+    case "WHO": case "WHO2": return who;
+    case "TIME": return BL_TIME;
+    case "LINE": return BL_LINE;
+    case "FEEL": return H.feelings.map(([e, k]) => [e, k]);
+    case "N": return words.filter(isN).map(mk).concat(exN.map(([e, k]) => [e, koFirst(k)]));
+    case "V": return words.filter(isV).map(mk).concat(exV.map(([e, k]) => [e, koFirst(k)]));
+    case "PL": return pl.map(([e, k, p]) => [`${p} ${e}`, k]);
+    case "PLT": return pl.map(([e, k]) => [e, k]);
+  }
+  return [];
+}
+const slotsOf = (f) => (f.en.match(/\{(\w+)\}/g) || []).map((x) => x.slice(1, -1));
+const anFix = (en, v) => en.replace(/\ba \{N\}/, v.N && /^[aeiou]/i.test(v.N[0]) ? "an {N}" : "a {N}");
+function blSentence(f, v) {
+  let en = anFix(f.en, v).replace(/\{(\w+)\}/g, (_, k) => (v[k] ? v[k][0] : "___"));
+  en = en.replace(/\b([Aa]) ([aeiou]\w*)/g, (m, a, w) => (a === "A" ? "An " : "an ") + w); /* a → an */
+  return en.charAt(0).toUpperCase() + en.slice(1);
+}
+function blocksHtml() {
+  const mis = (V.held && V.held.mission) || [];
+  if (BL.f < 0) {
+    return `<div class="grp">1. 문장 틀을 골라요 · 칸마다 단어를 고르면 영어 한 줄과 우리말 자막 한 줄이 같이 들어가요</div>
+      ${BL_FRAMES.map((f, i) => `<button class="ins frm" data-bf="${i}">${esc(f.en).replace(/\{(\w+)\}/g, (_, k) => `<b>[${esc(SLOT_KO[k].replace("?", ""))}]</b>`)}<small>${esc(f.k)}</small></button>`).join("")}
+      <div class="dim" style="font-size:13px;margin-top:6px">⭐ 미션 단어(${esc(mis.join(", "))})는 '무엇?', '무엇을 하다?' 칸 맨 앞에 있어요.</div>`;
+  }
+  const f = BL_FRAMES[BL.f], sl = slotsOf(f), v = BL.vals;
+  if (!BL.cur || v[BL.cur]) BL.cur = sl.find((k) => !v[k]) || null;
+  const sent = esc(anFix(f.en, v)).replace(/\{(\w+)\}/g, (_, k) => `<span class="slot ${v[k] ? "fill" : ""} ${BL.cur === k ? "on" : ""}" data-bs="${k}">${esc(v[k] ? v[k][0] : SLOT_KO[k])}</span>`);
+  const done = sl.every((k) => v[k]);
+  const opts = BL.cur ? blOptions(BL.cur) : [];
+  return `<div class="bld"><div class="sent">${sent}</div>${done ? `<div class="sko">${esc(f.ko(v))}</div>` : ""}</div>
+    ${BL.cur ? `<div class="grp">${esc(SLOT_KO[BL.cur])} 골라요</div>${opts.map(([e, k, m], j) => `<button class="ins w ${m ? "mis" : ""}" data-bo="${j}">${m ? "⭐ " : ""}${esc(e)}<small>${esc(k)}</small></button>`).join("")}
+      <input id="bOwn" placeholder="다른 말을 영어로 직접 쓰기 (예: cat)" autocomplete="off" style="margin-top:8px">` : ""}
+    <div class="two" style="margin-top:10px"><button id="bBack">← 다른 틀</button><button id="bPut" class="${done ? "primary" : ""}" ${done ? "" : "disabled"}>✅ 문장 넣기</button></div>`;
+}
+function bindBlocks(sh) {
+  sh.querySelectorAll("[data-bf]").forEach((b) => b.onclick = () => { BL = { f: +b.dataset.bf, vals: {}, cur: null }; hintSheet(true); });
+  sh.querySelectorAll("[data-bs]").forEach((b) => b.onclick = () => { BL.cur = b.dataset.bs; delete BL.vals[BL.cur]; hintSheet(true); });
+  const opts = BL.cur ? blOptions(BL.cur) : [];
+  sh.querySelectorAll("[data-bo]").forEach((b) => { b.onmousedown = (e) => e.preventDefault(); b.onclick = () => { const o = opts[+b.dataset.bo]; BL.vals[BL.cur] = [o[0], o[1]]; BL.cur = null; hintSheet(true); }; });
+  const own = $("#bOwn"); if (own) own.onkeydown = (e) => { if (e.key === "Enter" && own.value.trim()) { const w = own.value.trim().slice(0, 30); BL.vals[BL.cur] = [w, BL.cur === "WHO" || BL.cur === "WHO2" ? w : w]; BL.cur = null; hintSheet(true); } };
+  const back = $("#bBack"); if (back) back.onclick = () => { BL = { f: -1, vals: {}, cur: null }; hintSheet(true); };
+  const put = $("#bPut"); if (put) put.onclick = () => {
+    const f = BL_FRAMES[BL.f], en = blSentence(f, BL.vals), ownKo = Object.entries(BL.vals).some(([k, x]) => x[0] === x[1] && !/^(WHO|WHO2)$/.test(k) && /[a-z]/i.test(x[1]));
+    const ko = ownKo ? "" : f.ko(BL.vals);
+    const m = /^(?:text|screen|ko)(\d)$/.exec(lastF || ""), i = m ? m[1] : "0";
+    const add = (name, line) => { const el = document.querySelector(`[data-f="${name}"]`); if (!el || !line) return; el.value = el.value.replace(/\s+$/, "") + (el.value.trim() ? "\n" : "") + line; el.dispatchEvent(new Event("input")); };
+    add("text" + i, en);
+    /* 우리말 자막은 영어 줄 수에 맞춰 넣어요 (영상에서 줄끼리 짝이 맞게) */
+    const tEl = document.querySelector(`[data-f="text${i}"]`), kEl = document.querySelector(`[data-f="ko${i}"]`);
+    if (kEl && ko) { const need = tEl.value.split("\n").filter((x) => x.trim()).length - 1, have = kEl.value.split("\n").filter((x) => x.trim()).length; if (have < need) kEl.value = kEl.value.replace(/\s+$/, "") + "\n".repeat(kEl.value.trim() ? 1 : 0) + Array(need - have).fill("-").join("\n"); add("ko" + i, ko); }
+    lastF = "text" + i;
+    toast(`장면 ${+i + 1}에 넣었어요: ${en.slice(0, 32)}`);
+    BL = { f: -1, vals: {}, cur: null }; hintSheet(true);
+  };
 }
 
 /* ---------- 영어 문장 도우미 ---------- */

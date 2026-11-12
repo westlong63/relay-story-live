@@ -169,7 +169,7 @@
       else if (kos.join(" ").split(/(?<=[.!?])\s+/).filter(Boolean).length === lines.length) { const ks = kos.join(" ").split(/(?<=[.!?])\s+/).filter(Boolean); lines.forEach((l, j) => (l[2] = ks[j])); }
       else if (kos.length) lines.forEach((l, j) => (l[2] = kos[Math.min(kos.length - 1, Math.floor((j * kos.length) / lines.length))]));
       const auto = this.autoKo || {};
-      for (const l of lines) { if (!l[2] && auto[l[1]]) l[2] = auto[l[1]]; l.length = 3; }
+      for (const l of lines) { if (/^[-–—]$/.test(l[2])) l[2] = ""; /* '-'는 쉬운 모드가 줄 맞춤용으로 넣은 빈 자막 */ if (!l[2] && auto[l[1]]) l[2] = auto[l[1]]; l.length = 3; }
       return lines;
     }
     buildFilm(story) {
