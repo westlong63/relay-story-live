@@ -195,6 +195,43 @@
   .bld .sko { font-size:14px; color:var(--dim); margin-top:2px; }
   #sheet .ins.mis { border-color:#E0A400; background:#FFF7E0; }
   #sheet .frm b { color:var(--blue); }
+  /* 릴레이 소설(턴제): 차례표, 사건 카드, 친구 글 실시간 보기, 범인 투표 */
+  .rolebar { display:flex; align-items:center; gap:8px; flex-wrap:wrap; background:var(--navy); color:#fff; padding:10px 14px; border-radius:6px; margin:12px 0 0; font-weight:800; font-size:18px; }
+  .rolebar .rk { background:#ffd23f; color:#16306e; border-radius:4px; padding:1px 8px; font-size:14px; }
+  .rolebar small { font-weight:500; font-size:14px; opacity:.92; flex-basis:100%; }
+  .ccards { display:grid; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); gap:8px; margin:8px 0 12px; }
+  .ccard { background:#fff; border-radius:6px; padding:10px 10px 12px; text-align:center; box-shadow:0 0 0 2px var(--frame), 0 3px 0 2px var(--frame-2); line-height:1.3; }
+  .ccard .lab { display:block; font-size:12px; font-weight:800; color:var(--red); }
+  .ccard .em { display:block; font-size:34px; line-height:1.25; }
+  .ccard b { display:block; font-size:17px; color:var(--px-ink); }
+  .ccard small { display:block; font-size:12px; color:var(--dim); }
+  .ccard i { display:block; font-style:normal; font-size:12px; color:var(--blue); font-weight:600; margin-top:2px; }
+  .ccard p { margin:6px 0 0; font-size:13px; text-align:left; background:var(--tint); padding:5px 7px; border-radius:4px; }
+  .ccard.why { grid-column:1 / -1; text-align:left; } .ccard.why b { font-size:16px; }
+  .envl { text-align:center; background:#FFF7E0; border:2px dashed #E0A400; border-radius:8px; padding:16px; margin:8px 0 12px; line-height:1.5; }
+  .envl .em { font-size:44px; line-height:1.2; }
+  .order { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-top:6px; font-size:14px; }
+  .order .chip { margin:0; }
+  .order .chip.now { background:var(--navy); color:#fff; box-shadow:0 0 0 2px #163f9e; font-weight:800; }
+  .order .chip.done { opacity:.55; }
+  .order .chip.me { outline:3px solid #ffd23f; outline-offset:1px; }
+  .liveCard { box-shadow:0 0 0 2px var(--blue), var(--card-shadow); }
+  #liveBox { min-height:96px; font-size:19px; line-height:1.6; }
+  #liveBox p { margin:6px 0; }
+  .caret { display:inline-block; width:3px; height:1.05em; background:var(--blue); vertical-align:-3px; margin-left:2px; animation:blink 1s steps(2) infinite; }
+  @keyframes blink { 50% { opacity:0; } }
+  .nextme { background:#FFF3C4; border-left:4px solid #E0A400; padding:10px 12px; font-weight:700; margin-top:10px; }
+  #sheet .ins.used { opacity:.5; }
+  #sheet .detsw { display:flex; gap:6px; align-items:center; font-size:14px; margin:4px 0 6px; }
+  #sheet .detsw button { width:auto; margin:0; padding:6px 12px; font-size:15px; }
+  #sheet .detsw button.on { background:var(--navy); color:#fff; }
+  .gopts { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  main button.gopt { margin:0; padding:10px 8px 12px; text-align:center; line-height:1.3; display:block; }
+  .gopt .em { display:block; font-size:36px; line-height:1.2; } .gopt b { display:block; font-size:18px; } .gopt small { display:block; font-size:12px; color:var(--dim); font-weight:500; }
+  .gopt i { display:block; font-style:normal; font-size:13px; font-weight:500; margin-top:5px; text-align:left; background:var(--tint); padding:5px 7px; border-radius:4px; color:var(--ink); }
+  .gopt em { display:block; font-style:normal; font-weight:800; color:var(--navy); margin-top:4px; }
+  main button.gopt.sel { background:linear-gradient(#f3f8ff, #dceaff); box-shadow:inset 0 2px 0 #fff, 0 0 0 3px var(--blue), 0 4px 0 2px #1f56c8; }
+  main button.gopt:disabled { opacity:1; }
   /* 디벗(갤럭시 탭): 세로 800px, 가로 1280px 안팎. 글자와 버튼을 통째로 키워요. */
   @media (min-width:700px) {
     main, #sheet, .credit { zoom:1.2; }
@@ -230,6 +267,8 @@
 <script src="js/config.js"></script>
 <script>if (window.RSL_CONFIG.firebase && !new URLSearchParams(location.search).has("demo")) document.write('<link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="' + (window.RSL_CONFIG.firebase.databaseURL || "").replace(/[^\w:/.-]/g, "") + '"><script src="vendor/firebase-app-compat.js"><\/script><script src="vendor/firebase-auth-compat.js"><\/script><script src="vendor/firebase-database-compat.js"><\/script>');</script>
 <script src="js/content.js"></script>
+<script src="js/cases.js"></script>
+<script src="js/clue.js"></script>
 <script src="js/engine.js"></script>
 <script src="js/bus.js"></script>
 <script src="js/grammar.js"></script>
@@ -285,7 +324,8 @@ function topicOf(t) {
   return l ? Object.assign({}, l, { characters: Object.keys(l.characters).filter((n) => n !== "Narrator") }) : null;
 }
 const banned = () => window.RSL_CONTENT.banned.concat((V && V.bannedX) || []);
-const hkOf = (v) => { const held = v.held || {}; return [v.phase, v.me ? 1 : 0, v.write && v.write.round, v.write && v.write.done, v.write && v.write.started, held.id, held.submitted, v.quiz, v.quizGame, v.me ? curGame() : "", v.wordIndex, v.watching && v.watching.id].join("|"); };
+const hkOf = (v) => { const held = v.held || {}, g = v.guess || {}; return [v.phase, v.me ? 1 : 0, v.write && v.write.round, v.write && v.write.done, v.write && v.write.started, held.id, held.submitted, v.turn && v.turn.me, v.quiz, v.quizGame, v.me ? curGame() : "", v.wordIndex, v.watching && v.watching.id, g.story, g.state].join("|"); };
+let lastLive = "";
 function onView(v) {
   if (!v) return;
   const T = topicOf(v.topic);
@@ -293,15 +333,18 @@ function onView(v) {
   v.topic = T;
   V = v;
   endsAt = v.write && v.write.endsAt ? v.write.endsAt - (link.offset || 0) : 0;
-  const held = v.held || {};
   const hk = hkOf(v);
   const key = JSON.stringify(v, (k, val) => (k === "v" || k === "left" ? undefined : val));
+  /* 친구가 쓰는 글(live)만 바뀌었으면 그 칸만 다시 그려요 (화면이 깜빡이지 않게) */
+  const rest = JSON.stringify(v, (k, val) => (k === "v" || k === "left" || k === "live" ? undefined : val)), onlyLive = rest === lastLive;
+  lastLive = rest;
   if (v.write && v.write.closing) autoSave();
-  if (hk !== hardKey) { hardKey = hk; lastKey = key; if (typing()) document.activeElement.blur(); render(); return; }
+  if (hk !== hardKey) { hardKey = hk; lastKey = key; if (typing()) document.activeElement.blur(); render(); window.scrollTo(0, 0); return; } /* 단계나 차례가 바뀌면 맨 위부터 보여요 */
   if (key === lastKey) return;
   lastKey = key;
   if ($("#fishRoot")) { game(); fishHud(); return; } /* 낚시 중에는 화면 전체를 다시 그리지 않아요 (찌·애니메이션 유지) */
   if ($("#runRoot")) { game(); return; } /* 달리기 중에도 마찬가지 */
+  if (onlyLive && $("#liveBox")) { paintLive(); return; }
   if (typing()) { pending = true; return; }
   render();
 }
@@ -320,7 +363,7 @@ function render() {
   const head = `<div class="top"><span style="display:flex;align-items:center;gap:8px;min-width:0">${FRAMED ? "" : `<a class="homeBtn" id="homeBtn" href="index.html" aria-label="처음 화면으로">🏠 처음</a>`}<span>${esc(V.me.name)} · <b style="color:${t.color}">${esc(t.name)}</b></span></span><span>${esc(V.topic.title)}</span></div>`;
   $("#main").innerHTML = head + ({ topic: rTopic, words: rWords, write: rWrite, video: rVideo, watch: rWatch }[V.phase])();
   document.body.classList.toggle("fishing", !!($("#fishRoot") || $("#runRoot")));
-  bind();
+  bind(); paintLive();
   if ($("#fishRoot")) fishMount();
   if ($("#runRoot")) runMount();
   if (!(V.phase === "write" && V.held && !V.write.done)) hintSheet(false); else if (!$("#sheet").hidden) hintSheet(true);
@@ -352,13 +395,18 @@ function rJoin() {
     else if (!V.me) $("#join").textContent = "입장했어요! 화면을 불러오는 중…";
   };
 }
+const CS0 = () => (window.RSL_CLUE && V ? RSL_CLUE.of(V.topic.id) : null); /* 이 주제의 사건 파일 */
+const CS = () => (V && V.clue ? CS0() : null); /* 지금 수업이 사건 구조로 진행될 때만 */
 function rTopic() {
-  const T = V.topic;
+  const T = V.topic, cs = CS();
   return `<div class="card"><div class="dim">오늘의 주제</div><h1>${esc(T.title)}</h1>${T.ko ? `<div style="font-weight:600;color:var(--blue);font-size:14px">${esc(T.ko)}</div>` : ""}
     <p style="font-size:19px">${esc(T.seed)}</p>${T.seedKo ? `<p class="dim" style="font-size:14px">${esc(T.seedKo)}</p>` : ""}
     <div>등장인물: ${T.characters.map((c) => `<span class="chip">${esc(c)}</span>`).join("")} + 새 인물도 OK</div></div>
+    ${cs ? `<div class="card"><div class="dim">🔍 오늘의 사건</div><h2>${esc(cs.title)}</h2><div style="font-weight:600;color:var(--blue);font-size:14px">${esc(cs.ko)}</div>
+      <p style="font-size:18px">${cs.missing.emoji} ${esc(cs.incident)}</p><p class="dim" style="font-size:14px">${esc(cs.incidentKo)}</p>
+      <p class="dim" style="font-size:14px">용의자 중에 누가 가져갔을까요? 모둠마다 범인이 달라요!</p></div>` : ""}
     <div class="card"><h2>우리 모둠</h2>${V.team.members.map((m) => `<span class="chip">${esc(m)}</span>`).join("")}
-    <p class="dim">곧 오늘의 단어 6개를 배우고, 🎣 단어 낚시 대회를 한 뒤, 모둠 친구들과 이야기를 돌려 써요. 선생님 화면을 봐 주세요!</p></div>`;
+    <p class="dim">곧 오늘의 단어 6개를 배우고, 단어 게임을 한 뒤, 모둠 친구들과 한 명씩 차례로 이야기를 이어 써요. 선생님 화면을 봐 주세요!</p></div>`;
 }
 
 /* ---------- 단어 시간: 카드 → 게임 → 복습 ---------- */
@@ -677,20 +725,49 @@ function rWords() {
   return wordCard(W[V.wordIndex], V.wordIndex, W.length) + `<div class="card dim">선생님 화면과 같이 넘어가요. 다 보면 디벗으로 단어 게임을 해요! 🎣 단어 낚시 또는 🏃 단어 달리기 중에서 선생님이 골라요.</div>`;
 }
 function epHtml(e, i) {
-  return `<div class="ep"><b>EP${i + 1} ${esc(e.title || "")}</b> <span class="dim">by ${esc(e.writer)}</span>
+  const cs = CS(), R = cs && e.k != null ? RSL_CLUE.ROLE[RSL_CLUE.role(e.k, V.write.rounds)] : null;
+  return `<div class="ep"><b>EP${e.k != null ? e.k + 1 : i + 1} ${esc(e.title || (R ? R.en : ""))}</b> ${R ? `<span class="dim">${R.icon} ${R.ko} · </span>` : ""}<span class="dim">by ${esc(e.writer)}</span>
     ${e.scenes.map((s) => `${s.screen ? `<p class="dim">${esc(s.screen)}</p>` : ""}<p>${esc(s.text).replace(/\n/g, "<br>")}</p>${s.ko ? `<p class="dim" style="font-size:13px">${esc(s.ko).replace(/\n/g, "<br>")}</p>` : ""}`).join("")}
     ${e.next ? `<p class="dim">❓ ${esc(e.next.question)} (A) ${esc(e.next.a)} / (B) ${esc(e.next.b)}</p>` : ""}</div>`;
 }
 const dk = () => `rsl-draft-${room}-${V.me.id}-${V.write.round}`;
 const draft = () => { try { return JSON.parse(store.get(dk()) || "{}"); } catch (e) { return {}; } };
+const saveDraft = (d) => store.set(dk(), JSON.stringify(d));
+/* ---------- 릴레이 소설 (턴제): 내 차례면 쓰고, 아니면 친구가 쓰는 글을 바로 봐요 ---------- */
+const roleOf = () => (CS() ? RSL_CLUE.ROLE[RSL_CLUE.role(V.write.round, V.write.rounds)] : null);
+function orderHtml() {
+  const t = V.turn; if (!t) return "";
+  return `<div class="order"><span class="dim">차례</span>${t.order.map((o) => `<span class="chip ${o.st} ${o.name === V.me.name ? "me" : ""}">${o.st === "now" ? "✏️ " : o.st === "done" ? "✓ " : ""}${esc(o.name)}</span>`).join("")}</div>`;
+}
+function roleBar() {
+  const R = roleOf(); if (!R) return "";
+  return `<div class="rolebar"><span class="rk">${V.write.round + 1}화</span>${R.icon} ${R.en} <span style="font-weight:600">${R.ko}</span><small>${esc(R.tip)}</small></div>`;
+}
+/* 사건 카드. 마지막 화의 비밀 봉투는 쓰는 학생이 직접 열어야 보여요 */
+function cardsHtml(part, opened) {
+  const cs = CS(); if (!cs || !part) return "";
+  if (part.locked) return `<div class="envl"><div class="em">🔒</div><b>비밀 봉투</b><div class="dim">범인이 누구인지는 지금 쓰는 친구만 열어 볼 수 있어요. 글에서 곧 밝혀져요!</div></div>`;
+  if (part.role === "solve" && !opened) return `<div class="envl"><div class="em">✉️</div><b>비밀 봉투가 도착했어요</b><div class="dim">범인, 찾은 곳, 이유가 들어 있어요. 모둠 친구들에게는 글로 알려 줘요.</div><button class="primary" id="envOpen">봉투 열기</button></div>`;
+  return `<div class="ccards">${RSL_CLUE.cards(cs, part).map((c) => `<div class="ccard ${c.t}"><span class="lab">${esc(c.label)}</span>${c.t === "why" ? "" : `<span class="em">${c.emoji}</span>`}<b>${esc(c.en)}</b><small>${esc(c.ko)}</small>${c.sub ? `<i>${esc(c.sub)} · ${esc(c.subKo)}</i>` : ""}${c.note ? `<p>${esc(c.note)}<small>${esc(c.noteKo)}</small></p>` : ""}</div>`).join("")}</div>`;
+}
+function prevHtml(eps) {
+  const k = eps.length; if (!k) return "";
+  return `<div class="card"><h2>지금까지의 이야기 (${k}화)</h2>${k > 1 ? `<details><summary class="dim">앞부분 보기</summary>${eps.slice(0, -1).map(epHtml).join("")}</details>` : ""}${epHtml(eps[k - 1], k - 1)}</div>`;
+}
+const missionHtml = (mis) => mis.map((m) => { const mw = V.topic.words.find((x) => x.word === m); return `<span class="chip" data-w="${esc(m)}">${esc(m)}${mw ? ` <small>${esc(mw.ko.split(",")[0])}</small>` : ""}</span>`; }).join("");
+const storyHtml = (s) => `<div class="card"><h2>${esc(s.title || "우리 모둠 이야기")}</h2><div class="dim">by ${esc([...new Set(s.writers)].join(", "))} · 미션 단어 ${s.used}/${s.total}</div>${s.episodes.map(epHtml).join("")}</div>`;
 function rWrite() {
-  const w = V.write, h = V.held;
-  if (!w.started) return `<div class="card"><h2>곧 돌려 쓰기를 시작해요</h2><p class="dim">선생님이 시작하면 내 이야기의 1화를 쓰게 돼요.</p></div>`;
-  if (w.done) return `<div class="card"><h2>돌려 쓰기 끝!</h2><p class="dim">이제 모둠 이야기들이 영상으로 만들어져요. 선생님 화면을 봐 주세요.</p></div>` +
-    (V.teamStories || []).map((s) => `<div class="card"><h2>${esc(s.title || s.starter + "의 이야기")}</h2>${s.episodes.map(epHtml).join("")}</div>`).join("");
-  if (!h) return `<div class="card"><h2>이번 돌려 쓰기는 이미 시작됐어요</h2><p class="dim">다음 활동부터 함께 써요. 지금은 친구들 이야기를 응원해 주세요!</p></div>`;
-  const prog = (V.teamProgress || []).map((x) => `<span class="chip ${x.done ? "on" : ""}">${x.done ? "✓" : "✏️"} ${esc(x.name)}</span>`).join("");
-  const d = draft(), last = h.episodes[h.episodes.length - 1], k = h.episodes.length;
+  const w = V.write;
+  if (!w.started) return `<div class="card"><h2>곧 릴레이 소설을 시작해요</h2><p class="dim">모둠 친구들과 이야기 하나를 한 명씩 차례로 이어 써요. 친구가 쓰는 글은 내 화면에 바로 보여요.</p></div>`;
+  if (w.done) return `<div class="card"><h2>🎉 우리 모둠 이야기 완성!</h2><p class="dim">다른 모둠이 끝나면 영상으로 만들어요. 그동안 우리 이야기를 다시 읽어 봐요.</p></div>` + (V.teamStories || []).map(storyHtml).join("");
+  if (V.held) return rWriter();
+  if (V.watch) return rWatcher();
+  return `<div class="card"><h2>잠시만 기다려 주세요</h2><p class="dim">곧 우리 모둠 차례표에 들어가요. 선생님 화면을 봐 주세요.</p></div>`;
+}
+function rWriter() {
+  const w = V.write, h = V.held, cs = CS(), part = h.clue, d = draft();
+  /* 사건 구조: 그림이 되는 화면 묘사를 카드에 맞게 미리 넣어 둬요 (마지막 화는 봉투를 연 뒤에) */
+  if (cs && part && !d.pre && !d.screen0 && !(part.role === "solve" && !d.env)) { d.screen0 = RSL_CLUE.frames(cs, part, 0).screen; d.pre = 1; saveDraft(d); }
   const scenes = Array.from({ length: V.maxScenes }, (_, i) => `
     <div class="card"><h2>장면 ${i + 1}${i >= 2 ? " 보너스" : ""}${i > 0 ? ' <span class="dim" style="font-size:14px">(선택)</span>' : ""}</h2>
       <label>화면 묘사 · 영어 한 줄 (이게 그림이 돼요: 누가, 어디서)</label>
@@ -702,51 +779,82 @@ function rWrite() {
       <label>우리말 자막 (선택) · 영어 한 줄에 우리말 한 줄씩 쓰면 영상에 같이 나와요</label>
       <textarea data-f="ko${i}" style="min-height:70px" placeholder="갑자기 문이 열렸다.&#10;준: 저게 뭐야?">${esc(d["ko" + i] || "")}</textarea>
     </div>`).join("");
-  const F = window.RSL_CONTENT.hints.flow, fl = k === 0 ? F.first : w.round + 1 >= w.rounds ? F.last : F.middle;
-  const flow = `<div class="flow"><b>${esc(fl.title)}</b><ul style="margin:6px 0 0;padding-left:20px">${fl.tips.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>
-    <div class="modes"><button id="mEasy" class="${easyOn() ? "on" : ""}">🧩 쉬운 모드<small>문장 틀을 고르고 단어만 골라 넣어요. 우리말 자막도 같이 채워져요</small></button>
+  const F = window.RSL_CONTENT.hints.flow, fl = w.round === 0 ? F.first : w.round + 1 >= w.rounds ? F.last : F.middle;
+  const tips = cs ? ["위의 사건 카드 내용을 이야기에 넣어요", "🧩 쉬운 모드에서 사건 문장을 골라 넣고, 내 문장을 한 줄 더해 봐요", "미션 단어를 넣으면 영상에서 금색으로 빛나요"] : fl.tips;
+  const flow = `<div class="flow"><b>${cs ? "이렇게 써요" : esc(fl.title)}</b><ul style="margin:6px 0 0;padding-left:20px">${tips.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>
+    <div class="modes"><button id="mEasy" class="${easyOn() ? "on" : ""}">🧩 쉬운 모드<small>${cs ? "사건 문장을 골라 넣어요. 우리말 자막도 같이 채워져요" : "문장 틀을 고르고 단어만 골라 넣어요. 우리말 자막도 같이 채워져요"}</small></button>
       <button id="mFree" class="${easyOn() ? "" : "on"}">✏️ 도전 모드<small>내 문장으로 자유롭게 써요. 막히면 💡 힌트</small></button></div>
     <div class="dim" style="font-size:13px;margin-top:6px">영어 도우미는 고쳐 보면 좋은 곳만 알려 줘요. 점수와 상관없고, 안 고쳐도 제출돼요.</div></div>`;
+  const next = V.turn && V.turn.next;
   return `
-    <div class="sticky"><div style="display:flex;justify-content:space-between;align-items:center"><div><b>라운드 ${w.round + 1}/${w.rounds}</b> · ${h.mineStarted ? "내가 시작한 이야기" : `${esc(h.starter)}의 이야기 ${k + 1}화`}</div><div class="tleft" id="tleft"></div></div>
-      <div>미션: <span id="mission">${h.mission.map((m) => { const mw = V.topic.words.find((x) => x.word === m); return `<span class="chip" data-w="${esc(m)}">${esc(m)}${mw ? ` <small>${esc(mw.ko.split(",")[0])}</small>` : ""}</span>`; }).join("")}</span></div></div>
-    ${h.submitted ? `<div class="card" style="border:2px solid var(--ok)"><b class="ok">✓ 제출했어요!</b> <span class="dim">시간이 남았으면 고쳐서 다시 제출해도 돼요.</span><div style="margin-top:6px">${prog}</div></div>` : ""}
-    ${k ? `<div class="card"><h2>지금까지의 이야기 (${k}화)</h2>${h.episodes.length > 1 ? `<details><summary class="dim">앞부분 보기</summary>${h.episodes.slice(0, -1).map(epHtml).join("")}</details>` : ""}${epHtml(last, k - 1)}</div>` :
-      `<div class="card"><h2>내 이야기의 1화를 시작해요</h2><p class="dim">${esc(V.topic.seed)}</p><p class="dim">이 이야기는 다음 라운드에 옆 친구가 이어 써요.</p></div>`}
+    <div class="sticky"><div style="display:flex;justify-content:space-between;align-items:center"><div><b>✏️ 내 차례!</b> ${w.round + 1}화 / ${w.rounds}화</div><div class="tleft" id="tleft"></div></div>
+      <div>미션: <span id="mission">${missionHtml(h.mission)}</span></div>${orderHtml()}</div>
+    ${h.submitted ? `<div class="card" style="border:2px solid var(--ok)"><b class="ok">✓ 제출했어요!</b> <span class="dim">${next ? `곧 ${esc(next)} 차례로 넘어가요.` : "곧 다음으로 넘어가요."}</span></div>` : ""}
+    ${roleBar()}${cardsHtml(part, d.env)}
+    ${prevHtml(h.episodes) || (cs ? "" : `<div class="card"><h2>우리 모둠 이야기의 1화를 시작해요</h2><p class="dim">${esc(V.topic.seed)}</p></div>`)}
+    <div class="card dim" style="font-size:14px">내가 쓰는 글은 모둠 친구들과 선생님 화면에 바로 보여요. 다 쓰면 다음 친구가 이어 써요.</div>
     ${flow}
     ${h.twist ? `<div class="twist"><b>Twist 카드</b> (넣으면 더 재밌어요): ${esc(h.twist)}${(window.RSL_CONTENT.twistsKo || {})[h.twist] ? `<div class="dim" style="font-size:14px">${esc(window.RSL_CONTENT.twistsKo[h.twist])}</div>` : ""}</div>` : ""}
     ${h.choice ? `<div class="twist">❓ 앞사람이 남긴 갈림길: <b>${esc(h.choice.question)}</b>
         <button data-pick="0" class="${d.pick === 0 ? "sel" : ""}">A) ${esc(h.choice.a)}</button><button data-pick="1" class="${d.pick === 1 ? "sel" : ""}">B) ${esc(h.choice.b)}</button></div>` : ""}
-    <div class="card"><label>이번 화 제목 (선택)</label><input data-f="title" value="${esc(d.title || "")}" placeholder="${k ? "The Secret Door" : "A Strange Night"}"></div>
+    ${cs ? "" : `<div class="card"><label>이번 화 제목 (선택)</label><input data-f="title" value="${esc(d.title || "")}" placeholder="${w.round ? "The Secret Door" : "A Strange Night"}"></div>`}
     ${scenes}
-    ${w.round + 1 < w.rounds ? `<div class="card"><h2>다음 사람에게 갈림길 남기기 <span class="dim" style="font-size:14px">(선택)</span></h2>
+    ${cs ? "" : w.round + 1 < w.rounds ? `<div class="card"><h2>다음 사람에게 갈림길 남기기 <span class="dim" style="font-size:14px">(선택)</span></h2>
       <input data-f="nq" value="${esc(d.nq || "")}" placeholder="What should Jun do?">
       <input data-f="na" value="${esc(d.na || "")}" placeholder="A) Open the door">
-      <input data-f="nb" value="${esc(d.nb || "")}" placeholder="B) Call for help"></div>` : `<div class="card dim">마지막 라운드예요. 이야기를 멋지게 끝내 주세요!</div>`}
+      <input data-f="nb" value="${esc(d.nb || "")}" placeholder="B) Call for help"></div>` : `<div class="card dim">마지막 화예요. 이야기를 멋지게 끝내 주세요!</div>`}
     <div id="check" class="card"></div>
     ${DEMO ? `<button id="sample" class="ghost">(시연용) 예시로 채우기</button>` : ""}
     <button class="hintBtn" id="hintBtn">💡 힌트</button>
-    <button class="primary" id="submit">${h.submitted ? "고친 내용 다시 제출 ✓" : "다 썼어요! 제출 ✓"}</button>
-    <div id="msg" class="warn"></div>
-    ${h.submitted ? "" : `<div class="card"><div class="dim">우리 모둠 진행</div>${prog}</div>`}`;
+    <button class="primary" id="submit">${h.submitted ? "✓ 제출했어요" : "다 썼어요! 제출하고 다음 친구에게 ✓"}</button>
+    <div id="msg" class="warn"></div>`;
+}
+function rWatcher() {
+  const w = V.write, x = V.watch, t = V.turn || {};
+  return `
+    <div class="sticky"><div style="display:flex;justify-content:space-between;align-items:center"><div>👀 지금은 <b>${esc(t.writer || "친구")}</b> 차례 · ${w.round + 1}화 / ${w.rounds}화</div><div class="tleft" id="tleft"></div></div>${orderHtml()}</div>
+    ${t.next === V.me.name ? `<div class="nextme">다음은 내 차례예요! 친구 글을 읽으면서 이어 쓸 내용을 생각해 봐요.</div>` : ""}
+    ${roleBar()}${cardsHtml(x.clue)}
+    <div class="card liveCard"><h2>✏️ ${esc(t.writer || "친구")}의 글 <span class="dim" style="font-size:14px;font-weight:500">쓰는 대로 바로 보여요</span></h2><div id="liveBox"></div></div>
+    <div class="card"><div class="dim" style="margin-bottom:4px">이번 화 미션 단어 · 친구가 쓰면 색이 바뀌어요</div><span id="mission">${missionHtml(x.mission)}</span></div>
+    ${prevHtml(x.episodes)}`;
+}
+/* 친구가 쓰는 글: 이 칸만 다시 그려요 */
+function paintLive() {
+  const el = $("#liveBox"); if (!el || !V || !V.watch) return;
+  const lv = V.watch.live, n = lv ? lv.scenes.length : 0;
+  el.innerHTML = !lv || (!n && !lv.title) ? `<p class="dim">아직 쓰기 전이에요. 곧 글이 나타나요<span class="caret"></span></p>` :
+    (lv.title ? `<p><b>${esc(lv.title)}</b></p>` : "") + lv.scenes.map((s, i) => `${s.screen ? `<p class="dim" style="font-size:15px">🎬 ${esc(s.screen)}</p>` : ""}<p>${esc(s.text).replace(/\n/g, "<br>")}${!lv.done && i === n - 1 ? '<span class="caret"></span>' : ""}</p>${s.ko ? `<p class="dim" style="font-size:14px">${esc(s.ko).replace(/\n/g, "<br>")}</p>` : ""}`).join("") +
+    (lv.done ? `<p class="ok"><b>✓ 제출했어요!</b> 곧 다음 차례로 넘어가요.</p>` : "");
+  const story = lv ? lv.scenes.map((s) => s.text).join(" ") : "";
+  document.querySelectorAll("#mission [data-w]").forEach((c) => c.classList.toggle("on", wordRe(c.dataset.w).test(story)));
 }
 function rVideo() {
-  const list = V.teamStories || [];
-  return `<div class="card"><h2>우리 모둠 대표작 고르기</h2><p class="dim">다 같이 볼 영상 1편을 골라요. 표가 가장 많은 이야기가 대표작(★)이 돼요. 나머지도 나중에 우리 반 영상관에서 볼 수 있어요.</p></div>
-    ${list.map((s) => `<div class="card" style="${V.myVote === s.id ? "outline:3px solid var(--gold)" : ""}"><h2>${V.rep === s.id ? "★ " : ""}${esc(s.title || s.starter + "의 이야기")}</h2>
-      <div class="dim">by ${esc([...new Set(s.writers)].join(", "))} · 단어 ${s.used}/${s.total} · ${s.votes}표</div>
-      <details><summary class="dim">이야기 읽기</summary>${s.episodes.map(epHtml).join("")}</details>
-      <button data-tv="${s.id}" class="${V.myVote === s.id ? "primary" : ""}">${V.myVote === s.id ? "✔ 내가 고른 대표작" : "이 이야기에 투표"}</button></div>`).join("") || '<div class="card dim">아직 이야기가 없어요</div>'}`;
+  return `<div class="card"><h2>🎬 우리 이야기가 영상이 돼요</h2><p class="dim">선생님 화면에서 영상을 만들고 있어요. 곧 다 같이 봐요! 그동안 우리 모둠 이야기를 다시 읽어 봐요.</p></div>
+    ${(V.teamStories || []).map(storyHtml).join("") || '<div class="card dim">아직 이야기가 없어요</div>'}`;
+}
+/* "범인은 누구?" 반 전체 투표 (다른 모둠 영상일 때만 투표해요) */
+function guessHtml() {
+  const g = V.guess, cs = CS0(); if (!g || !cs) return "";
+  const S = cs.suspects, ans = g.state === "reveal" ? S[g.answer] : null;
+  if (g.own) return `<div class="card"><h2>🤫 우리 모둠 영상이에요</h2><p>범인은 비밀! 친구들이 맞히는지 지켜봐요.</p>
+    <p class="dim">${g.state === "reveal" ? `투표한 ${g.n}명 중 <b>${g.right}명</b>이 맞혔어요.` : `투표 ${g.n} / ${g.of}명`}</p></div>`;
+  const head = g.state === "open" ? "🔍 Who did it? 범인은 누구일까요?" : g.state === "closed" ? "투표 마감! 정답을 기다려요" :
+    g.mine === g.answer ? "🎉 정답! 명탐정이에요" : g.mine == null ? `정답은 ${esc(ans.name)}!` : `아쉬워요! 정답은 ${esc(ans.name)}`;
+  const btn = (i) => { const s = S[i], cls = g.state === "reveal" ? (i === g.answer ? "yes" : g.mine === i ? "no" : "") : g.mine === i ? "sel" : "";
+    return `<button class="gopt ${cls}" data-guess="${i}" ${g.state !== "open" ? "disabled" : ""}><span class="em">${s.emoji}</span><b>${esc(s.name)}</b><small>${esc(s.role)} · ${esc(s.roleKo)}</small><i>${esc(s.name)} ${esc(s.trait)}.<br><span class="dim">${esc(s.traitKo)}</span></i>${g.state === "reveal" ? `<em>${g.tally[g.opts.indexOf(i)]}표${i === g.answer ? " · 범인!" : ""}</em>` : g.mine === i ? "<em>✔ 내 선택</em>" : ""}</button>`; };
+  return `<div class="card"><h2>${head}</h2>${g.state === "open" ? `<p class="dim">영상에 나온 단서를 떠올려 보세요. 고른 뒤에도 마감 전까지 바꿀 수 있어요.</p>` : ""}
+    <div class="gopts">${g.opts.map(btn).join("")}</div>${V.sleuth ? `<p class="dim" style="margin-bottom:0">내가 맞힌 사건: <b>${V.sleuth}개</b></p>` : ""}</div>`;
 }
 function rWatch() {
   const w = V.watching, others = (V.screenTeams || []).filter((t) => t.id !== V.me.team);
   const gal = `watch.html?r=${encodeURIComponent(room)}${DEMO ? "&demo=1" : ""}`;
-  return `<div class="card">${w ? `<div class="dim">지금 상영 중</div><h2 style="color:${w.color}">${esc(w.name)} · ${esc(w.title)}</h2>
+  return `${guessHtml()}<div class="card">${w ? `<div class="dim">지금 상영 중</div><h2 style="color:${w.color}">${esc(w.name)} · ${esc(w.title)}</h2>
       <div class="rx">${Object.keys(EMO).map((e) => `<button data-rx="${e}">${EMO[e]}</button>`).join("")}</div><p class="dim" style="font-size:14px">누르면 큰 화면에 이모지가 떠올라요</p>` : "<h2>시상식!</h2>"}</div>
     <div class="card"><h2>Best Story 투표 (우리 모둠 말고)</h2>
       ${others.map((t) => `<button class="teamBtn ${V.voted === t.id ? "sel" : ""}" data-vote="${t.id}" style="--c:${t.color}">${esc(t.name)} ${V.voted === t.id ? "✔" : ""}</button>`).join("")}
       <p class="dim">영상을 다 본 뒤에 바꿔도 돼요.</p></div>
-    <div class="card"><h2>우리 반 영상관</h2><p class="dim">수업이 끝나도 모든 이야기 영상을 다시 볼 수 있어요.${V.myStory ? " 내가 시작한 이야기도 있어요!" : ""}</p>
+    <div class="card"><h2>우리 반 영상관</h2><p class="dim">수업이 끝나도 모든 이야기 영상을 다시 볼 수 있어요.${V.myStory ? " 우리 모둠 이야기도 있어요!" : ""}</p>
       <a href="${gal}${V.myStory ? "&s=" + V.myStory : ""}" target="_blank"><button>영상관 열기 ↗</button></a></div>`;
 }
 
@@ -758,7 +866,7 @@ function bind() {
   bindAns(document);
   document.querySelectorAll("[data-rx]").forEach((b) => b.onclick = () => { if (V.watching) link.send("react", { team: V.watching.id, emoji: b.dataset.rx }); b.animate([{ transform: "scale(1.35)" }, { transform: "scale(1)" }], 250); });
   document.querySelectorAll("[data-vote]").forEach((b) => b.onclick = () => link.send("vote", { team: +b.dataset.vote }));
-  document.querySelectorAll("[data-tv]").forEach((b) => b.onclick = () => link.send("teamVote", { story: b.dataset.tv }));
+  document.querySelectorAll("[data-guess]").forEach((b) => b.onclick = () => link.send("guess", { pick: +b.dataset.guess }));
   document.querySelectorAll("[data-gsw]").forEach((b) => b.onclick = () => { if (b.classList.contains("on")) return; try { store.set(GPK(), b.dataset.gsw); } catch (e) {} hardKey = hkOf(V); render(); });
   if (V.phase === "write" && V.held && !V.write.done) bindWrite();
 }
@@ -783,39 +891,56 @@ function collect() {
   return { title: d.title || "", scenes, pick: d.pick, round: V.write.round,
     next: d.nq && d.na && d.nb ? { question: d.nq, a: String(d.na).replace(/^A\)\s*/i, ""), b: String(d.nb).replace(/^B\)\s*/i, "") } : null };
 }
+/* 쓰는 중인 글을 2초에 한 번쯤 보내요 → 모둠 친구와 선생님 화면에 바로 보여요 */
+let liveT = null, liveLast = "", liveAt = 0;
+function liveSoon() { if (liveT) return; liveT = setTimeout(() => { liveT = null; sendLive(); }, Math.max(350, 1800 - (Date.now() - liveAt))); }
+function sendLive() {
+  if (!V || !V.held || V.held.submitted || V.phase !== "write" || V.write.done || V.write.closing) return;
+  const c = collect(), body = { round: V.write.round, title: c.title, scenes: c.scenes }, j = JSON.stringify(body);
+  if (j === liveLast) return;
+  liveLast = j; liveAt = Date.now(); link.send("live", body);
+}
 function bindWrite() {
   const fields = document.querySelectorAll("[data-f]");
-  const save = () => { const d = draft(); fields.forEach((f) => (d[f.dataset.f] = f.value)); d.dirty = true; store.set(dk(), JSON.stringify(d)); check(); gramAll(); };
+  const save = () => { const d = draft(); fields.forEach((f) => (d[f.dataset.f] = f.value)); d.dirty = true; saveDraft(d); check(); gramAll(); liveSoon(); };
   fields.forEach((f) => (f.oninput = save));
   trackFields();
   $("#hintBtn").onclick = () => { if ($("#sheet").hidden && easyOn()) hintTab = "blk"; hintSheet($("#sheet").hidden); };
   $("#mEasy").onclick = () => { store.set("rsl-easy", "1"); $("#mEasy").classList.add("on"); $("#mFree").classList.remove("on"); hintTab = "blk"; hintSheet(true); };
   $("#mFree").onclick = () => { store.set("rsl-easy", "0"); $("#mFree").classList.add("on"); $("#mEasy").classList.remove("on"); if (hintTab === "blk") hintSheet(false); const f = document.querySelector('[data-f="text0"]'); if (f) f.focus(); };
+  if ($("#envOpen")) $("#envOpen").onclick = () => { const d = draft(); d.env = 1; saveDraft(d); render(); };
   RSLGrammar.load().then(gramAll);
   gramAll(true);
   document.querySelectorAll("[data-pick]").forEach((b) => b.onclick = () => {
-    const d = draft(); d.pick = +b.dataset.pick; d.dirty = true; store.set(dk(), JSON.stringify(d));
+    const d = draft(); d.pick = +b.dataset.pick; d.dirty = true; saveDraft(d);
     document.querySelectorAll("[data-pick]").forEach((x) => x.classList.toggle("sel", x === b));
   });
   if ($("#sample")) $("#sample").onclick = () => {
-    const T = { words: V.topic.words, seed: V.topic.seed, screens: V.topic.screens || [], characters: Object.fromEntries(["Narrator", ...V.topic.characters].map((c) => [c, {}])) };
-    const s = RSLEngine.sample(T, V.write.round, V.me.name.length, !!V.held.choice);
-    const d = { title: s.title, screen0: s.scenes[0].screen, text0: s.scenes[0].text, ko0: s.scenes[0].ko || "", pick: s.pick == null ? undefined : s.pick, dirty: true };
-    if (s.next && V.write.round + 1 < V.write.rounds) Object.assign(d, { nq: s.next.question, na: s.next.a, nb: s.next.b });
-    store.set(dk(), JSON.stringify(d)); render();
+    const cs = CS(), part = V.held.clue, d = draft();
+    let s;
+    if (cs && part) { d.env = 1; s = RSL_CLUE.sample(cs, part, V.me.name.length % 2, V.topic.words.find((x) => x.word === V.held.mission[0])); }
+    else {
+      const T = { words: V.topic.words, seed: V.topic.seed, screens: V.topic.screens || [], characters: Object.fromEntries(["Narrator", ...V.topic.characters].map((c) => [c, {}])) };
+      s = RSLEngine.sample(T, V.write.round, V.me.name.length, !!V.held.choice);
+      if (s.next && V.write.round + 1 < V.write.rounds) Object.assign(d, { nq: s.next.question, na: s.next.a, nb: s.next.b });
+    }
+    Object.assign(d, { title: s.title, screen0: s.scenes[0].screen, text0: s.scenes[0].text, ko0: s.scenes[0].ko || "", dirty: true, pre: 1 });
+    if (s.pick != null) d.pick = s.pick;
+    saveDraft(d); render();
   };
-  check();
+  check(); liveSoon();
+  $("#submit").disabled = !!V.held.submitted;
   $("#submit").onclick = async () => {
     const c = collect();
     if (!c.scenes.length) return ($("#msg").textContent = "장면 1의 이야기를 써 주세요");
     if (V.held.choice && c.pick == null) return ($("#msg").textContent = "앞사람이 남긴 갈림길에서 A/B를 골라 주세요");
     $("#submit").disabled = true; const label = $("#submit").textContent; $("#submit").textContent = "보내는 중…";
     const j = await link.send("submit", c);
-    if (j.ok) { const d = draft(); d.dirty = false; store.set(dk(), JSON.stringify(d)); $("#msg").textContent = ""; if ($("#submit")) $("#submit").textContent = "✓ 제출했어요"; }
-    else { $("#submit").disabled = false; $("#submit").textContent = label; $("#msg").textContent = j.msg || "다시 시도해 주세요"; }
+    if (j.ok) { const d = draft(); d.dirty = false; saveDraft(d); if ($("#msg")) $("#msg").textContent = ""; if ($("#submit")) $("#submit").textContent = "✓ 제출했어요"; }
+    else if ($("#submit")) { $("#submit").disabled = false; $("#submit").textContent = label; $("#msg").textContent = j.msg || "다시 시도해 주세요"; }
   };
 }
-/* 라운드 시간이 끝나면 쓰던 내용을 자동으로 제출 */
+/* 내 차례 시간이 끝나면 쓰던 내용을 자동으로 제출 */
 async function autoSave() {
   if (!V || !V.me || !V.held || !V.write) return;
   const r = V.write.round, d = draft();
@@ -885,11 +1010,11 @@ function hintSheet(open) {
   let body = "";
   if (hintTab === "words") {
     const mw = T.words.filter((w) => mis.includes(w.word)), ow = T.words.filter((w) => !mis.includes(w.word));
-    body = `<div class="grp">이번 라운드 미션 단어 · 누르면 쓰던 칸에 들어가요</div>${mw.map((w) => ins(w.word, `${w.emoji || ""} ${w.ko}`, "w")).join("")}
+    body = `<div class="grp">이번 화 미션 단어 · 누르면 쓰던 칸에 들어가요</div>${mw.map((w) => ins(w.word, `${w.emoji || ""} ${w.ko}`, "w")).join("")}
       <div class="grp">예문을 넣고 조금 바꿔 써 봐요</div>${mw.map((w) => ins(w.ex, w.exKo)).join("")}
       <div class="grp">오늘의 다른 단어</div>${ow.map((w) => ins(w.word, w.ko, "w")).join("")}
       ${T.extra ? `<div class="grp">이 주제에 어울리는 단어</div>${T.extra.map(([e, k]) => ins(e, k, "w")).join("")}` : ""}
-      <div class="grp">등장인물 대사 시작</div>${T.characters.map((c) => ins(c + ":", "", "w")).join("")}`;
+      <div class="grp">등장인물 대사 시작</div>${castNames().map(([c]) => ins(c + ":", "", "w")).join("")}`;
   }
   if (hintTab === "blk") body = blocksHtml();
   if (hintTab === "phr") body = H.phrases.map((g) => `<div class="grp">${esc(g.group)}</div>${g.items.map(([e, k]) => ins(e.trim(), k)).join("")}`).join("") +
@@ -912,7 +1037,12 @@ function hintSheet(open) {
 }
 
 /* ---------- 쉬운 모드: 문장 블록 (틀 고르기 → 칸마다 단어 고르기 → 영어 한 줄 + 우리말 한 줄을 같이 넣어요) ---------- */
-const easyOn = () => store.get("rsl-easy") === "1";
+const easyOn = () => store.get("rsl-easy") !== "0"; /* 처음에는 쉬운 모드 */
+/* 대사를 할 수 있는 인물: 주인공 + 이번 사건의 용의자 4명 */
+function castNames() {
+  const cs = CS(), part = V.held && V.held.clue, T = V.topic, names = Array.isArray(T.characters) ? T.characters : Object.keys(T.characters || {});
+  return names.filter((n) => n !== "Narrator").map((n) => [n, KO_NAME[n] || n]).concat(cs && part ? part.sus.map((i) => [cs.suspects[i].name, cs.suspects[i].ko]) : []);
+}
 let BL = { f: -1, vals: {}, cur: null };
 const KO_NAME = { Mina: "미나", Jun: "준", Emma: "엠마", We: "우리" };
 const koFirst = (k) => String(k || "").split(/[;,]/)[0].replace(/\([^)]*\)\s*/g, "").trim();
@@ -940,8 +1070,7 @@ const BL_FRAMES = [
 const SLOT_KO = { WHO: "누가?", WHO2: "누구와?", TIME: "언제?", N: "무엇?", V: "무엇을 하다?", PL: "어디서?", PLT: "어디로?", LINE: "무슨 말?", FEEL: "어떤 기분?" };
 function blOptions(slot) {
   const T = V.topic, mis = (V.held && V.held.mission) || [], H = window.RSL_CONTENT.hints;
-  const names = Array.isArray(T.characters) ? T.characters : Object.keys(T.characters || {});
-  const who = names.filter((n) => n !== "Narrator").map((n) => [n, KO_NAME[n] || n]).concat([["We", "우리"]]);
+  const who = castNames().concat([["We", "우리"]]);
   const isN = (w) => /명사/.test(w.pos || ""), isV = (w) => /동사/.test(w.pos || "");
   const words = T.words.slice().sort((a, b) => (mis.includes(b.word) ? 1 : 0) - (mis.includes(a.word) ? 1 : 0));
   const ex = (T.extra || []).filter(([e]) => /^[a-z]+$/i.test(e));
@@ -968,10 +1097,21 @@ function blSentence(f, v) {
   en = en.replace(/\b([Aa]) ([aeiou]\w*)/g, (m, a, w) => (a === "A" ? "An " : "an ") + w); /* a → an */
   return en.charAt(0).toUpperCase() + en.slice(1);
 }
+let blDet = 0; /* 사건 문장에서 앞장서는 탐정: 0 미나, 1 준 */
 function blocksHtml() {
   const mis = (V.held && V.held.mission) || [];
   if (BL.f < 0) {
-    return `<div class="grp">1. 문장 틀을 골라요 · 칸마다 단어를 고르면 영어 한 줄과 우리말 자막 한 줄이 같이 들어가요</div>
+    const cs = CS(), part = V.held && V.held.clue, d = draft();
+    let top = `<div class="grp">1. 문장 틀을 골라요 · 칸마다 단어를 고르면 영어 한 줄과 우리말 자막 한 줄이 같이 들어가요</div>`;
+    if (cs && part && part.role === "solve" && !d.env) top = `<div class="grp">🔒 먼저 위의 비밀 봉투를 열어 주세요. 그러면 사건 문장이 나와요.</div><div class="grp">✏️ 내 문장 만들기 · 틀을 고르고 칸마다 단어를 골라요</div>`;
+    else if (cs && part) {
+      const fr = RSL_CLUE.frames(cs, part, blDet), txt = [0, 1, 2].map((i) => d["text" + i] || "").join("\n");
+      top = `<div class="grp">🔍 ${part.k + 1}화 사건 문장 · 누르면 영어와 우리말 자막이 같이 들어가요</div>
+        <div class="detsw">앞장서는 탐정 ${RSL_CLUE.DET.map(([n], i) => `<button data-det="${i}" class="${blDet === i ? "on" : ""}">${n}</button>`).join("")}</div>
+        ${fr.list.map((f, i) => `<button class="ins frm ${txt.includes(f.en) ? "used" : ""}" data-cf="${i}">${txt.includes(f.en) ? "✓ " : ""}${esc(f.en)}<small>${esc(f.ko)}</small></button>`).join("")}
+        <div class="grp">✏️ 내 문장 만들기 · 틀을 고르고 칸마다 단어를 골라요</div>`;
+    }
+    return `${top}
       ${BL_FRAMES.map((f, i) => `<button class="ins frm" data-bf="${i}">${esc(f.en).replace(/\{(\w+)\}/g, (_, k) => `<b>[${esc(SLOT_KO[k].replace("?", ""))}]</b>`)}<small>${esc(f.k)}</small></button>`).join("")}
       <div class="dim" style="font-size:13px;margin-top:6px">⭐ 미션 단어(${esc(mis.join(", "))})는 '무엇?', '무엇을 하다?' 칸 맨 앞에 있어요.</div>`;
   }
@@ -985,24 +1125,28 @@ function blocksHtml() {
       <input id="bOwn" placeholder="다른 말을 영어로 직접 쓰기 (예: cat)" autocomplete="off" style="margin-top:8px">` : ""}
     <div class="two" style="margin-top:10px"><button id="bBack">← 다른 틀</button><button id="bPut" class="${done ? "primary" : ""}" ${done ? "" : "disabled"}>✅ 문장 넣기</button></div>`;
 }
+/* 영어 한 줄과 우리말 자막 한 줄을 같은 장면에 넣어요 (자막은 영어 줄 수에 맞춰 넣어야 영상에서 짝이 맞아요) */
+function putLine(en, ko) {
+  const m = /^(?:text|screen|ko)(\d)$/.exec(lastF || ""), i = m ? m[1] : "0";
+  const add = (name, line) => { const el = document.querySelector(`[data-f="${name}"]`); if (!el || !line) return; el.value = el.value.replace(/\s+$/, "") + (el.value.trim() ? "\n" : "") + line; el.dispatchEvent(new Event("input")); };
+  add("text" + i, en);
+  const tEl = document.querySelector(`[data-f="text${i}"]`), kEl = document.querySelector(`[data-f="ko${i}"]`);
+  if (kEl && ko) { const need = tEl.value.split("\n").filter((x) => x.trim()).length - 1, have = kEl.value.split("\n").filter((x) => x.trim()).length; if (have < need) kEl.value = kEl.value.replace(/\s+$/, "") + "\n".repeat(kEl.value.trim() ? 1 : 0) + Array(need - have).fill("-").join("\n"); add("ko" + i, ko); }
+  lastF = "text" + i;
+  toast(`장면 ${+i + 1}에 넣었어요: ${en.slice(0, 32)}`);
+}
 function bindBlocks(sh) {
   sh.querySelectorAll("[data-bf]").forEach((b) => b.onclick = () => { BL = { f: +b.dataset.bf, vals: {}, cur: null }; hintSheet(true); });
+  sh.querySelectorAll("[data-det]").forEach((b) => b.onclick = () => { blDet = +b.dataset.det; hintSheet(true); });
+  sh.querySelectorAll("[data-cf]").forEach((b) => { b.onmousedown = (e) => e.preventDefault(); b.onclick = () => { const f = RSL_CLUE.frames(CS(), V.held.clue, blDet).list[+b.dataset.cf]; if (f) { putLine(f.en, f.ko); hintSheet(true); } }; });
   sh.querySelectorAll("[data-bs]").forEach((b) => b.onclick = () => { BL.cur = b.dataset.bs; delete BL.vals[BL.cur]; hintSheet(true); });
   const opts = BL.cur ? blOptions(BL.cur) : [];
   sh.querySelectorAll("[data-bo]").forEach((b) => { b.onmousedown = (e) => e.preventDefault(); b.onclick = () => { const o = opts[+b.dataset.bo]; BL.vals[BL.cur] = [o[0], o[1]]; BL.cur = null; hintSheet(true); }; });
-  const own = $("#bOwn"); if (own) own.onkeydown = (e) => { if (e.key === "Enter" && own.value.trim()) { const w = own.value.trim().slice(0, 30); BL.vals[BL.cur] = [w, BL.cur === "WHO" || BL.cur === "WHO2" ? w : w]; BL.cur = null; hintSheet(true); } };
+  const own = $("#bOwn"); if (own) own.onkeydown = (e) => { if (e.key === "Enter" && own.value.trim()) { const w = own.value.trim().slice(0, 30); BL.vals[BL.cur] = [w, w]; BL.cur = null; hintSheet(true); } };
   const back = $("#bBack"); if (back) back.onclick = () => { BL = { f: -1, vals: {}, cur: null }; hintSheet(true); };
   const put = $("#bPut"); if (put) put.onclick = () => {
     const f = BL_FRAMES[BL.f], en = blSentence(f, BL.vals), ownKo = Object.entries(BL.vals).some(([k, x]) => x[0] === x[1] && !/^(WHO|WHO2)$/.test(k) && /[a-z]/i.test(x[1]));
-    const ko = ownKo ? "" : f.ko(BL.vals);
-    const m = /^(?:text|screen|ko)(\d)$/.exec(lastF || ""), i = m ? m[1] : "0";
-    const add = (name, line) => { const el = document.querySelector(`[data-f="${name}"]`); if (!el || !line) return; el.value = el.value.replace(/\s+$/, "") + (el.value.trim() ? "\n" : "") + line; el.dispatchEvent(new Event("input")); };
-    add("text" + i, en);
-    /* 우리말 자막은 영어 줄 수에 맞춰 넣어요 (영상에서 줄끼리 짝이 맞게) */
-    const tEl = document.querySelector(`[data-f="text${i}"]`), kEl = document.querySelector(`[data-f="ko${i}"]`);
-    if (kEl && ko) { const need = tEl.value.split("\n").filter((x) => x.trim()).length - 1, have = kEl.value.split("\n").filter((x) => x.trim()).length; if (have < need) kEl.value = kEl.value.replace(/\s+$/, "") + "\n".repeat(kEl.value.trim() ? 1 : 0) + Array(need - have).fill("-").join("\n"); add("ko" + i, ko); }
-    lastF = "text" + i;
-    toast(`장면 ${+i + 1}에 넣었어요: ${en.slice(0, 32)}`);
+    putLine(en, ownKo ? "" : f.ko(BL.vals));
     BL = { f: -1, vals: {}, cur: null }; hintSheet(true);
   };
 }
@@ -1014,6 +1158,8 @@ function knownWords() {
   const s = new Set(), add = (w) => String(w).toLowerCase().split(/[^a-z]+/).forEach((x) => x && s.add(x));
   for (const t of window.RSL_CONTENT.topics) { t.words.forEach((w) => add(w.word)); (t.extra || []).forEach(([e]) => add(e)); }
   window.RSL_CONTENT.hints.dict.forEach(([e]) => add(e)); V.topic.words.forEach((w) => add(w.word)); V.topic.characters.forEach(add);
+  /* 사건 카드에 나오는 이름과 낱말도 아는 말로 쳐요 */
+  const cs = CS0(); if (cs) [cs.missing.en, cs.incident].concat(cs.suspects.flatMap((x) => [x.name, x.role, x.trait, x.why]), cs.places.map((p) => p.en), cs.items.map((i) => i.en)).forEach(add);
   knownWords.s = s; knownWords.k = V.topic.id; return s;
 }
 function gramAll(now) { clearTimeout(gramT); const run = () => document.querySelectorAll("[data-g]").forEach(gramOne); if (now === true) run(); else gramT = setTimeout(run, 600); }
