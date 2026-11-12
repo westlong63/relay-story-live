@@ -116,6 +116,51 @@
   .shop button small { display:block; color:var(--dim); font-size:11px; font-family:var(--font); font-weight:500; }
   .qtitle { font-size:14px; color:var(--navy); margin-bottom:4px; }
   .fhud .ic { display:inline-block; vertical-align:-4px; }
+  /* 단어 달리기 */
+  .run { margin-top:6px; }
+  .rhud { display:flex; flex-wrap:wrap; align-items:center; gap:4px 16px; font-size:17px; padding:6px 0 2px; }
+  .rhud .rh { display:flex; align-items:center; gap:3px; }
+  .rhud i.hp, .rhud i.sh { width:27px; height:24px; display:inline-block; background-size:100% 100%; image-rendering:pixelated; }
+  .rhud i.hp { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 8' shape-rendering='crispEdges'%3E%3Cpath fill='%2314233d' d='M1 0h3v1h1V0h3v1h1v3H8v1H7v1H6v1H5v1H4V7H3V6H2V5H1V4H0V1h1z'/%3E%3Cpath fill='%23ff3b5c' d='M1 1h2v1h1v1h1V2h1V1h2v3H7v1H6v1H5v1H4V6H3V5H2V4H1z'/%3E%3Crect x='2' y='2' width='1' height='1' fill='%23ffd0d8'/%3E%3C/svg%3E"); filter:grayscale(1) opacity(.3); }
+  .rhud i.hp.on { filter:none; }
+  .rhud i.sh { width:22px; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 9' shape-rendering='crispEdges'%3E%3Cpath fill='%23e0a020' d='M0 0h8v6H7v1H6v1H5v1H3V8H2V7H1V6H0z'/%3E%3Cpath fill='%232c67be' d='M1 1h6v5H6v1H5v1H3V7H2V6H1z'/%3E%3Crect x='3' y='2' width='2' height='3' fill='%23fff'/%3E%3C/svg%3E"); }
+  .rhud .rsc { font-size:20px; } .rhud .rsc b { color:var(--navy); }
+  .rhud .rgo b { color:var(--red); }
+  .rhud .rtm { margin-left:auto; font-size:24px; color:var(--navy); font-variant-numeric:tabular-nums; } .rhud .rtm.low { color:var(--red); }
+  .rhud .fv { color:#fff; background:linear-gradient(90deg,#ff3b30,#ff9f1a,#e0a020,#3fa45a,#2c67be,#8a6be6); padding:2px 8px; border:2px solid #14233d; margin-left:6px; font-size:15px; }
+  .rspell { display:flex; flex-wrap:wrap; align-items:center; gap:4px; font-size:16px; min-height:36px; padding:2px 0 6px; }
+  .rspell .lab { background:#14233d; color:#ffd84a; padding:2px 8px; margin-right:4px; }
+  .rspell .ch { display:inline-block; min-width:24px; text-align:center; font-size:22px; border-bottom:3px solid #c9ccd3; color:#14233d; line-height:1.2; }
+  .rspell .ch.on { border-color:#3fa45a; color:#1e7f4a; } .rspell .ch.next { border-color:#e0a020; }
+  .rspell .ko { font-family:var(--font); font-weight:600; color:var(--dim); font-size:14px; margin-left:8px; }
+  .rstage { position:relative; height:320px; border:3px solid #14233d; overflow:hidden; touch-action:none; user-select:none; -webkit-user-select:none; background:#5d6470; }
+  .rstage canvas { position:absolute; inset:0; width:100%; height:100%; image-rendering:crisp-edges; image-rendering:pixelated; }
+  .rbanner { position:absolute; left:50%; top:6px; transform:translateX(-50%); z-index:3; background:rgba(255,255,255,.95); border:3px solid #14233d; padding:3px 14px 5px; text-align:center; display:none; width:max-content; max-width:92%; box-shadow:3px 3px 0 rgba(20,35,61,.35); }
+  .rbanner.on { display:block; }
+  .rbanner .big { font-size:30px; font-weight:800; line-height:1.15; color:#14233d; }
+  .rbanner .mid { font-size:20px; font-weight:800; line-height:1.25; color:#14233d; }
+  .rbanner .sm { font-size:13px; color:var(--dim); font-weight:600; }
+  .rbanner .ans { font-size:15px; color:var(--red); font-weight:700; }
+  .rbanner .mini { padding:1px 8px; font-size:12px; }
+  .rsign { position:absolute; z-index:2; transform:translate(-50%, -100%); background:#fff; border:3px solid #14233d; padding:1px 10px; font-size:20px; font-weight:800; white-space:nowrap; color:#14233d; box-shadow:0 3px 0 #14233d; line-height:1.3; }
+  .rsign .ko { font-size:15px; }
+  .rsign.x { background:#e2e5ea; color:#8a93a6; }
+  .rsign.right { background:#3fa45a; color:#fff; } .rsign.wrong { background:#e2e5ea; color:#8a93a6; text-decoration:line-through; }
+  .rpop { position:absolute; z-index:4; font-size:18px; color:#ffd84a; text-shadow:2px 2px 0 #14233d,-1px -1px 0 #14233d,1px -1px 0 #14233d,-1px 1px 0 #14233d; animation:rise .9s forwards; pointer-events:none; white-space:nowrap; }
+  .rpop.big { font-size:24px; color:#fff; }
+  @keyframes rise { to { transform:translateY(-40px); opacity:0; } }
+  .rover { position:absolute; inset:0; z-index:5; display:flex; align-items:center; justify-content:center; pointer-events:none; }
+  .rover > * { pointer-events:auto; }
+  .rbox { background:rgba(255,255,255,.96); border:3px solid #14233d; padding:12px 18px; text-align:center; max-width:94%; box-shadow:4px 4px 0 rgba(20,35,61,.35); }
+  .rhow { text-align:left; font-size:15px; margin:4px 0 10px; } .rhow div { padding:2px 0; } .rhow b { display:inline-block; min-width:104px; color:var(--navy); }
+  .rbox button.go { font-size:22px; padding:12px 26px; background:var(--red); color:#fff; border:3px solid #14233d; box-shadow:0 4px 0 #14233d; border-radius:0; }
+  .rgoal { background:#1c479a; color:#fff; border:3px solid #14233d; padding:10px 18px; text-align:center; font-size:22px; animation:pop .3s; }
+  .rgoal span { font-size:15px; color:#ffd84a; }
+  .rctl { display:flex; justify-content:space-between; gap:12px; margin-top:12px; }
+  .rctl > div { display:flex; gap:12px; }
+  .rctl button { width:96px; height:74px; font-size:28px; line-height:1; padding:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; background:#fff; touch-action:manipulation; margin:0; }
+  .rctl button small { font-size:12px; font-family:var(--font); font-weight:700; color:var(--dim); }
+  .rctl button.jump { width:160px; background:var(--red); color:#fff; font-size:26px; } .rctl button.jump small { color:#ffe1dc; }
   /* 쉬운 쓰기: 문장 블록 */
   .modes { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
   .modes button { margin:0 !important; text-align:left; padding:12px 14px; font-size:16px; font-weight:800; line-height:1.35; }
@@ -148,6 +193,11 @@
     body.fishing main { max-width:1000px; }
     .fgrid { grid-template-columns:1.05fr 1fr; align-items:start; }
     .pond { height:250px; }
+    .rstage { height:330px; }
+  }
+  @media (min-width:700px) and (orientation:portrait) {
+    .rstage { height:calc(46vh / 1.2); }
+    .rctl button { height:92px; width:120px; } .rctl button.jump { width:200px; }
   }
 </style>
 </head>
@@ -162,6 +212,7 @@
 <script src="js/bus.js"></script>
 <script src="js/grammar.js"></script>
 <script src="js/pixelfish.js"></script>
+<script src="js/wordrun.js"></script>
 <script>
 "use strict";
 const $ = (s) => document.querySelector(s);
@@ -215,13 +266,14 @@ function onView(v) {
   V = v;
   endsAt = v.write && v.write.endsAt ? v.write.endsAt - (link.offset || 0) : 0;
   const held = v.held || {};
-  const hk = [v.phase, v.me ? 1 : 0, v.write && v.write.round, v.write && v.write.done, v.write && v.write.started, held.id, held.submitted, v.quiz, v.wordIndex, v.watching && v.watching.id].join("|");
+  const hk = [v.phase, v.me ? 1 : 0, v.write && v.write.round, v.write && v.write.done, v.write && v.write.started, held.id, held.submitted, v.quiz, v.quizGame, v.wordIndex, v.watching && v.watching.id].join("|");
   const key = JSON.stringify(v, (k, val) => (k === "v" || k === "left" ? undefined : val));
   if (v.write && v.write.closing) autoSave();
   if (hk !== hardKey) { hardKey = hk; lastKey = key; if (typing()) document.activeElement.blur(); render(); return; }
   if (key === lastKey) return;
   lastKey = key;
   if ($("#fishRoot")) { game(); fishHud(); return; } /* 낚시 중에는 화면 전체를 다시 그리지 않아요 (찌·애니메이션 유지) */
+  if ($("#runRoot")) { game(); return; } /* 달리기 중에도 마찬가지 */
   if (typing()) { pending = true; return; }
   render();
 }
@@ -239,9 +291,10 @@ function render() {
   const t = V.team;
   const head = `<div class="top"><span>${esc(V.me.name)} · <b style="color:${t.color}">${esc(t.name)}</b></span><span>${esc(V.topic.title)}</span></div>`;
   $("#main").innerHTML = head + ({ topic: rTopic, words: rWords, write: rWrite, video: rVideo, watch: rWatch }[V.phase])();
-  document.body.classList.toggle("fishing", !!$("#fishRoot"));
+  document.body.classList.toggle("fishing", !!($("#fishRoot") || $("#runRoot")));
   bind();
   if ($("#fishRoot")) fishMount();
+  if ($("#runRoot")) runMount();
   if (!(V.phase === "write" && V.held && !V.write.done)) hintSheet(false); else if (!$("#sheet").hidden) hintSheet(true);
 }
 
@@ -353,6 +406,9 @@ function sfx(k) {
     if (k === "catch") [523, 659, 784].forEach((f, i) => tone(f, 0.18, i * 0.08, "triangle", 0.09));
     if (k === "rare") [523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, 0.24, i * 0.09, "triangle", 0.1));
     if (k === "miss") tone(200, 0.3, 0, "sawtooth", 0.04);
+    if (k === "tick") tone(660, 0.05, 0, "square", 0.03);
+    if (k === "jump") { tone(330, 0.1, 0, "triangle", 0.07); tone(560, 0.1, 0.06, "triangle", 0.05); }
+    if (k === "coin") { tone(988, 0.06, 0, "square", 0.035); tone(1319, 0.09, 0.05, "square", 0.035); }
   } catch (e) {}
 }
 const fishLeft = () => (V && V.quizEnd ? Math.round((V.quizEnd - (link.offset || 0) - Date.now()) / 1000) : null);
@@ -490,15 +546,87 @@ function fishMount() {
   /* 새로 열었거나 끊겼다 다시 들어온 경우, 내 코인을 선생님 화면에 다시 알려요 */
   if (FS.earned > ((V.game || {}).earned || 0)) sendFish();
 }
+/* ---------- 단어 달리기: 단어 문을 맞는 줄로 통과하고, 철자를 모아 FEVER! (그림과 조작은 js/wordrun.js) ---------- */
+let RS = null, rSendT = null, RN = { lastQ: null };
+const RK = () => `rsl-run-${room}-${V.me.id}-${V.topic.id}`;
+function runState() {
+  const key = V.topic.id + "|" + V.me.id;
+  if (!RS || RS.key !== key) {
+    let s = {}; try { s = JSON.parse(store.get(RK()) || "{}"); } catch (e) {}
+    RS = Object.assign({ earned: 0, laps: 0, best: 0, tries: {}, pass: 1, rep: {} }, s, { key });
+  }
+  return RS;
+}
+const saveR = () => store.set(RK(), JSON.stringify({ earned: RS.earned, laps: RS.laps, best: RS.best, tries: RS.tries, pass: RS.pass, rep: RS.rep }));
+function sendRun(rare) {
+  saveR(); clearTimeout(rSendT);
+  const go = () => link.send("fish", { earned: RS.earned, caught: RS.laps, best: 0, rod: 0, pond: 0, coins: RS.earned, rare: rare || null })
+    .then((r) => { if (!(r && r.ok) && !(r && r.msg)) rSendT = setTimeout(go, 3000); });
+  if (rare) go(); else rSendT = setTimeout(go, 1000);
+}
+const shuf = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+/* 다음 단어 문: 처음엔 안 푼 문제를 순서대로, 다 풀면 다시 돌아요 (철자 문제는 FEVER 글자로 나와요) */
+function runGate() {
+  const g = game(), W = V.topic.words, pool = g.qs.filter((q) => q.kind !== "spell");
+  if (!pool.length) return null;
+  let q = pool.find((x) => !g.done[x.id] && x.id !== RN.lastQ) || pool.find((x) => !g.done[x.id]);
+  if (!q) { q = pool.find((x) => !RS.rep[x.id] && x.id !== RN.lastQ); if (!q) { RS.rep = {}; RS.pass++; q = pool.find((x) => x.id !== RN.lastQ) || pool[0]; } }
+  const w = W[q.w], first = !g.done[q.id] && !RS.tries[q.id];
+  let banner = "", lanes = [], say = null;
+  const three = (ans, opts) => shuf([{ t: ans, ok: true }, ...shuf(opts.filter((o) => o !== ans)).slice(0, 2).map((t) => ({ t, ok: false }))]);
+  if (q.kind === "door") { banner = `<div class="big en">${esc(q.prompt)}</div><div class="sm">무슨 뜻일까요? 뜻이 적힌 줄로 달려요</div>`; lanes = three(q.answer, q.options); }
+  if (q.kind === "listen") { banner = `<div class="big en">🔊 Listen!</div><div class="sm">들리는 단어가 적힌 줄로 달려요 <button class="mini" data-rsay="${q.w}">🔊 다시 듣기</button></div>`; lanes = three(q.answer, q.options); say = w; }
+  if (q.kind === "blank") { banner = `<div class="mid en">${esc(q.prompt)}</div>${q.hint ? `<div class="sm">${esc(q.hint)}</div>` : ""}`; lanes = three(q.answer, q.options); }
+  if (q.kind === "egg") {
+    banner = `<div class="big en">${esc(q.prompt)}</div><div class="sm">어디를 세게 읽을까요? <button class="mini" data-rsay="${q.w}">🔊 듣기</button></div>`; say = w;
+    lanes = q.options.map((p, i) => ({ t: q.options.map((x, j) => (j === i ? x.toUpperCase() : x)).join("·"), ok: String(i) === String(q.answer) }));
+    lanes = shuf(lanes).slice(0, 3); if (!lanes.some((l) => l.ok)) lanes[0] = { t: q.options.map((x, j) => (String(j) === String(q.answer) ? x.toUpperCase() : x)).join("·"), ok: true };
+    while (lanes.length < 3) lanes.splice(Math.floor(Math.random() * (lanes.length + 1)), 0, { t: "✕", ok: null });
+  }
+  RN.lastQ = q.id;
+  return { q, first, banner, lanes, say };
+}
+function runGateDone(G2, ok) {
+  const g = game(), q = G2.q, tries = (RS.tries[q.id] || 0) + 1;
+  if (ok) {
+    if (!g.done[q.id]) { const x = { ok: tries === 1, tries, ms: 5000, at: ++gSeq }; g.done[q.id] = x; sendAns(q.id, x); saveG(); }
+    else RS.rep[q.id] = 1;
+    delete RS.tries[q.id];
+  } else if (!g.done[q.id]) RS.tries[q.id] = tries;
+  saveR();
+}
+/* FEVER 글자: 아직 안 푼 철자 문제의 단어, 다 풀었으면 오늘의 짧은 단어로 연습 */
+function runSpell() {
+  const g = game(), W = V.topic.words, sq = g.qs.find((q) => q.kind === "spell" && !g.done[q.id]);
+  if (sq) return { q: sq, word: sq.answer, hint: sq.prompt, say: W[sq.w] };
+  const cand = W.filter((w) => /^[a-z]{3,7}$/.test(w.word)), w = cand[Math.floor(Math.random() * cand.length)];
+  return w ? { q: null, word: w.word, hint: w.ko, say: w } : null;
+}
+function runSpellDone(sp, ok) {
+  const g = game(); if (!sp.q || g.done[sp.q.id]) return;
+  const x = { ok, tries: ok ? 1 : 2, ms: 8000, at: ++gSeq }; g.done[sp.q.id] = x; sendAns(sp.q.id, x); saveG();
+}
+function runMount() {
+  const el = $("#runRoot"); if (!el || el._run || !window.WordRun) return;
+  runState(); game();
+  el._run = WordRun.mount(el, {
+    state: RS, esc, sfx, gate: runGate, gateDone: runGateDone, spell: runSpell, spellDone: runSpellDone,
+    score: (rare) => sendRun(rare), left: () => fishLeft(), say: (w) => playWord(w),
+  });
+  el.addEventListener("click", (e) => { const b = e.target.closest("[data-rsay]"); if (b) playWord(V.topic.words[+b.dataset.rsay]); });
+  if (RS.earned > ((V.game || {}).earned || 0)) sendRun();
+}
 function rGame() {
+  if (V.quizGame === "run") return `<div id="runRoot"></div>`;
   return `<div id="fishRoot"><div class="fhud px pxt" id="fhud"></div>
     <div class="fgrid"><div class="card pondCard px"><div id="pond" class="pond"></div><div id="pondCtl"></div></div><div class="card" id="qbox"></div></div></div>`;
 }
 function rReview() {
   const W = V.topic.words, gm = V.game || {}, top = gm.top || [], mine = (gm.mine || []).filter((i) => !top.includes(i)), tm = gm.team || {};
-  return `<div class="card" style="text-align:center"><div class="dim">내가 모은 코인</div><div class="rank">🪙 ${(gm.earned || 0).toLocaleString()}</div>
-      ${gm.rank ? `<div>우리 반 ${gm.of}명 중 <b>${gm.rank}등</b> · 물고기 ${gm.caught || 0}마리 · 한 번에 맞힌 문제 ${gm.ok}/${gm.n}</div>` : ""}
-      ${tm.rank ? `<div style="margin-top:6px;color:${V.team.color};font-weight:800">${esc(V.team.name)} ${tm.rank}등 (1인 평균 🪙 ${tm.avg.toLocaleString()})</div>` : ""}</div>
+  const run = V.quizGame === "run", ic = run ? "⭐" : "🪙";
+  return `<div class="card px" style="text-align:center">${window.PX ? PX.puangImg("cheer", 72) : ""}<div class="dim">${run ? "내가 모은 점수" : "내가 모은 코인"}</div><div class="rank pxt">${ic} ${(gm.earned || 0).toLocaleString()}</div>
+      ${gm.rank ? `<div>우리 반 ${gm.of}명 중 <b>${gm.rank}등</b> · ${run ? `신서중 완주 ${gm.caught || 0}번` : `물고기 ${gm.caught || 0}마리`} · 한 번에 맞힌 문제 ${gm.ok}/${gm.n}</div>` : ""}
+      ${tm.rank ? `<div style="margin-top:6px;color:${V.team.color};font-weight:800">${esc(V.team.name)} ${tm.rank}등 (1인 평균 ${ic} ${tm.avg.toLocaleString()})</div>` : ""}</div>
     <h2 style="margin-top:18px">우리 반이 많이 틀린 단어 ${top.length ? "TOP " + top.length : ""}</h2>
     ${top.length ? top.map((i) => wordCard(W[i], i, 0)).join("") : `<div class="card ok">우리 반 모두 거의 다 맞혔어요! 👏</div>`}
     ${mine.length ? `<h2>내가 틀린 단어도 한 번 더</h2>${mine.map((i) => wordCard(W[i], i, 0)).join("")}` : ""}
@@ -508,7 +636,7 @@ function rWords() {
   const W = V.topic.words;
   if (V.quiz === "open") return rGame();
   if (V.quiz === "results") return rReview();
-  return wordCard(W[V.wordIndex], V.wordIndex, W.length) + `<div class="card dim">선생님 화면과 같이 넘어가요. 다 보면 디벗으로 🎣 단어 낚시 대회를 해요! 문제를 맞히면 미끼를 얻고, 물고기를 낚아 코인을 모아요.</div>`;
+  return wordCard(W[V.wordIndex], V.wordIndex, W.length) + `<div class="card dim">선생님 화면과 같이 넘어가요. 다 보면 디벗으로 단어 게임을 해요! 🎣 단어 낚시 또는 🏃 단어 달리기 중에서 선생님이 골라요.</div>`;
 }
 function epHtml(e, i) {
   return `<div class="ep"><b>EP${i + 1} ${esc(e.title || "")}</b> <span class="dim">by ${esc(e.writer)}</span>

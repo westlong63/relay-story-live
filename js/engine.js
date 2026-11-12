@@ -228,6 +228,7 @@
         case "quiz": {
           const st = ["open", "results"].includes(b.state) ? b.state : "closed";
           if (st === "open" && b.min) S.quizEndsAt = Date.now() + Math.max(1, Math.min(20, +b.min || 7)) * 60000;
+          if (st === "open" && (b.game === "run" || b.game === "fish")) S.quizGame = b.game; /* 단어 낚시 또는 단어 달리기 */
           if (st !== "open") S.quizEndsAt = null;
           S.quiz = st; break;
         }
@@ -286,7 +287,9 @@
         const f = pl.fish && pl.fish.earned != null ? pl.fish : (pl.fish = { earned: 0, caught: 0, best: 0, rod: 0, pond: 0, coins: 0 });
         f.earned = Math.max(f.earned, num(b.earned, 1000000)); f.caught = Math.max(f.caught, num(b.caught, 100000));
         f.best = Math.max(f.best || 0, num(b.best, 4)); f.rod = num(b.rod, 2); f.pond = num(b.pond, 2); f.coins = num(b.coins, 1000000);
-        if (b.rare && num(b.rare.tier, 4) >= 3) {
+        if (b.rare && (b.rare.kind === "goal" || b.rare.kind === "fever")) {
+          S.catchFeed = (S.catchFeed || []).concat({ name: pl.name, team: pl.team, kind: b.rare.kind, at: Date.now() }).slice(-8);
+        } else if (b.rare && num(b.rare.tier, 4) >= 3) {
           S.catchFeed = (S.catchFeed || []).concat({ name: pl.name, team: pl.team, tier: num(b.rare.tier, 4), pond: num(b.rare.pond, 2), at: Date.now() }).slice(-8);
         }
         this.bump();
@@ -344,7 +347,7 @@
       return { room: this.S.room, phase: this.S.phase, topic: full || T.custom ? this.publicTopic() : { id: T.id, title: T.title }, wordIndex: this.S.wordIndex, quiz: this.S.quiz,
         write: { started: w.started, round: w.round, rounds: w.rounds, roundSec: w.roundSec, done: w.done, closing: !!w.closingAt,
           endsAt: w.endsAt || null },
-        filmsMade: this.S.filmsMade, quizEnd: this.S.quiz === "open" ? this.S.quizEndsAt || null : null };
+        filmsMade: this.S.filmsMade, quizEnd: this.S.quiz === "open" ? this.S.quizEndsAt || null : null, quizGame: this.S.quizGame || "fish" };
     }
     storyBrief(s, withText) {
       const o = { id: s.id, team: s.team, starter: s.starterName, n: s.episodes.length, title: (s.episodes[0] && s.episodes[0].title) || "",
