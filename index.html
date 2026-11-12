@@ -9,69 +9,72 @@
 <link rel="stylesheet" href="css/app.css">
 <style>
   .in { max-width:1200px; margin:0 auto; padding:0 24px; }
-  .gnb { background:#fff; border-bottom:3px solid var(--px-ink); position:relative; z-index:2; }
-  .gnb .in { display:flex; align-items:center; gap:28px; height:76px; }
-  .brand { display:flex; align-items:baseline; gap:10px; text-decoration:none; color:var(--ink); }
-  .brand b { font-family:var(--px-font); font-size:22px; font-weight:700; letter-spacing:0; }
-  .brand span { font-size:14px; color:var(--dim); padding-left:10px; border-left:1px solid var(--line-2); }
-  .gnb nav { margin-left:auto; display:flex; gap:28px; }
-  .gnb nav a { color:var(--ink); text-decoration:none; font-family:var(--px-font); font-size:16px; font-weight:700; padding:26px 0 24px; border-bottom:3px solid transparent; }
-  .gnb nav a:hover { border-bottom-color:var(--blue-2); }
+  /* 위 메뉴: 풍경 위에 뜬 반투명 남색 띠 */
+  .gnb { position:absolute; left:0; right:0; top:0; z-index:3; background:linear-gradient(rgba(8,26,82,.62), rgba(8,26,82,0)); }
+  .gnb .in { display:flex; align-items:center; gap:28px; height:72px; }
+  .brand { display:flex; align-items:baseline; gap:10px; text-decoration:none; color:#fff; }
+  .brand b { font-family:var(--px-font); font-size:22px; font-weight:700; letter-spacing:0; text-shadow:0 2px 0 rgba(8,26,82,.5); }
+  .brand span { font-size:14px; color:#d4e2fa; padding-left:10px; border-left:1px solid rgba(255,255,255,.4); }
+  .gnb nav { margin-left:auto; display:flex; gap:26px; }
+  .gnb nav a { color:#fff; text-decoration:none; font-family:var(--px-font); font-size:16px; padding:6px 0; text-shadow:0 2px 0 rgba(8,26,82,.5); border-bottom:2px solid transparent; }
+  .gnb nav a:hover { border-bottom-color:#ffd23f; }
 
-  /* 첫 화면: 아케이드 타이틀처럼, 푸앙이가 중앙대에서 신서중으로 달려요 */
-  .hero { position:relative; overflow:hidden; border-bottom:3px solid var(--px-ink); background:#5aa2ef; min-height:560px; }
+  /* 첫 화면: 푸앙런처럼 고해상도 픽셀 풍경. 푸앙이가 중앙대 빌딩 앞을 지나 신서중으로 달려요 */
+  .hero { position:relative; overflow:hidden; background:#2f72e6; min-height:max(600px, 78vh); display:flex; align-items:flex-start; }
   .hero canvas { position:absolute; inset:0; width:100%; height:100%; image-rendering:crisp-edges; image-rendering:pixelated; }
-  .hero .in { position:relative; padding-top:44px; padding-bottom:150px; }
-  .hero .eyebrow { display:inline-block; font-size:16px; color:#fff; background:var(--px-ink); padding:4px 10px; }
-  .hero h1 { font-family:var(--px-font); font-size:clamp(44px, 7.4vw, 88px); font-weight:700; margin:14px 0 0; line-height:1.05; color:#fff; letter-spacing:0;
-    text-shadow:4px 4px 0 var(--px-ink), -2px -2px 0 var(--px-ink), 2px -2px 0 var(--px-ink), -2px 2px 0 var(--px-ink), 2px 2px 0 var(--px-ink); }
-  .hero h1 span { color:#ffd84a; }
-  .lead { font-size:19px; color:var(--ink); line-height:1.6; margin:22px 0 24px; max-width:640px; background:#fff; border:3px solid var(--px-ink); padding:14px 18px; box-shadow:4px 4px 0 rgba(20,35,61,.35); }
-  .cta { display:flex; gap:12px; flex-wrap:wrap; }
+  .hero .in { position:relative; width:100%; padding-top:104px; padding-bottom:210px; text-align:center; }
+  .hero .eyebrow { font-size:17px; color:#fff; letter-spacing:.16em; text-shadow:0 2px 0 rgba(8,26,82,.55); }
+  .hero h1 { font-family:var(--px-font); font-weight:400; font-size:clamp(48px, 7.6vw, 96px); margin:10px 0 0; line-height:1.04; color:#fff; letter-spacing:.02em;
+    text-shadow:0 4px 0 rgba(13,46,128,.55), 0 0 24px rgba(13,46,128,.35); }
+  .hero h1 span { color:#ffe066; }
+  .panel { margin:26px auto 0; max-width:720px; background:rgba(11,33,96,.62); padding:22px 26px 24px; border-radius:6px; box-shadow:0 0 0 2px rgba(255,255,255,.14), 0 14px 34px rgba(8,26,82,.3); }
+  .lead { font-family:var(--px-font); font-weight:700; font-size:clamp(20px, 2.6vw, 28px); line-height:1.45; margin:0; color:#7fc0ff;
+    text-shadow:2px 0 0 #fff, -2px 0 0 #fff, 0 2px 0 #fff, 0 -2px 0 #fff, 2px 2px 0 #fff, -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff, 0 5px 0 rgba(8,26,82,.5); }
+  .lead2 { color:#e3ecfb; font-size:16px; line-height:1.6; margin:14px 0 18px; }
+  .cta { display:flex; gap:14px; flex-wrap:wrap; justify-content:center; }
   .cta .btn { font-size:19px; padding:14px 26px; text-decoration:none; display:inline-block; }
-  .press { margin-top:18px; font-family:var(--px-font); font-size:18px; color:#fff; text-shadow:2px 2px 0 var(--px-ink); animation:blink 1s steps(2) infinite; }
-  @keyframes blink { 50% { opacity:0; } }
-  #hostNote { font-size:14px; margin-top:10px; background:#fff; display:inline-block; padding:0 6px; }
+  #hostNote { font-size:14px; margin-top:12px; color:#ffd2cc; }
 
   .board { position:relative; z-index:1; }
-  .board .in { display:grid; grid-template-columns:minmax(0, 1fr) 360px; gap:0; margin-top:-48px; align-items:start; }
-  .notice { background:#fff; border:3px solid var(--px-ink); box-shadow:6px 6px 0 rgba(20,35,61,.18); display:grid; grid-template-columns:170px minmax(0, 1fr); gap:28px; padding:40px 40px 32px; }
+  .board .in { display:grid; grid-template-columns:minmax(0, 1fr) 360px; gap:22px; margin-top:-120px; align-items:start; }
+  .notice { background:rgba(255,255,255,.97); border-radius:10px; box-shadow:0 0 0 2px rgba(255,255,255,.6), var(--card-shadow); display:grid; grid-template-columns:170px minmax(0, 1fr); gap:28px; padding:38px 38px 30px; }
   .notice .side { text-align:right; }
-  .notice .side .eyebrow { font-size:34px; }
-  .notice .side .big { font-family:var(--px-font); font-size:38px; font-weight:700; letter-spacing:0; line-height:1.05; }
+  .notice .side .eyebrow { font-size:30px; }
+  .notice .side .big { font-family:var(--px-font); font-size:38px; letter-spacing:0; line-height:1.05; }
   .notice .side p { margin:18px 0 0; font-size:15px; color:var(--dim); line-height:1.6; }
   .steps { list-style:none; margin:0; padding:0; }
-  .steps li { display:grid; grid-template-columns:72px minmax(0, 1fr) auto; gap:16px; align-items:baseline; padding:15px 0; border-bottom:1px solid var(--line); }
+  .steps li { display:grid; grid-template-columns:72px minmax(0, 1fr) auto; gap:16px; align-items:baseline; padding:15px 0; border-bottom:2px dashed var(--frame); }
+  .steps li:last-child { border-bottom:0; }
   .steps li:first-child { padding-top:4px; }
-  .steps .tag { text-align:center; }
+  .steps .tag { text-align:center; background:var(--blue); }
   .steps b { font-size:18px; display:block; }
   .steps .sub { font-size:15px; color:var(--dim); line-height:1.5; display:block; margin-top:3px; }
   .steps time { font-size:15px; color:var(--dim); font-variant-numeric:tabular-nums; }
 
-  .navyblk { background:var(--navy); color:#fff; padding:40px 32px 34px; margin-top:36px; border:3px solid var(--px-ink); box-shadow:6px 6px 0 rgba(20,35,61,.25); }
-  .navyblk .eyebrow { color:rgba(255,255,255,.72); font-size:34px; }
-  .navyblk .big { font-family:var(--px-font); font-size:38px; font-weight:700; letter-spacing:0; margin-bottom:22px; }
+  .navyblk { background:linear-gradient(#2459c8, #163c94); color:#fff; padding:34px 28px 28px; border-radius:10px; box-shadow:0 0 0 2px rgba(255,255,255,.25), var(--card-shadow); }
+  .navyblk .eyebrow { color:#9fc4ff; font-size:30px; }
+  .navyblk .big { font-family:var(--px-font); font-size:36px; letter-spacing:0; margin-bottom:20px; }
   .navyblk label { display:block; font-size:15px; color:rgba(255,255,255,.85); margin-bottom:8px; }
-  .codeIn { font-family:var(--px-font); font-size:30px; text-align:center; letter-spacing:10px; text-transform:uppercase; width:100%; font-weight:700; border:3px solid var(--px-ink); }
-  .navyblk button { width:100%; margin-top:12px; font-size:19px; padding:13px; background:#ffd84a; color:var(--px-ink); font-weight:700; }
-  .navyblk button:hover { background:#ffe27a; }
+  .codeIn { font-family:var(--px-font); font-size:30px; text-align:center; letter-spacing:10px; text-transform:uppercase; width:100%; font-weight:700; border:0; box-shadow:inset 0 3px 0 rgba(0,0,0,.08), 0 0 0 3px #0f2c73; }
+  .navyblk button { width:100%; margin-top:14px; font-size:19px; padding:13px; color:#3a2600; background:linear-gradient(#ffe57a, #ffd23f 55%, #f0b31c); text-shadow:0 1px 0 rgba(255,255,255,.5);
+    box-shadow:inset 0 2px 0 rgba(255,255,255,.6), inset 0 -3px 0 rgba(0,0,0,.12), 0 0 0 2px #8a5a00, 0 4px 0 2px #6a4300; }
   .navyblk ul { list-style:none; padding:0; margin:22px 0 0; }
-  .navyblk li { border-top:1px solid var(--navy-line); padding:13px 2px; font-size:15px; line-height:1.5; }
+  .navyblk li { border-top:1px solid rgba(255,255,255,.18); padding:12px 2px; font-size:15px; line-height:1.5; color:#e3ecfb; }
 
-  .strip { margin-top:48px; }
-  .strip .box { background:#fff; border:3px solid var(--px-ink); padding:24px; display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px; }
-  .strip h2 { font-size:22px; margin:0 0 14px; }
-  .safe { background:var(--tint); border:2px solid var(--px-ink); padding:16px 18px; }
+  .strip { margin-top:36px; }
+  .strip .box { background:rgba(255,255,255,.97); border-radius:10px; box-shadow:var(--card-shadow); padding:24px; display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px; }
+  .strip h2 { font-size:24px; margin:0 0 14px; color:#fff; text-shadow:0 2px 0 rgba(8,26,82,.5); }
+  .safe { background:#f1f6ff; border-radius:6px; box-shadow:inset 0 0 0 2px var(--frame); padding:16px 18px; }
   .safe b { display:block; font-size:17px; margin-bottom:4px; }
   .safe span { font-size:14px; color:var(--dim); line-height:1.55; }
-  .credit { margin-top:56px; }
+  .credit { margin-top:48px; }
 
   @media (max-width: 900px) {
     .gnb nav { display:none; }
-    .hero .in { padding-top:32px; padding-bottom:130px; }
-    .board .in { grid-template-columns:1fr; margin-top:0; }
-    .navyblk { margin-top:0; order:-1; }
-    .notice { grid-template-columns:1fr; padding:28px 20px; gap:16px; }
+    .hero .in { padding-top:92px; padding-bottom:190px; }
+    .board .in { grid-template-columns:1fr; margin-top:-90px; }
+    .navyblk { order:-1; }
+    .notice { grid-template-columns:1fr; padding:26px 20px; gap:16px; }
     .notice .side { text-align:left; }
     .steps li { grid-template-columns:64px minmax(0, 1fr); }
     .steps time { grid-column:2; }
@@ -79,23 +82,25 @@
   }
 </style>
 </head>
-<body>
+<body class="scene">
+<canvas id="bgScene" aria-hidden="true"></canvas>
 <header class="gnb"><div class="in">
   <a class="brand" href="index.html"><b>Relay Story Live</b><span>중3 전환기 영어</span></a>
   <nav aria-label="바로가기"><a href="#flow">수업 흐름</a><a href="#safe">안전 장치</a><a href="demo.html">시연 모드</a></nav>
 </div></header>
 
 <section class="hero"><canvas id="heroCv" aria-hidden="true"></canvas><div class="in">
-  <div class="eyebrow">중앙대 영어교육과 × 신서중 · 영어 수업 게임</div>
-  <h1>RELAY STORY<br><span>LIVE!</span></h1>
-  <p class="lead">모둠 친구들과 영어 이야기를 돌려 쓰면, 그 이야기가 바로 영상이 되어 다 같이 보는 수업이에요.
-    설치도 로그인도 없고, 영어 선생님이 아니어도 화면 안내대로 진행하면 돼요.</p>
-  <div class="cta">
-    <a class="btn primary" id="host" href="host.html">▶ 수업 시작하기 (교사)</a>
-    <a class="btn" href="demo.html">시연 모드 열기</a>
+  <div class="eyebrow">중앙대학교 영어교육과 × 신서중학교 : 영어 수업 게임</div>
+  <h1>Relay Story <span>Live</span></h1>
+  <div class="panel">
+    <p class="lead">영어 이야기를 이어 쓰면,<br>우리 반 영화가 돼요!</p>
+    <p class="lead2">단어 게임으로 몸을 풀고, 모둠 친구들과 이야기를 돌려 쓰면 바로 영상으로 함께 봐요.<br>설치도 로그인도 없어요. 영어 선생님이 아니어도 화면 안내대로 하면 돼요.</p>
+    <div class="cta">
+      <a class="btn primary" id="host" href="host.html">▶ 수업 시작하기 (교사)</a>
+      <a class="btn" href="demo.html">시연 모드 열기</a>
+    </div>
+    <div id="hostNote"></div>
   </div>
-  <div id="hostNote" class="warn"></div>
-  <div class="press">PRESS START</div>
 </div></section>
 
 <section class="board"><div class="in">
@@ -107,7 +112,7 @@
     </div>
     <ol class="steps">
       <li><span class="tag">STEP 1</span><span><b>오늘의 주제</b><span class="sub">준비된 주제 36개 중 하나를 자동으로 추천해요. 주제와 시작 상황을 함께 읽어요.</span></span><time>2분</time></li>
-      <li><span class="tag">STEP 2</span><span><b>단어</b><span class="sub">2022 개정 중학교 기본 어휘 6개를 카드로 듣고, 디벗으로 단어 게임을 해요. 🎣 단어 낚시(신서중 연못 → 중앙대 청룡연못) 또는 🏃 단어 달리기(중앙대 → 신서중 정문) 중에서 골라요. 모둠 점수를 모은 뒤 많이 틀린 단어를 복습해요.</span></span><time>12분</time></li>
+      <li><span class="tag">STEP 2</span><span><b>단어</b><span class="sub">2022 개정 중학교 기본 어휘 6개를 카드로 듣고, 디벗으로 단어 게임을 해요. 🎣 단어 낚시(신서중 연못 → 중앙대 청룡연못)와 🏃 단어 달리기(중앙대 → 신서중 정문)를 오가며 모은 점수로 모둠 순위를 겨뤄요.</span></span><time>12분</time></li>
       <li><span class="tag">STEP 3</span><span><b>돌려 쓰기</b><span class="sub">모두 동시에 자기 이야기를 시작하고, 라운드마다 옆 친구에게 넘겨 이어 써요.</span></span><time>14분</time></li>
       <li><span class="tag">STEP 4</span><span><b>AI 영상</b><span class="sub">장면 그림, 자막, 영어 음성, 음악이 있는 영상이 바로 만들어져요. 모둠 대표작을 골라요.</span></span><time>4분</time></li>
       <li><span class="tag">STEP 5</span><span><b>함께 보기</b><span class="sub">대표작 상영, 반응 보내기, Best Story 투표와 시상.</span></span><time>10분</time></li>
@@ -139,42 +144,14 @@
 
 <div class="credit" id="credit"></div>
 <script src="js/config.js"></script>
-<script src="js/pixelfish.js"></script>
-<script src="js/wordrun.js"></script>
+<script src="js/pxart.js"></script>
 <script>
   const C = window.RSL_CONFIG || {};
-  /* 첫 화면 그림: 하늘, 중앙대 건물, 신서중, 길 위를 달리는 푸앙이 */
-  (function () {
-    const cv = document.getElementById("heroCv"); if (!cv || !window.PX) return;
-    const x = cv.getContext("2d"), LH = 120, T = window.WordRun && WordRun.text;
-    const R = (i, j, w, h, c) => { x.fillStyle = c; x.fillRect(Math.round(i), Math.round(j), w, h); };
-    const rnd = (n) => { const v = Math.sin(n * 12.9898 + 78.233) * 43758.5453; return v - Math.floor(v); };
-    let t0 = performance.now(); const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    function draw(t) {
-      if (!cv.isConnected) return;
-      const LW = Math.max(120, Math.min(420, Math.round((LH * cv.clientWidth) / Math.max(1, cv.clientHeight))));
-      if (cv.width !== LW) { cv.width = LW; cv.height = LH; }
-      const s = (t - t0) / 1000, cam = s * 40;
-      ["#3d8be8", "#4a95ec", "#5aa2ef", "#6aaef2", "#7cbaf5", "#90c7f7"].forEach((c, i) => R(0, i * 14, LW, 14, c));
-      [[0.1, 10], [0.5, 22], [0.8, 8]].forEach(([o, cy], n) => { const cx = (((o * LW - s * (3 + n)) % (LW + 40)) + LW + 40) % (LW + 40) - 20; R(cx, cy, 18, 4, "#fff"); R(cx + 4, cy - 3, 10, 3, "#fff"); R(cx + 2, cy + 4, 14, 1, "#dcefff"); });
-      for (let b = 0; b * 20 < LW + 20; b++) {
-        const bx = b * 20, right = bx > LW * 0.62, h = right ? 10 + rnd(b) * 6 : 16 + rnd(b) * 22, top = 92 - h;
-        if (!right) { R(bx, top, 18, h, rnd(b + 3) > 0.5 ? "#2c5fb8" : "#3b6fc4"); for (let j = top + 3; j < 90; j += 4) for (let i = bx + 2; i < bx + 16; i += 4) R(i, j, 2, 2, "#9fd0ff"); if (rnd(b + 7) > 0.6 && T) { R(bx + 2, top - 7, 13, 6, "#fff"); T(x, "CAU", bx + 3, top - 6, "#1c479a"); } }
-        else { R(bx, top, 18, h, "#f3e6c8"); R(bx - 1, top - 2, 20, 2, "#b5523b"); for (let i = bx + 3; i < bx + 15; i += 5) R(i, top + 3, 3, 3, "#7fb2e0"); if (rnd(b + 2) > 0.5) { R(bx + 19, 86, 1, 6, "#7a4a24"); R(bx + 16, 81, 7, 6, "#f6b8cf"); } }
-      }
-      const sx = Math.round(LW * 0.86);
-      if (T) { R(sx - 26, 52, 52, 40, "#f3e6c8"); R(sx - 28, 50, 56, 3, "#b5523b"); R(sx - 6, 38, 12, 14, "#f3e6c8"); R(sx - 7, 36, 14, 3, "#b5523b"); R(sx - 3, 41, 6, 6, "#fff"); R(sx, 42, 1, 3, "#14233d"); R(sx, 44, 2, 1, "#14233d");
-        R(sx - 15, 56, 30, 8, "#1c479a"); T(x, "SINSEO", sx - 12, 58, "#fff"); for (let i = sx - 22; i < sx + 22; i += 6) if (Math.abs(i - sx) > 4) { R(i, 68, 4, 4, "#7fb2e0"); R(i, 78, 4, 4, "#7fb2e0"); } R(sx - 4, 80, 8, 12, "#5a7fa8"); }
-      R(0, 92, LW, 3, "#6cbf5c"); R(0, 95, LW, 2, "#c9ccd3"); R(0, 97, LW, 23, "#5d6470");
-      for (let i = -((cam % 24) + 24); i < LW; i += 24) R(i, 108, 12, 1, "#e8ebf0");
-      const px = Math.round(LW * 0.66 + Math.sin(s * 0.7) * LW * 0.05), pose = Math.floor(t / 120) % 2 ? "run1" : "run2";
-      x.fillStyle = "rgba(0,0,0,.25)"; x.fillRect(px + 8, 112, 18, 2);
-      x.drawImage(PX.puang(pose), px, 80);
-      if (!still) requestAnimationFrame(draw);
-    }
-    requestAnimationFrame(draw);
-    if (still) addEventListener("resize", () => requestAnimationFrame(draw));
-  })();
+  /* 첫 화면 그림: 고해상도 픽셀 풍경 (js/pxart.js). 움직임 줄이기 설정이면 멈춘 그림 */
+  if (window.PXA) {
+    PXA.live(document.getElementById("heroCv"), { run: true, school: true, still: matchMedia("(prefers-reduced-motion: reduce)").matches });
+    PXA.backdrop(document.getElementById("bgScene"));
+  }
   document.getElementById("credit").textContent = C.credit || "";
   if (!C.firebase) {
     document.getElementById("host").href = "host.html?demo=1";

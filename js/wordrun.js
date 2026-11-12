@@ -213,7 +213,77 @@
     }
   };
   /* ---------- 그림 ---------- */
-  P.draw = function (t) {
+  P.draw = function (t) { if (g.PXA && g.PXA.ok) this.drawHD(t); else this.drawLo(t); };
+  /* 고해상도 그림 (assets/px): 게임 계산은 그대로 120칸, 그림은 2배(240칸)로 그려요 */
+  P.drawHD = function (t) {
+    const A = g.PXA.IM, K = 2, cv = this.cv, cw = cv.clientWidth || 300, ch = cv.clientHeight || 120;
+    const LW = Math.max(150, Math.min(380, Math.round((LH * cw) / ch))), W = LW * K, H = LH * K;
+    if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
+    this.LW = LW;
+    const x = this.x, cam = this.cam, off = cam * K;
+    const R = (i, j, w, h, c) => { x.fillStyle = c; x.fillRect(Math.round(i), Math.round(j), w, h); };
+    x.imageSmoothingEnabled = false;
+    x.save();
+    if (this.shake > 0) x.translate(Math.round((rnd(t) - 0.5) * 6), 0);
+    const RT = 59 * K; /* 도로 위쪽 */
+    const lapStart = Math.floor(cam / LAP) * LAP, finX = (lapStart + LAP - cam + PX0 + 20) * K;
+    g.PXA.drawScene(x, W, { off, t, roadTop: RT, school: finX > -260 && finX < W + 400 ? finX + 30 : null });
+    /* 차선, 길가 덤불 */
+    for (const ly of [79, 97]) for (let i = -((off % 48) + 48); i < W; i += 48) R(i, ly * K, 24, 2, "#e9eef4");
+    for (let i = -((off * 1.0) % 256) - 256; i < W; i += 256) x.drawImage(A.hedge, Math.round(i), H - 12);
+    /* 출발 아치(중앙대)와 결승 정문(신서중) */
+    for (const gx of [lapStart, lapStart + LAP]) {
+      const sx = Math.round((gx - cam + PX0 + 20) * K);
+      if (sx < -200 || sx > W + 200) continue;
+      for (let j = RT; j < 116 * K; j += 6) for (let k = 0; k < 2; k++) R(sx + k * 6, j, 6, 6, ((j - RT) / 6 + k) % 2 ? "#ffffff" : "#14233d");
+      const im = gx > 0 ? A.gate_finish : A.gate_start;
+      x.drawImage(im, sx - Math.round(im.width / 2) + 6, RT - im.height + 2);
+    }
+    if (this.goalT > 0) { const cols = ["#ff3b30", "#ffd84a", "#3fa45a", "#2c67be", "#ffffff", "#e58fb9"]; for (let n = 0; n < 90; n++) { const fx = rnd(n) * W, fy = ((rnd(n + 9) * 120 + (2.4 - this.goalT) * (80 + rnd(n + 3) * 100)) % 236); R(fx + Math.sin(t / 200 + n) * 6, fy, 4, 4, cols[n % cols.length]); } }
+    /* 단어 문 기둥 */
+    const G = this.gate;
+    if (G) {
+      const sx = (G.x - cam) * K;
+      R(sx - 3, 64, 6, H - 64, "#22345c"); R(sx - 2, 64, 2, H - 64, "#5a7bb8"); R(sx - 14, 60, 28, 6, "#ffd23f"); R(sx - 14, 60, 28, 2, "#fff1a8");
+      const signs = this.el.signs.children;
+      for (let i = 0; i < signs.length; i++) { signs[i].style.left = (sx / W) * 100 + "%"; signs[i].style.top = ((LANE_Y[i] - 5) / LH) * 100 + "%"; signs[i].style.display = sx < W + 60 ? "" : "none"; }
+    }
+    /* 물건과 푸앙이를 위 줄부터 */
+    const items = this.objs.filter((o) => !(o.done && !o.fly)).map((o) => ({ o, y: LANE_Y[o.lane] }));
+    items.push({ me: true, y: this.laneY + 0.5 });
+    items.sort((a, b) => a.y - b.y);
+    const at = (im, cx, by) => x.drawImage(im, Math.round(cx - im.width / 2), Math.round(by - im.height));
+    for (const it of items) {
+      if (it.me) { this.drawMeHD(t); continue; }
+      const o = it.o, sx = (o.x - cam) * K, gy = LANE_Y[o.lane] * K;
+      if (o.fly) { o.fly += 0.08; x.globalAlpha = Math.max(0, 1 - o.fly / 3); }
+      const fy = o.fly ? -o.fly * 16 : 0, bob = Math.floor(t / 280) % 2 ? 2 : 0;
+      if (o.k === "obst") {
+        if (o.t !== "puddle") { x.fillStyle = "rgba(10,25,60,.25)"; x.fillRect(Math.round(sx), gy - 2 + fy, 28, 3); }
+        at(A[{ cone: "cone", hurdle: "barrier", books: "books", puddle: "puddle" }[o.t] || "cone"], sx + 12, gy + 2 + fy);
+      } else if (o.k === "coin") at(A["coin" + (Math.floor(t / 120 + o.x) % 4)], sx + 7, gy - 6 + fy - bob);
+      else if (o.k === "heart") at(A.cube_heart, sx + 8, gy - 6 + fy - bob);
+      else if (o.k === "shield") at(A.cube_shield, sx + 8, gy - 6 + fy - bob);
+      else if (o.k === "letter") {
+        const next = this.spell && o.ch === this.spell.word[this.spell.i], li = o.ch.toUpperCase().charCodeAt(0) - 65, cx = Math.round(sx + 13 - 11), cy = Math.round(gy - 34 + fy - bob);
+        if (next) { R(cx - 3, cy - 3, 28, 28, (Math.floor(t / 200) % 2) ? "#fff1a8" : "#ffd23f"); }
+        if (li >= 0 && li < 26) x.drawImage(A.letters, li * 22, 0, 22, 22, cx, cy, 22, 22);
+      }
+      x.globalAlpha = 1;
+    }
+    x.restore();
+  };
+  P.drawMeHD = function (t) {
+    const A = g.PXA.IM, K = 2, x = this.x, air = this.jumpT >= 0 ? Math.sin((this.jumpT / 0.62) * Math.PI) * 20 : 0;
+    const base = Math.round(this.laneY * K), y = Math.round(base - 60 - air * K), px = PX0 * K - 6;
+    x.fillStyle = "rgba(10,25,60,.28)"; x.fillRect(px + 16, base - 3, 30 - Math.round(air / 2), 4);
+    if (this.fever > 0) { const cols = ["#ff3b30", "#ff9f1a", "#ffd84a", "#3fa45a", "#2c67be", "#8a6be6"]; cols.forEach((c, i) => { x.fillStyle = c; x.fillRect(px - 50 + (Math.floor(t / 60) % 2) * 2, y + 30 + i * 4, 64, 4); }); }
+    if (this.inv > 0 && this.fever <= 0 && Math.floor(t / 90) % 2) return;
+    const pose = this.hurtT > 0 ? "hurt" : this.jumpT >= 0 ? "jump" : ["run0", "run1", "run2", "run3"][Math.floor(t / (this.fever > 0 ? 60 : 95)) % 4];
+    x.drawImage(A[pose], px, y);
+    if (this.shield) { x.strokeStyle = "rgba(140,200,255,.95)"; x.lineWidth = 2; x.beginPath(); x.arc(px + 32, y + 34, 32, 0, Math.PI * 2); x.stroke(); }
+  };
+  P.drawLo = function (t) {
     const cv = this.cv, cw = cv.clientWidth || 300, ch = cv.clientHeight || 120;
     const LW = Math.max(150, Math.min(380, Math.round((LH * cw) / ch)));
     if (cv.width !== LW || cv.height !== LH) { cv.width = LW; cv.height = LH; this.sky = null; }

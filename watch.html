@@ -8,26 +8,29 @@
 <link rel="stylesheet" href="fonts/pretendard/pretendardvariable-dynamic-subset.css">
 <link rel="stylesheet" href="css/app.css">
 <style>
-  .gnb { background:#fff; border-bottom:1px solid var(--line); }
-  .gnb div { max-width:1100px; margin:0 auto; padding:0 16px; height:64px; display:flex; align-items:center; gap:10px; font-weight:800; font-size:19px; letter-spacing:-0.02em; }
+  .gnb { background:var(--glass); box-shadow:0 8px 24px rgba(8,24,70,.25); }
+  .gnb div { max-width:1100px; margin:0 auto; padding:0 16px; height:64px; display:flex; align-items:center; gap:10px; font-family:var(--px-font); font-weight:700; font-size:19px; letter-spacing:0; color:#fff; }
   .gnb div::before { content:""; width:12px; height:12px; border-top:3px solid var(--red); border-right:3px solid var(--red); }
-  main { max-width:1100px; margin:0 auto; padding:28px 16px 10px; }
-  h1 { margin:0 0 6px; font-size:40px; font-weight:800; }
-  .stage { position:relative; background:#000; overflow:hidden; width:100%; aspect-ratio:16/9; }
+  main { max-width:1100px; margin:20px auto 16px; padding:26px 22px 14px; background:rgba(246,250,255,.93); border-radius:10px; box-shadow:0 0 0 2px rgba(255,255,255,.55), 0 20px 44px rgba(8,30,90,.28); }
+  h1 { margin:0 0 6px; font-size:40px; }
+  .stage { position:relative; background:#000; overflow:hidden; width:100%; aspect-ratio:16/9; border-radius:6px; box-shadow:0 0 0 3px #0f2c73; }
   .stage canvas { width:100%; height:100%; display:block; }
   .ctrl { display:flex; gap:8px; margin:12px 0; flex-wrap:wrap; align-items:center; }
-  .list { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:0; margin-top:16px; border-top:2px solid var(--ink); }
-  .film { background:#fff; border-bottom:1px solid var(--line); border-right:1px solid var(--line); padding:14px 16px; cursor:pointer; border-left:4px solid var(--c); }
-  .film:hover { background:var(--tint); }
-  .film.on { background:var(--tint); box-shadow:inset 0 -3px 0 var(--blue-2); }
+  .list { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:10px; margin-top:16px; }
+  .film { background:#fff; border-radius:6px; box-shadow:inset 5px 0 0 var(--c), 0 0 0 2px var(--frame); padding:14px 16px 14px 20px; cursor:pointer; }
+  .film:hover { background:#f1f6ff; }
+  .film.on { background:#e6f0ff; box-shadow:inset 5px 0 0 var(--c), 0 0 0 3px var(--blue); }
   .film b { display:block; font-size:17px; margin-bottom:2px; }
   label.inline { display:inline-flex; gap:6px; align-items:center; }
 </style>
 </head>
-<body>
+<body class="scene">
+<canvas id="bgScene" aria-hidden="true"></canvas>
 <header class="gnb"><div>Relay Story Live</div></header>
 <main id="main">불러오는 중…</main>
 <div class="credit" id="credit"></div>
+<script src="js/pxart.js"></script>
+<script>PXA.backdrop(document.getElementById("bgScene"));</script>
 <script src="js/config.js"></script>
 <script>if (window.RSL_CONFIG.firebase && !new URLSearchParams(location.search).has("demo")) document.write('<link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="' + (window.RSL_CONFIG.firebase.databaseURL || "").replace(/[^\w:/.-]/g, "") + '"><script src="vendor/firebase-app-compat.js"><\/script><script src="vendor/firebase-auth-compat.js"><\/script><script src="vendor/firebase-database-compat.js"><\/script>');</script>
 <script src="js/pixelart.js"></script>

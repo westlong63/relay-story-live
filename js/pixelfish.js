@@ -5,6 +5,15 @@
    글자 지도를 다시 만들 때: 글자 하나 = 픽셀 하나, "."은 투명, 나머지 글자는 PAL(또는 물고기의 pal) 색이에요. */
 (function (g) {
   "use strict";
+  /* 고해상도 낚시터 그림 (assets/px/p*.png). 다 받아지면 낚시터를 2배 촘촘하게 그려요 */
+  const HDN = ["psky0", "pwater0", "pfar0", "pschool", "pcherry1", "pcherry2", "pbank0", "plily", "plilyf", "psky1", "pwater1", "psun1", "pisland", "pbank1", "pcloud1", "pcloud1b", "psky2", "pwater2", "pcity2", "pmoon", "pbank2", "prock"];
+  const HDB = (typeof document !== "undefined" && document.currentScript && document.currentScript.src.replace(/js\/pixelfish\.js.*$/, "")) || "";
+  let HDI = null, HDok = false;
+  function loadHD() {
+    if (HDI || typeof Image === "undefined") return;
+    HDI = {}; let left = HDN.length;
+    HDN.forEach((n) => { const im = new Image(); im.onload = im.onerror = () => { if (--left === 0) HDok = HDN.every((k) => HDI[k].naturalWidth > 0); }; im.src = HDB + "assets/px/" + n + ".png"; HDI[n] = im; });
+  }
   const PAL = {"o": "#1d2f5c", "b": "#74c4ee", "d": "#4b9fd6", "w": "#ffffff", "t": "#dcc196", "T": "#b8986a", "p": "#f5c3d3", "P": "#e58fb9", "k": "#0f1a33", "y": "#ffd84a", "Y": "#e0a020", "r": "#8a5a2b"};
   /* 푸앙이 (중앙대학교 마스코트, 교육용 사용 허락을 받았어요): 32×36 */
   const PUANG = {
@@ -751,7 +760,7 @@
   function Pond(cv) {
     this.cv = cv; this.x = cv.getContext("2d"); this.st = { pond: 0, mode: "idle", tier: 0 }; this.since = performance.now();
     this.sh = [0, 1, 2, 3].map((i) => ({ f: rnd(i + 1), y: 0.25 + rnd(i + 7) * 0.65, v: (0.0012 + rnd(i + 3) * 0.0016) * (i % 2 ? 1 : -1) }));
-    this.bg = null; this.bgKey = ""; this.last = 0;
+    this.bg = null; this.bgKey = ""; this.last = 0; loadHD();
     const loop = (t) => { if (!this.cv.isConnected) return; if (t - this.last > 80 && !document.hidden) { this.last = t; try { this.draw(t); } catch (e) {} } requestAnimationFrame(loop); };
     requestAnimationFrame(loop);
   }
@@ -760,6 +769,7 @@
     this.st = Object.assign({}, st);
   };
   Pond.prototype.draw = function (t) {
+    if (HDok && g.PXA && g.PXA.ok) return this.drawHD(t);
     const cv = this.cv, cw = cv.clientWidth || 300, ch = cv.clientHeight || 100;
     const LW = Math.max(120, Math.min(340, Math.round((LH * cw) / ch))), st = this.st, pond = st.pond | 0, mode = st.mode, age = t - this.since;
     if (cv.width !== LW || cv.height !== LH) { cv.width = LW; cv.height = LH; }
@@ -832,6 +842,122 @@
       } else {
         line(tip[0], tip[1], tip[0], tip[1] + 10, lc);
         R(tip[0], tip[1] + 9, 1, 1, "#1d2f5c"); R(tip[0] - 1, tip[1] + 10, 3, 2, "#ff3b30"); R(tip[0] - 1, tip[1] + 12, 3, 1, "#ffffff");
+      }
+    }
+  };
+  /* ---------- 고해상도 낚시터: 같은 자리(100줄)를 2배 촘촘한 그림(200줄)으로 ---------- */
+  Pond.prototype.bgHD = function (W, pond, LW) {
+    const I = HDI, P = g.PXA.IM, HZd = HZ * 2;
+    const mk = () => { const c = document.createElement("canvas"); c.width = W; c.height = LH * 2; const x = c.getContext("2d"); x.imageSmoothingEnabled = false; return [c, x]; };
+    const tile = (x, im, y, off) => { const w = im.width; for (let sx = -((((off || 0) % w) + w) % w); sx < W; sx += w) x.drawImage(im, sx, y); };
+    /* A: 하늘 (해·달 포함) */
+    const [A, a] = mk();
+    tile(a, I["psky" + pond], 0);
+    if (pond === 0) a.drawImage(P.sun, W - 118, -96);
+    if (pond === 1) a.drawImage(I.psun1, Math.round(W * 0.76 - I.psun1.width / 2), HZd - I.psun1.height);
+    if (pond === 2) a.drawImage(I.pmoon, Math.round(W * 0.82 - 16), 2);
+    /* B: 먼 풍경 + 물 + 물 위 장식 (구름보다 앞) */
+    const [B, b] = mk();
+    if (pond === 0) {
+      tile(b, I.pfar0, HZd - I.pfar0.height, 40);
+      const sx = Math.round(Math.max(150, W * 0.64) - 50);
+      b.drawImage(I.pcherry2, sx - 24, HZd - 30); b.drawImage(I.pcherry1, sx + 96, HZd - 30);
+      b.drawImage(I.pschool, sx, HZd - 58);
+      if (W > 420) b.drawImage(I.pcherry1, sx - 52, HZd - 28);
+    }
+    if (pond === 1) b.drawImage(I.pisland, Math.round(W * 0.34 - 43), HZd - I.pisland.height + 2);
+    if (pond === 2) tile(b, I.pcity2, HZd - I.pcity2.height, 262 - Math.round(W * 0.58)); /* CAU 간판 빌딩이 가운데 오른쪽에 */
+    tile(b, I["pwater" + pond], HZd);
+    b.fillStyle = pond === 0 ? "#e6f6ff" : pond === 1 ? "#fff1dc" : "#6a70c0"; b.fillRect(0, HZd, W, 1);
+    if (pond === 0) for (let i = 0; i < W; i += 4) { b.fillStyle = (i >> 2) % 2 ? "#c9d3dc" : "#9aa7b3"; b.fillRect(i, HZd - 2, 4, 2); }
+    if (pond === 2) {
+      const rx = W - 48;
+      b.drawImage(I.prock, rx - 28, HZd - 6);
+      b.drawImage(fish(2, 4), rx - 26, HZd - 34, 52, 32);
+    }
+    return [A, B];
+  };
+  Pond.prototype.drawHD = function (t) {
+    const cv = this.cv, cw = cv.clientWidth || 300, ch = cv.clientHeight || 100;
+    const LW = Math.max(120, Math.min(340, Math.round((LH * cw) / ch))), W = LW * 2, H = LH * 2, HZd = HZ * 2, GYd = GY * 2;
+    const st = this.st, pond = st.pond | 0, mode = st.mode, age = t - this.since, I = HDI, P = g.PXA.IM;
+    if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
+    const key = "hd|" + W + "|" + pond;
+    if (this.bgKey !== key) { this.bg = this.bgHD(W, pond, LW); this.bgKey = key; }
+    const x = this.x;
+    x.setTransform(1, 0, 0, 1, 0, 0); x.imageSmoothingEnabled = false; x.globalAlpha = 1;
+    const R = (i, j, w, h, col) => { x.fillStyle = col; x.fillRect(Math.round(i), Math.round(j), w, h); };
+    const line = (x0, y0, x1, y1, col, th) => { x0 = Math.round(x0); y0 = Math.round(y0); x1 = Math.round(x1); y1 = Math.round(y1); const dx = Math.abs(x1 - x0), dy = -Math.abs(y1 - y0), sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1; let e = dx + dy; x.fillStyle = col; for (let n = 0; n < 800; n++) { x.fillRect(x0, y0, th || 1, th || 1); if (x0 === x1 && y0 === y1) break; const e2 = 2 * e; if (e2 >= dy) { e += dy; x0 += sx; } if (e2 <= dx) { e += dx; y0 += sy; } } };
+    x.drawImage(this.bg[0], 0, 0);
+    /* 하늘 움직임: 구름·별·갈매기 */
+    const drift = (im, p, v, y) => { const span = W + im.width + 20, cx = (((p * span + t * v) % span) + span) % span - im.width; x.drawImage(im, Math.round(cx), y); };
+    if (pond === 0) { drift(P.cloud2, 0.1, 0.004, 4); drift(P.cloud4, 0.55, 0.007, 22); }
+    if (pond === 1) {
+      drift(I.pcloud1, 0.15, 0.003, 8); drift(I.pcloud1b, 0.6, 0.005, 26);
+      [[0.2, 18, 0.009], [0.62, 30, 0.007]].forEach(([o, cy, v]) => { const cx = ((o * (W + 40) + t * v) % (W + 40)) - 20, f = Math.floor(t / 260) % 2; R(cx, cy + f, 3, 1, "#3a2a50"); R(cx + 3, cy + 1 - f, 2, 1, "#3a2a50"); R(cx + 5, cy + f, 3, 1, "#3a2a50"); });
+    }
+    if (pond === 2) for (let n = 0; n < 34; n++) {
+      const sx = Math.round(rnd(n) * W), sy = Math.round(2 + rnd(n + 99) * (HZd - 40)), tw = Math.sin(t / 520 + n * 1.7);
+      if (tw > 0.55) { R(sx - 1, sy, 3, 1, "#ffffff"); R(sx, sy - 1, 1, 3, "#ffffff"); } else R(sx, sy, 1, 1, n % 3 ? "#c8d0ff" : "#ffffff");
+    }
+    x.drawImage(this.bg[1], 0, 0);
+    /* 물빛: 해·달 그림자와 반짝이 */
+    if (pond === 1 || pond === 2) {
+      const sx = W * (pond === 1 ? 0.76 : 0.82), ph = Math.floor(t / 420) % 2;
+      for (let k = 0; k < 12; k++) { const w = Math.max(2, (pond === 1 ? 46 : 18) - k * (pond === 1 ? 4 : 1.4)); R(sx - w / 2 + ((k + ph) % 2 ? 2 : -2), HZd + 3 + k * 4, Math.round(w), 1, pond === 1 ? "rgba(255,226,160,.8)" : "rgba(255,243,176,.6)"); }
+    }
+    const water0 = Math.ceil(edgeAt(pond, GY)) + 6, bxL = Math.round(Math.max(water0 + 26, LW * 0.64)), byL = 74, bx = bxL * 2, by = byL * 2;
+    for (let n = 0; n < 12; n++) { if (Math.sin(t / 650 + n * 2.3) > 0.35) { const sx = water0 * 2 + rnd(n + 50) * (W - water0 * 2 - 12), sy = HZd + 8 + rnd(n + 70) * (H - HZd - 16); R(sx, sy, 3 + (n % 4) * 2, 1, "rgba(255,255,255,.5)"); } }
+    /* 물속 물고기 그림자 */
+    x.fillStyle = "rgba(10,20,60,.2)";
+    this.sh.forEach((s, n) => {
+      s.f += s.v; if (s.f > 1.08) s.f = -0.08; if (s.f < -0.08) s.f = 1.08;
+      let sx = water0 + s.f * (LW - water0), sy = HZ + 8 + s.y * (LH - HZ - 12);
+      if (n === 0 && (mode === "wait" || mode === "bite")) { const k = mode === "bite" ? 1 : Math.min(1, age / 2500); sx = sx + (bxL - 4 - sx) * k; sy = sy + (byL + 4 - sy) * k; }
+      const X = Math.round(sx * 2), Y = Math.round(sy * 2), d = s.v > 0 ? 1 : -1;
+      x.fillRect(X - 7, Y, 14, 4); x.fillRect(X - 5, Y - 1, 10, 6); x.fillRect(X - 3, Y - 2, 6, 8); x.fillRect(X + 8 * -d - (d < 0 ? 0 : 3), Y - 2, 3, 8);
+    });
+    if (pond === 0) [[0.47, 168, "plilyf"], [0.9, 184, "plily"], [0.7, 194, "plily"]].forEach(([f, cy, n]) => x.drawImage(I[n], Math.round(W * f - 15), cy - 8 + (Math.floor(t / 900 + f * 7) % 2)));
+    x.drawImage(I["pbank" + pond], 0, GYd - 24);
+    /* 푸앙이 (고해상도) */
+    const shake = mode === "bite" ? (Math.floor(t / 60) % 2 ? 2 : -2) : 0;
+    const jump = mode === "caught" ? [0, -4, -8, -10, -8, -4, 0, 0][Math.floor(age / 70) % 8] * (age < 2400 ? 1 : 0) : 0;
+    const blink = mode !== "bite" && t % 3600 < 140;
+    const pose = mode === "caught" ? "cheer" : mode === "bite" ? "wow" : st.over ? "stand" : blink ? "blink" : "fish";
+    const px0 = 14 + shake, py0 = GYd - 64 + jump;
+    R(px0 + 20, GYd - 2, 30, 3, "rgba(20,40,20,.25)");
+    x.drawImage(P[pose] || P.stand, px0, py0);
+    /* 낚싯대와 낚싯줄 */
+    if (!st.over) {
+      const hx = px0 + 41, hy = py0 + 44;
+      const tip = mode === "caught" ? [hx + 14, hy - 56] : mode === "wait" ? [hx + 46, hy - 34] : mode === "bite" ? [hx + 44, hy - 18 + (Math.floor(t / 70) % 2) * 2] : [hx + 24, hy - 52];
+      const mx = hx + (tip[0] - hx) * 0.24, my = hy + (tip[1] - hy) * 0.24;
+      line(hx - 3, hy + 4, mx, my, "#4a2e14", 3);
+      line(mx, my, tip[0], tip[1], "#8a5a2b", 2); line(mx, my - 1, tip[0], tip[1] - 1, "#c8925a", 1);
+      R(hx - 2, hy - 1, 4, 4, "#1d2f5c"); R(mx - 1, my - 1, 3, 3, "#d0d6e0");
+      const lc = "rgba(255,255,255,.9)";
+      if (mode === "wait" || mode === "bite") {
+        const bob = mode === "wait" ? (Math.floor(t / 520) % 2) * 2 : 5, sag = mode === "wait" ? 14 : 2;
+        for (let k = 0; k <= 140; k++) { const u = k / 140, lx = (1 - u) * (1 - u) * tip[0] + 2 * u * (1 - u) * ((tip[0] + bx) / 2) + u * u * bx, ly = (1 - u) * (1 - u) * tip[1] + 2 * u * (1 - u) * (Math.max(tip[1], by) + sag) + u * u * (by - 10 + bob); R(lx, ly, 1, 1, lc); }
+        if (mode === "wait") {
+          for (let k = 0; k < 2; k++) { const a = ((age + k * 800) % 1600) / 1600, r = 4 + a * 20; x.globalAlpha = 1 - a; for (let q = 0; q < 56; q++) { const an = (q / 56) * Math.PI * 2; R(bx + Math.cos(an) * r, by + 1 + Math.sin(an) * r * 0.32, 1, 1, "#ffffff"); } x.globalAlpha = 1; }
+          R(bx - 1, by - 13 + bob, 2, 4, "#1d2f5c"); R(bx - 3, by - 9 + bob, 6, 4, "#ff3b30"); R(bx - 2, by - 9 + bob, 2, 1, "#ff8a80"); R(bx - 3, by - 5 + bob, 6, 4, "#ffffff"); R(bx - 4, by - 1, 8, 1, "rgba(255,255,255,.6)");
+        } else {
+          R(bx - 3, by + 1, 6, 2, "#ff3b30");
+          for (let q = 0; q < 16; q++) { const an = rnd(q + Math.floor(t / 90)) * Math.PI, r = 6 + rnd(q * 3 + Math.floor(t / 90)) * 12; R(bx + Math.cos(an) * r, by - Math.sin(an) * r * 0.8, 2, 2, "#ffffff"); }
+          const qx = px0 + 46, qy = py0 - 4;
+          R(qx, qy, 16, 20, "#1d2f5c"); R(qx + 2, qy + 2, 12, 16, "#ffffff"); R(qx + 3, qy + 20, 4, 4, "#1d2f5c");
+          R(qx + 6, qy + 4, 4, 8, "#ff3b30"); R(qx + 6, qy + 14, 4, 2, "#ff3b30");
+        }
+      } else if (mode === "caught") {
+        const f = fish(st.pondOf != null ? st.pondOf : pond, st.tier), sw = Math.round(Math.sin(t / 160) * 2);
+        line(tip[0], tip[1], tip[0] + sw, tip[1] + 12, lc, 1);
+        x.drawImage(f, tip[0] + sw - 8, tip[1] + 8, f.width * 2, f.height * 2);
+        if ((st.tier | 0) >= 2) for (let q = 0; q < 6; q++) { if (Math.sin(t / 180 + q * 1.9) > 0.2) { const a = (q / 6) * Math.PI * 2 + t / 900, sx = tip[0] + 18 + Math.cos(a) * 34, sy = tip[1] + 24 + Math.sin(a) * 20, c = (st.tier | 0) >= 4 ? "#ffd84a" : "#ffffff"; R(sx - 2, sy, 5, 1, c); R(sx, sy - 2, 1, 5, c); } }
+        if (age < 900) { const a = age / 900, r = 6 + a * 24; x.globalAlpha = 1 - a; for (let q = 0; q < 60; q++) { const an = (q / 60) * Math.PI * 2; R(bx + Math.cos(an) * r, by + 1 + Math.sin(an) * r * 0.32, 1, 1, "#ffffff"); } x.globalAlpha = 1; }
+      } else {
+        line(tip[0], tip[1], tip[0], tip[1] + 20, lc, 1);
+        R(tip[0] - 1, tip[1] + 17, 2, 3, "#1d2f5c"); R(tip[0] - 2, tip[1] + 20, 5, 3, "#ff3b30"); R(tip[0] - 2, tip[1] + 23, 5, 2, "#ffffff");
       }
     }
   };
