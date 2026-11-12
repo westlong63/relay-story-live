@@ -100,6 +100,9 @@
   .pond .pn, .pond .msg, .catchCard .fn, .catchCard .fc, .tierTag { font-family:"Galmuri11", var(--font); font-weight:700; letter-spacing:0; }
   .pond .pn { position:absolute; left:6px; top:6px; z-index:2; font-size:15px; background:rgba(255,255,255,.88); padding:3px 8px; color:#14233d; border:2px solid #14233d; }
   .pond .pn small { color:#4a5568; font-size:11px; }
+  /* 물고기 카드가 뜨면 연못 이름은 카드 왼쪽에 짧게 */
+  .pond.caught .pn { max-width:calc(40% - 18px); font-size:13px; line-height:1.2; }
+  .pond.caught .pn small { display:none; }
   .pond .msg { position:absolute; left:0; right:0; bottom:8px; text-align:center; z-index:3; font-size:17px; color:#fff; text-shadow:2px 2px 0 #14233d, -1px -1px 0 #14233d, 1px -1px 0 #14233d, -1px 1px 0 #14233d; padding:0 6px; }
   .catchCard { position:absolute; right:8px; top:8px; bottom:8px; width:min(60%, 340px); z-index:4; background:rgba(255,255,255,.95); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; animation:pop .35s; padding:6px 8px; border:3px solid #14233d; box-shadow:4px 4px 0 rgba(20,35,61,.35); }
   .catchCard .fe { line-height:0; margin:2px 0 4px; } .catchCard .fn { font-size:21px; line-height:1.15; } .catchCard .fk { font-size:12px; color:var(--dim); font-family:var(--font); }
